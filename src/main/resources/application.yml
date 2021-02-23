@@ -1,0 +1,40 @@
+spring:
+  application:
+    name: diurnal-dbi-service
+    heroku: ${spring.application.name}.herokuapp.com
+  profiles:
+    active: ${SPRING_PROFILE}
+  security:
+    user:
+      name: ${SPRING_SECURITY_USERNAME:user}
+      password: ${SPRING_SECURITY_CRED:default}
+
+server:
+  port: ${SERVER_PORT:25641}
+
+#eureka:
+#  local: localhost:2011
+#  instance:
+#    hostname: ${DOMAIN_NAME:${spring.application.name}}
+#    preferIpAddress: true
+#  client:
+#    service-url:
+#      defaultZone: http://${eureka.user}:${eureka.password}@${EUREKA_URL:${eureka.local}}/eureka #EUREKA_URL var set to => https://prom-v2-eureka-service.herokuapp.com on heroku dashboard
+#  user: ${EUREKA_USER_NAME:user}
+#  password: ${EUREKA_USER_CRED:default}
+
+db:
+  diurnal:
+    name: diurnal
+    server:
+      host: localhost
+      port: ${PROM_POSTGRES_PORT}
+    user: ${PROM_POSTGRES_REF_USER}
+    cred: ${PROM_POSTGRES_REF_CRED}
+
+dbi:
+  tables:
+    create:
+      onStartup: true
+
+logging.level.org.springframework.web: ${LOGGING:INFO}

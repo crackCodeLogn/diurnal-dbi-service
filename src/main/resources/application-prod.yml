@@ -1,0 +1,8 @@
+db:
+  diurnal:
+    name: diurnal
+    server:
+      host: --
+      port: --
+    user: --
+    cred: --

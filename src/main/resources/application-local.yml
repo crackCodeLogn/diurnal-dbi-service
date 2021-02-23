@@ -1,0 +1,8 @@
+db:
+  diurnal:
+    name: diurnal
+    server:
+      host: localhost
+      port: ${PROM_POSTGRES_PORT}
+    user: ${PROM_POSTGRES_REF_USER}
+    cred: ${PROM_POSTGRES_REF_CRED}

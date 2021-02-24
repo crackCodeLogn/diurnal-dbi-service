@@ -1,6 +1,5 @@
 db:
   diurnal:
-    name: diurnal
     server:
       host: localhost
       port: ${PROM_POSTGRES_PORT}

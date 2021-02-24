@@ -3,7 +3,7 @@ spring:
     name: diurnal-dbi-service
     heroku: ${spring.application.name}.herokuapp.com
   profiles:
-    active: ${SPRING_PROFILE}
+    active: ${SPRING_PROFILE:local}
   security:
     user:
       name: ${SPRING_SECURITY_USERNAME:user}

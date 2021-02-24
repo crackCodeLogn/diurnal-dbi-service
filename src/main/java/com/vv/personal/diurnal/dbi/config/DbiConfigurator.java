@@ -19,6 +19,8 @@ public interface DbiConfigurator {
 
     String getDbCred();
 
+    String getDbUrl();
+
     Connection getDbConnection();
 
     boolean closeDbConnection();

@@ -24,10 +24,17 @@ public abstract class AbstractDbiConfigurator implements DbiConfigurator {
     @Override
     public Connection getDbConnection() {
         if (connection == null) {
-            String dbUrl = String.format(DB_CONNECTORS_URL, getDbServerHost(), getDbServerPort(), getDbName());
+            Properties properties = new Properties();
+            String dbUrl;
+            if (getDbUrl().isEmpty()) {
+                dbUrl = String.format(DB_CONNECTORS_URL, getDbServerHost(), getDbServerPort(), getDbName());
+                properties = getProperties();
+            } else {
+                dbUrl = getDbUrl();
+            }
             LOGGER.info("Establishing DB connection to: {}", dbUrl);
             try {
-                Connection connection = DriverManager.getConnection(dbUrl, getProperties());
+                Connection connection = DriverManager.getConnection(dbUrl, properties);
                 LOGGER.info("DB connection successful => {}", connection.getClientInfo());
                 this.connection = connection;
                 return connection;

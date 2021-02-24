@@ -25,6 +25,9 @@ public class DbiConfigForDiurnal extends AbstractDbiConfigurator {
     @Value("${db.diurnal.cred}")
     private String dbCred;
 
+    @Value("${db.diurnal.url:}")
+    private String dbUrl;
+
     @Override
     public String getDbServerHost() {
         return dbServerHost;
@@ -48,6 +51,11 @@ public class DbiConfigForDiurnal extends AbstractDbiConfigurator {
     @Override
     public String getDbCred() {
         return dbCred;
+    }
+
+    @Override
+    public String getDbUrl() {
+        return dbUrl;
     }
 
 }

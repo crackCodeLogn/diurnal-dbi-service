@@ -1,7 +1,9 @@
 package com.vv.personal.diurnal.dbi.config;
 
+
 import com.vv.personal.diurnal.dbi.interactor.diurnal.CachedDiurnal;
 import com.vv.personal.diurnal.dbi.interactor.diurnal.DiurnalDbi;
+import com.vv.personal.diurnal.dbi.interactor.diurnal.DiurnalTableTitleMapping;
 import com.vv.personal.diurnal.dbi.interactor.diurnal.DiurnalTableUserMapping;
 import com.vv.personal.diurnal.dbi.util.DbiUtil;
 import org.apache.commons.lang3.time.StopWatch;
@@ -15,8 +17,7 @@ import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.vv.personal.diurnal.dbi.constants.Constants.PRIMARY_COL_USER_MAPPING;
-import static com.vv.personal.diurnal.dbi.constants.Constants.TABLE_DIURNAL_USER_MAPPING;
+import static com.vv.personal.diurnal.dbi.constants.Constants.*;
 
 /**
  * @author Vivek
@@ -51,14 +52,14 @@ public class DbiConfig {
     public DiurnalTableEntries diurnalTableEntries() {
         return new DiurnalTableEntries(TABLE_DIURNAL_USER_MAPPING, PRIMARY_COL_ENTRIES, DiurnalDbConnector(), cachedDiurnal(),
                 generateCreateTableSql("diurnal.entries"));
-    }
+    }*/
 
     @Bean
     @Qualifier("DiurnalTableTitleMapping")
     public DiurnalTableTitleMapping diurnalTableTitleMapping() {
-        return new DiurnalTableTitleMapping(TABLE_DIURNAL_ENTRIES, PRIMARY_COL_TITLE_MAPPING, DiurnalDbConnector(), cachedDiurnal(),
-                generateCreateTableSql("diurnal.title_mapping"));
-    }*/
+        return new DiurnalTableTitleMapping(TABLE_DIURNAL_TITLE_MAPPING, PRIMARY_COL_TITLE_MAPPING, DiurnalDbConnector(), cachedDiurnal(),
+                DbiUtil::generateCreateTableSql, "diurnal.title_mapping");
+    }
 
     @Bean(initMethod = "start")
     @Scope("prototype")
@@ -70,7 +71,7 @@ public class DbiConfig {
     public void postHaste() {
         diurnalDbis.add(diurnalTableUserMapping());
         //diurnalDbis.add(diurnalTableEntries());
-        //diurnalDbis.add(diurnalTableTitleMapping());
+        diurnalDbis.add(diurnalTableTitleMapping());
     }
 
     public boolean isCreateTablesOnStartup() {

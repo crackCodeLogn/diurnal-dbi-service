@@ -1,10 +1,7 @@
 package com.vv.personal.diurnal.dbi.config;
 
 
-import com.vv.personal.diurnal.dbi.interactor.diurnal.CachedDiurnal;
-import com.vv.personal.diurnal.dbi.interactor.diurnal.DiurnalDbi;
-import com.vv.personal.diurnal.dbi.interactor.diurnal.DiurnalTableTitleMapping;
-import com.vv.personal.diurnal.dbi.interactor.diurnal.DiurnalTableUserMapping;
+import com.vv.personal.diurnal.dbi.interactor.diurnal.*;
 import com.vv.personal.diurnal.dbi.util.DbiUtil;
 import org.apache.commons.lang3.time.StopWatch;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -27,6 +24,7 @@ import static com.vv.personal.diurnal.dbi.constants.Constants.*;
 public class DbiConfig {
 
     private final List<DiurnalDbi> diurnalDbis = new ArrayList<>();
+
     @Value("${dbi.tables.create.onStartup:true}")
     private boolean createTablesOnStartup;
 
@@ -47,12 +45,12 @@ public class DbiConfig {
                 DbiUtil::generateCreateTableSql, "diurnal.user_mapping");
     }
 
-    /*@Bean
-    @Qualifier("DiurnalTableEntries")
-    public DiurnalTableEntries diurnalTableEntries() {
-        return new DiurnalTableEntries(TABLE_DIURNAL_USER_MAPPING, PRIMARY_COL_ENTRIES, DiurnalDbConnector(), cachedDiurnal(),
-                generateCreateTableSql("diurnal.entries"));
-    }*/
+    @Bean
+    @Qualifier("DiurnalTableEntry")
+    public DiurnalTableEntry diurnalTableEntries() {
+        return new DiurnalTableEntry(TABLE_DIURNAL_ENTRY, PRIMARY_COL_ENTRY, DiurnalDbConnector(), cachedDiurnal(),
+                DbiUtil::generateCreateTableSql, "diurnal.entry");
+    }
 
     @Bean
     @Qualifier("DiurnalTableTitleMapping")
@@ -70,7 +68,7 @@ public class DbiConfig {
     @PostConstruct
     public void postHaste() {
         diurnalDbis.add(diurnalTableUserMapping());
-        //diurnalDbis.add(diurnalTableEntries());
+        diurnalDbis.add(diurnalTableEntries());
         diurnalDbis.add(diurnalTableTitleMapping());
     }
 

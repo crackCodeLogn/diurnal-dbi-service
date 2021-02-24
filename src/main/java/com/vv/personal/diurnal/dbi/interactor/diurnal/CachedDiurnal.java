@@ -23,7 +23,7 @@ public class CachedDiurnal {
         activeRefEntityIds.put(TABLE_DIURNAL_TITLE_MAPPING, generateEmptySet());
         /*activeRefEntityIds.put(TABLE_REF_PROBLEM, generateEmptySet());
         activeRefEntityIds.put(TABLE_REF_MAKE, generateEmptySet());*/
-        activeRefEntityIds.put(TABLE_DIURNAL_ENTRIES, generateEmptySet());
+        activeRefEntityIds.put(TABLE_DIURNAL_ENTRY, generateEmptySet());
     }
 
     public synchronized Boolean addNewIdToEntityCache(String entity, Integer idToAdd) {

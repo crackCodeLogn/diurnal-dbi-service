@@ -39,9 +39,9 @@ public class Constants {
     public static final String DB_DIURNAL = "diurnal";
     public static final String TABLE_DIURNAL_USER_MAPPING = "user_mapping";
     public static final String TABLE_DIURNAL_TITLE_MAPPING = "title_mapping";
-    public static final String TABLE_DIURNAL_ENTRIES = "entries";
+    public static final String TABLE_DIURNAL_ENTRY = "entry";
 
-    public static final String PRIMARY_COL_ENTRIES = "mobile,date,serial";
+    public static final String PRIMARY_COL_ENTRY = "mobile,date,serial";
     public static final String PRIMARY_COL_USER_MAPPING = "mobile";
     public static final String PRIMARY_COL_TITLE_MAPPING = "mobile,date";
 

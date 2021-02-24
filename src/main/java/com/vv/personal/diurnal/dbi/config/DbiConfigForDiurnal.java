@@ -13,16 +13,16 @@ public class DbiConfigForDiurnal extends AbstractDbiConfigurator {
     @Value("${db.diurnal.server.host:localhost}")
     private String dbServerHost;
 
-    @Value("${db.diurnal.server.port}")
+    @Value("${db.diurnal.server.port:5432}")
     private int dbServerPort;
 
     @Value("${db.diurnal.name:diurnal}")
     private String dbName;
 
-    @Value("${db.diurnal.user}")
+    @Value("${db.diurnal.user:}")
     private String dbUser;
 
-    @Value("${db.diurnal.cred}")
+    @Value("${db.diurnal.cred:}")
     private String dbCred;
 
     @Value("${db.diurnal.url:}")

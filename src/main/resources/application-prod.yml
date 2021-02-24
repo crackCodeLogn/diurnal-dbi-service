@@ -1,9 +1,9 @@
 db:
   diurnal:
-    name: ${DIURNAL_POSTGRES_HEROKU_DB_NAME}
+    name:
     server:
-      host: ${DIURNAL_POSTGRES_HEROKU_HOST}
+      host:
       port: ${DIURNAL_POSTGRES_HEROKU_PORT:5432}
-    user: ${DIURNAL_POSTGRES_HEROKU_USER}
-    cred: ${DIURNAL_POSTGRES_HEROKU_CRED}
+    user:
+    cred:
     url: ${DATABASE_URL:}

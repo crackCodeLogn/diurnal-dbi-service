@@ -3,6 +3,8 @@ package com.vv.personal.diurnal.dbi.config;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -22,15 +24,25 @@ public abstract class AbstractDbiConfigurator implements DbiConfigurator {
     protected Statement statement = null;
 
     @Override
-    public Connection getDbConnection() {
+    public Connection getDbConnection() throws URISyntaxException {
         if (connection == null) {
-            Properties properties = new Properties();
+            Properties properties;
             String dbUrl;
             if (getDbUrl().isEmpty()) {
                 dbUrl = String.format(DB_CONNECTORS_URL, getDbServerHost(), getDbServerPort(), getDbName());
-                properties = getProperties();
+                properties = getProperties(getDbUser(), getDbCred());
             } else {
-                dbUrl = getDbUrl();
+                try {
+                    URI dbUri = new URI(getDbUrl());
+
+                    String user = dbUri.getUserInfo().split(":")[0];
+                    String cred = dbUri.getUserInfo().split(":")[1];
+                    dbUrl = String.format(DB_CONNECTORS_URL, dbUri.getHost(), dbUri.getPort(), dbUri.getPath());
+                    properties = getProperties(user, cred);
+                } catch (URISyntaxException e) {
+                    LOGGER.error("Failed to parse URL: {}. ", getDbUrl());
+                    throw e;
+                }
             }
             LOGGER.info("Establishing DB connection to: {}", dbUrl);
             try {
@@ -46,7 +58,7 @@ public abstract class AbstractDbiConfigurator implements DbiConfigurator {
     }
 
     @Override
-    public Statement getStatement() {
+    public Statement getStatement() throws URISyntaxException {
         if (statement == null) {
             connection = getDbConnection();
             try {
@@ -74,10 +86,10 @@ public abstract class AbstractDbiConfigurator implements DbiConfigurator {
         return true;
     }
 
-    private Properties getProperties() {
+    private Properties getProperties(String user, String cred) {
         Properties properties = new Properties();
-        properties.setProperty(DB_USER_STRING, getDbUser());
-        properties.setProperty(DB_CRED_STRING, getDbCred());
+        properties.setProperty(DB_USER_STRING, user);
+        properties.setProperty(DB_CRED_STRING, cred);
         return properties;
     }
 }

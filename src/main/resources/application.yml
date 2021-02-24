@@ -35,6 +35,6 @@ db:
 dbi:
   tables:
     create:
-      onStartup: true
+      onStartup: ${DBI_TABLES_CREATE_ONSTARTUP:true}
 
 logging.level.org.springframework.web: ${LOGGING:INFO}

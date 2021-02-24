@@ -37,7 +37,7 @@ public abstract class AbstractDbiConfigurator implements DbiConfigurator {
 
                     String user = dbUri.getUserInfo().split(":")[0];
                     String cred = dbUri.getUserInfo().split(":")[1];
-                    dbUrl = String.format(DB_CONNECTORS_URL, dbUri.getHost(), dbUri.getPort(), dbUri.getPath());
+                    dbUrl = String.format(DB_CONNECTORS_URL, dbUri.getHost(), dbUri.getPort(), dbUri.getPath().substring(1));
                     properties = getProperties(user, cred);
                 } catch (URISyntaxException e) {
                     LOGGER.error("Failed to parse URL: {}. ", getDbUrl());

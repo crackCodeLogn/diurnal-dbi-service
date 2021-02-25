@@ -1,5 +1,6 @@
 package com.vv.personal.diurnal.dbi.config;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,24 +27,32 @@ public abstract class AbstractDbiConfigurator implements DbiConfigurator {
     @Override
     public Connection getDbConnection() throws URISyntaxException {
         if (connection == null) {
-            Properties properties;
-            String dbUrl;
+            String dbHost, dbName, user, cred;
+            Integer dbPort;
             if (getDbUrl().isEmpty()) {
-                dbUrl = String.format(DB_CONNECTORS_URL, getDbServerHost(), getDbServerPort(), getDbName());
-                properties = getProperties(getDbUser(), getDbCred());
+                dbHost = getDbServerHost();
+                dbPort = getDbServerPort();
+                dbName = getDbName();
+                user = getDbUser();
+                cred = getDbCred();
             } else {
                 try {
-                    URI dbUri = new URI(getDbUrl());
-
-                    String user = dbUri.getUserInfo().split(":")[0];
-                    String cred = dbUri.getUserInfo().split(":")[1];
-                    dbUrl = String.format(DB_CONNECTORS_URL, dbUri.getHost(), dbUri.getPort(), dbUri.getPath().substring(1));
-                    properties = getProperties(user, cred);
+                    String dbUrl = getDbUrl();  //procurement from Heroku - dynamic nature
+                    LOGGER.info("Procured DB-URL: {}", dbUrl);
+                    URI dbUri = new URI(dbUrl);
+                    dbHost = dbUri.getHost();
+                    dbPort = dbUri.getPort();
+                    dbName = dbUri.getPath().substring(1);
+                    String[] userInfo = StringUtils.split(dbUri.getUserInfo(), COLON_STR);
+                    user = userInfo[0];
+                    cred = userInfo[1];
                 } catch (URISyntaxException e) {
                     LOGGER.error("Failed to parse URL: {}. ", getDbUrl());
                     throw e;
                 }
             }
+            String dbUrl = String.format(DB_CONNECTORS_URL, dbHost, dbPort, dbName);
+            Properties properties = getProperties(user, cred);
             LOGGER.info("Establishing DB connection to: {}", dbUrl);
             try {
                 Connection connection = DriverManager.getConnection(dbUrl, properties);

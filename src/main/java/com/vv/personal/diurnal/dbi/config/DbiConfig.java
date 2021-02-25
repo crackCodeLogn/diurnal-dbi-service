@@ -1,6 +1,7 @@
 package com.vv.personal.diurnal.dbi.config;
 
 
+import com.vv.personal.diurnal.dbi.constants.DbConstants;
 import com.vv.personal.diurnal.dbi.interactor.diurnal.*;
 import com.vv.personal.diurnal.dbi.util.DbiUtil;
 import org.apache.commons.lang3.time.StopWatch;
@@ -14,7 +15,7 @@ import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.vv.personal.diurnal.dbi.constants.Constants.*;
+import static com.vv.personal.diurnal.dbi.constants.DbConstants.*;
 
 /**
  * @author Vivek
@@ -41,22 +42,22 @@ public class DbiConfig {
     @Bean
     @Qualifier("DiurnalTableUserMapping")
     public DiurnalTableUserMapping diurnalTableUserMapping() {
-        return new DiurnalTableUserMapping(TABLE_DIURNAL_USER_MAPPING, PRIMARY_COL_USER_MAPPING, DiurnalDbConnector(), cachedDiurnal(),
-                DbiUtil::generateCreateTableSql, "diurnal.user_mapping");
+        return new DiurnalTableUserMapping(DbConstants.TABLE_DIURNAL_USER_MAPPING, DbConstants.PRIMARY_COL_USER_MAPPING, DiurnalDbConnector(), cachedDiurnal(),
+                DbiUtil::generateCreateTableSql, DIURNAL_USER_MAPPING_SQL);
     }
 
     @Bean
     @Qualifier("DiurnalTableEntry")
     public DiurnalTableEntry diurnalTableEntries() {
-        return new DiurnalTableEntry(TABLE_DIURNAL_ENTRY, PRIMARY_COL_ENTRY, DiurnalDbConnector(), cachedDiurnal(),
-                DbiUtil::generateCreateTableSql, "diurnal.entry");
+        return new DiurnalTableEntry(DbConstants.TABLE_DIURNAL_ENTRY, DbConstants.PRIMARY_COL_ENTRY, DiurnalDbConnector(), cachedDiurnal(),
+                DbiUtil::generateCreateTableSql, DIURNAL_ENTRY_SQL);
     }
 
     @Bean
     @Qualifier("DiurnalTableTitleMapping")
     public DiurnalTableTitleMapping diurnalTableTitleMapping() {
-        return new DiurnalTableTitleMapping(TABLE_DIURNAL_TITLE_MAPPING, PRIMARY_COL_TITLE_MAPPING, DiurnalDbConnector(), cachedDiurnal(),
-                DbiUtil::generateCreateTableSql, "diurnal.title_mapping");
+        return new DiurnalTableTitleMapping(DbConstants.TABLE_DIURNAL_TITLE_MAPPING, DbConstants.PRIMARY_COL_TITLE_MAPPING, DiurnalDbConnector(), cachedDiurnal(),
+                DbiUtil::generateCreateTableSql, DIURNAL_TITLE_MAPPING_SQL);
     }
 
     @Bean(initMethod = "start")

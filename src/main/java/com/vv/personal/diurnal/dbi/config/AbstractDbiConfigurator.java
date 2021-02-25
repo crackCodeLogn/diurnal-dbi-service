@@ -1,5 +1,6 @@
 package com.vv.personal.diurnal.dbi.config;
 
+import com.vv.personal.diurnal.dbi.constants.DbConstants;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,7 +13,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Properties;
 
-import static com.vv.personal.diurnal.dbi.constants.Constants.*;
+import static com.vv.personal.diurnal.dbi.constants.Constants.COLON_STR;
 
 /**
  * @author Vivek
@@ -51,7 +52,7 @@ public abstract class AbstractDbiConfigurator implements DbiConfigurator {
                     throw e;
                 }
             }
-            String dbUrl = String.format(DB_CONNECTORS_URL, dbHost, dbPort, dbName);
+            String dbUrl = String.format(DbConstants.DB_CONNECTORS_URL, dbHost, dbPort, dbName);
             Properties properties = getProperties(user, cred);
             LOGGER.info("Establishing DB connection to: {}", dbUrl);
             try {
@@ -97,8 +98,8 @@ public abstract class AbstractDbiConfigurator implements DbiConfigurator {
 
     private Properties getProperties(String user, String cred) {
         Properties properties = new Properties();
-        properties.setProperty(DB_USER_STRING, user);
-        properties.setProperty(DB_CRED_STRING, cred);
+        properties.setProperty(DbConstants.DB_USER_STRING, user);
+        properties.setProperty(DbConstants.DB_CRED_STRING, cred);
         return properties;
     }
 }

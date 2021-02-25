@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.concurrent.*;
 import java.util.function.Function;
 
-import static com.vv.personal.diurnal.dbi.constants.Constants.SELECT_ALL_IDS;
+import static com.vv.personal.diurnal.dbi.constants.DbConstants.SELECT_ALL_IDS;
 
 
 /**

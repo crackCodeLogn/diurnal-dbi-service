@@ -9,7 +9,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.function.Function;
 
-import static com.vv.personal.diurnal.dbi.constants.Constants.SELECT_ALL;
+import static com.vv.personal.diurnal.dbi.constants.DbConstants.SELECT_ALL;
 
 /**
  * @author Vivek

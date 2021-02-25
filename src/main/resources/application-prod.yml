@@ -1,6 +1,5 @@
 db:
   diurnal:
-    name:
     server:
       host:
       port: ${DIURNAL_POSTGRES_HEROKU_PORT:5432}

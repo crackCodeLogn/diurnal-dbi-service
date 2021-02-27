@@ -27,7 +27,7 @@ public class DiurnalTableTitleMapping extends DiurnalDbi<TitleMappingProto.Title
     private final String UPDATE_STMT_TITLE = "UPDATE %s " +
             "SET \"%s\"='%s' " +
             "WHERE \"%s\"=%d and \"%s\"=%d";
-    private final String CHECK_STMT_TITLE_EXISTS = "SELECT %s from %s LIMIT 1 " +
+    private final String CHECK_STMT_TITLE_EXISTS = "SELECT %s from %s " +
             "WHERE \"%s\"=%d and \"%s\"=%d";
 
     private final String COL_DATE = "date";

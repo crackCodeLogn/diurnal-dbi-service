@@ -24,7 +24,7 @@ public class DiurnalTableEntry extends DiurnalDbi<EntryProto.Entry, EntryProto.E
             "VALUES(%d, %d, %d, %d, %d, '%.2f', '%s')";
     private final String DELETE_STMT_ENTRY = "DELETE FROM %s " +
             "WHERE \"%s\"=%d and \"%s\"=%d and \"%s\"=%d";
-    private final String CHECK_STMT_ENTRY_EXISTS = "SELECT %s from %s LIMIT 1 " +
+    private final String CHECK_STMT_ENTRY_EXISTS = "SELECT %s from %s " +
             "WHERE \"%s\"=%d and \"%s\"=%d and \"%s\"=%d";
 
     private final String COL_DATE = "date";

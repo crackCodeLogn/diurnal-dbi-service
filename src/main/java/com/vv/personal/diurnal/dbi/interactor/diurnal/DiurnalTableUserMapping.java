@@ -27,8 +27,8 @@ public class DiurnalTableUserMapping extends DiurnalDbi<UserMappingProto.UserMap
     private final String UPDATE_STMT_USER = "UPDATE %s " +
             "SET \"%s\"='%s' " +
             "WHERE \"%s\"=%d";
-    private final String CHECK_STMT_ENTRY_EXISTS = "SELECT %s from %s LIMIT 1 " +
-            "WHERE \"%s\"='%s'";
+    private final String CHECK_STMT_ENTRY_EXISTS = "SELECT %s from %s " +
+            "WHERE \"%s\"=%d";
 
     private final String COL_USER = "user";
     private final String COL_MOBILE = "mobile";

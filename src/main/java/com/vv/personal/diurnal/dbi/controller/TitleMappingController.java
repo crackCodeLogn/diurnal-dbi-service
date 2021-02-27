@@ -95,4 +95,20 @@ public class TitleMappingController {
                 .map(AbstractMessage::toString)
                 .collect(Collectors.toList());
     }
+
+    @ApiOperation(value = "check if title exists", hidden = true)
+    @GetMapping("/check/title")
+    public Boolean checkIfTitleExists(@RequestParam TitleMappingProto.TitleMapping titleMapping) {
+        LOGGER.info("Checking if title exists for: {} x {}", titleMapping.getMobile(), titleMapping.getDate());
+        boolean checkIfTitleExists = diurnalTableTitleMapping.checkEntity(titleMapping);
+        LOGGER.info("Result: {}", checkIfTitleExists);
+        return checkIfTitleExists;
+    }
+
+    @GetMapping("/check/manual/title")
+    public Boolean checkIfTitleExistsManually(@RequestParam Long mobile,
+                                              @RequestParam Integer date) {
+        LOGGER.info("Checking if title exists for: {} x {}", mobile, date);
+        return checkIfTitleExists(generateTitleMappingOnPk(mobile, date));
+    }
 }

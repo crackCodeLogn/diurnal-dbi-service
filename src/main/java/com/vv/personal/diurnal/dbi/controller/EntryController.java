@@ -99,4 +99,22 @@ public class EntryController {
                 .map(AbstractMessage::toString)
                 .collect(Collectors.toList());
     }
+
+    @ApiOperation(value = "check if entry exists", hidden = true)
+    @GetMapping("/check/entry")
+    public Boolean checkIfEntryExists(@RequestParam EntryProto.Entry entry) {
+        LOGGER.info("Checking if entry exists for: {} x {} x {}", entry.getMobile(), entry.getDate(), entry.getSerial());
+        boolean checkIfEntryExists = diurnalTableEntry.checkEntity(entry);
+        LOGGER.info("Result: {}", checkIfEntryExists);
+        return checkIfEntryExists;
+    }
+
+    @GetMapping("/check/manual/entry")
+    public Boolean checkIfEntryExistsManually(@RequestParam Long mobile,
+                                              @RequestParam Integer date,
+                                              @RequestParam Integer serial) {
+        LOGGER.info("Checking if entry exists for: {} x {} x {}", mobile, date, serial);
+        return checkIfEntryExists(generateEntryOnPk(mobile, date, serial));
+    }
+
 }

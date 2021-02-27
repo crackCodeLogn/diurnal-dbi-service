@@ -124,6 +124,19 @@ public abstract class DiurnalDbi<T, K> implements IDiurnalDbi<T, K> {
                 createTableIfNotExistSqlFunction.apply(createTableIfNotExistSqlLocation));
     }
 
+    protected boolean checkIfEntityExists(String sql, int expectedCount) {
+        ResultSet resultSet = executeNonUpdateSql(sql);
+        int rowsReturned = 0;
+        try {
+            while (resultSet.next()) {
+                rowsReturned++;
+            }
+        } catch (SQLException throwables) {
+            LOGGER.error("Failed to completely extract result from the above select all query. ", throwables);
+        }
+        return rowsReturned == expectedCount;
+    }
+
     @Override
     public void populatePrimaryIds() {
         getCachedRef().bulkAddNewIdsToEntityCache(TABLE, selectAllIdsForTable());

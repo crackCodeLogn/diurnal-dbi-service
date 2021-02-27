@@ -9,6 +9,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.function.Function;
 
+import static com.vv.personal.diurnal.dbi.constants.Constants.ONE;
+import static com.vv.personal.diurnal.dbi.constants.DbConstants.PRIMARY_COL_ENTRY;
 import static com.vv.personal.diurnal.dbi.constants.DbConstants.SELECT_ALL;
 
 /**
@@ -21,6 +23,8 @@ public class DiurnalTableEntry extends DiurnalDbi<EntryProto.Entry, EntryProto.E
     private final String INSERT_STMT_NEW_ENTRY = "INSERT INTO %s(\"mobile\", \"date\", \"serial\",\"sign\",\"curr\",\"amount\",\"description\") " +
             "VALUES(%d, %d, %d, %d, %d, '%.2f', '%s')";
     private final String DELETE_STMT_ENTRY = "DELETE FROM %s " +
+            "WHERE \"%s\"=%d and \"%s\"=%d and \"%s\"=%d";
+    private final String CHECK_STMT_ENTRY_EXISTS = "SELECT %s from %s LIMIT 1 " +
             "WHERE \"%s\"=%d and \"%s\"=%d and \"%s\"=%d";
 
     private final String COL_DATE = "date";
@@ -65,6 +69,15 @@ public class DiurnalTableEntry extends DiurnalDbi<EntryProto.Entry, EntryProto.E
     @Override
     public int updateEntity(EntryProto.Entry entry) {
         throw new UnsupportedOperationException("Entries can't be updated. They need to be deleted and re-created for DB!");
+    }
+
+    @Override
+    public boolean checkEntity(EntryProto.Entry entry) {
+        String sql = String.format(CHECK_STMT_ENTRY_EXISTS, PRIMARY_COL_ENTRY, TABLE,
+                COL_MOBILE, entry.getMobile(),
+                COL_DATE, entry.getDate(),
+                COL_SERIAL, entry.getSerial());
+        return checkIfEntityExists(sql, ONE);
     }
 
     @Override

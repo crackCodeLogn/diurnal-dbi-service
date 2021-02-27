@@ -9,6 +9,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.function.Function;
 
+import static com.vv.personal.diurnal.dbi.constants.Constants.ONE;
+import static com.vv.personal.diurnal.dbi.constants.DbConstants.PRIMARY_COL_TITLE_MAPPING;
 import static com.vv.personal.diurnal.dbi.constants.DbConstants.SELECT_ALL;
 
 /**
@@ -25,6 +27,9 @@ public class DiurnalTableTitleMapping extends DiurnalDbi<TitleMappingProto.Title
     private final String UPDATE_STMT_TITLE = "UPDATE %s " +
             "SET \"%s\"='%s' " +
             "WHERE \"%s\"=%d and \"%s\"=%d";
+    private final String CHECK_STMT_TITLE_EXISTS = "SELECT %s from %s LIMIT 1 " +
+            "WHERE \"%s\"=%d and \"%s\"=%d";
+
     private final String COL_DATE = "date";
     private final String COL_MOBILE = "mobile";
     private final String COL_TITLE = "title";
@@ -64,6 +69,14 @@ public class DiurnalTableTitleMapping extends DiurnalDbi<TitleMappingProto.Title
                 COL_DATE, titleMapping.getDate());
         int sqlExecResult = executeUpdateSql(sql);
         return sqlExecResult;
+    }
+
+    @Override
+    public boolean checkEntity(TitleMappingProto.TitleMapping titleMapping) {
+        String sql = String.format(CHECK_STMT_TITLE_EXISTS, PRIMARY_COL_TITLE_MAPPING, TABLE,
+                COL_MOBILE, titleMapping.getMobile(),
+                COL_DATE, titleMapping.getDate());
+        return checkIfEntityExists(sql, ONE);
     }
 
     @Override

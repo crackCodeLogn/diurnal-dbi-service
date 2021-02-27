@@ -9,6 +9,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.function.Function;
 
+import static com.vv.personal.diurnal.dbi.constants.Constants.ONE;
+import static com.vv.personal.diurnal.dbi.constants.DbConstants.PRIMARY_COL_USER_MAPPING;
 import static com.vv.personal.diurnal.dbi.constants.DbConstants.SELECT_ALL;
 
 /**
@@ -25,6 +27,9 @@ public class DiurnalTableUserMapping extends DiurnalDbi<UserMappingProto.UserMap
     private final String UPDATE_STMT_USER = "UPDATE %s " +
             "SET \"%s\"='%s' " +
             "WHERE \"%s\"=%d";
+    private final String CHECK_STMT_ENTRY_EXISTS = "SELECT %s from %s LIMIT 1 " +
+            "WHERE \"%s\"='%s'";
+
     private final String COL_USER = "user";
     private final String COL_MOBILE = "mobile";
 
@@ -47,7 +52,8 @@ public class DiurnalTableUserMapping extends DiurnalDbi<UserMappingProto.UserMap
 
     @Override
     public int deleteEntity(UserMappingProto.UserMapping userMapping) {
-        String sql = String.format(DELETE_STMT_USER, TABLE, COL_MOBILE, userMapping.getMobile());
+        String sql = String.format(DELETE_STMT_USER, TABLE,
+                COL_MOBILE, userMapping.getMobile());
         int sqlExecResult = executeUpdateSql(sql);
         return sqlExecResult;
         //return removeFromCacheOnSqlResult(sqlExecResult, userMapping.getMobile());
@@ -55,9 +61,18 @@ public class DiurnalTableUserMapping extends DiurnalDbi<UserMappingProto.UserMap
 
     @Override
     public int updateEntity(UserMappingProto.UserMapping userMapping) {
-        String sql = String.format(UPDATE_STMT_USER, TABLE, COL_USER, userMapping.getUsername(), COL_MOBILE, userMapping.getMobile());
+        String sql = String.format(UPDATE_STMT_USER, TABLE,
+                COL_USER, userMapping.getUsername(),
+                COL_MOBILE, userMapping.getMobile());
         int sqlExecResult = executeUpdateSql(sql);
         return sqlExecResult;
+    }
+
+    @Override
+    public boolean checkEntity(UserMappingProto.UserMapping userMapping) {
+        String sql = String.format(CHECK_STMT_ENTRY_EXISTS, PRIMARY_COL_USER_MAPPING, TABLE,
+                COL_MOBILE, userMapping.getMobile());
+        return checkIfEntityExists(sql, ONE);
     }
 
     @Override

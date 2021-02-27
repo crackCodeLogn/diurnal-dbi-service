@@ -17,6 +17,8 @@ public interface IDiurnalDbi<T, K> extends IDbi {
 
     int updateEntity(T t);
 
+    boolean checkEntity(T t);
+
     K retrieveAll();
 
     K retrieveSelective(); //TODO -- work on this later, not imp atm.

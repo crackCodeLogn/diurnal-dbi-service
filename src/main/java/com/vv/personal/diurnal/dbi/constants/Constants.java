@@ -16,6 +16,7 @@ public class Constants {
     public static final String DEFAULT_STR_INVALID = "-1";
 
     public static final int DEFAULT_INT_INVALID = -1;
+    public static final int ONE = 1;
 
     public static final List<Integer> EMPTY_LIST_INT = new ArrayList<>(0);
 

@@ -13,6 +13,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.generateUserMapping;
+import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.generateUserMappingFromMobile;
+
 /**
  * @author Vivek
  * @since 23/02/21
@@ -39,10 +42,7 @@ public class UserMappingController {
     public Integer createUserMappingManually(@RequestParam Long mobile,
                                              @RequestParam String user) {
         LOGGER.info("Obtained manual req for new user creation: {} x {}", mobile, user);
-        return createUserMapping(UserMappingProto.UserMapping.newBuilder()
-                .setMobile(mobile)
-                .setUsername(user)
-                .build());
+        return createUserMapping(generateUserMapping(mobile, user));
     }
 
     @ApiOperation(value = "delete user", hidden = true)
@@ -57,9 +57,7 @@ public class UserMappingController {
     @GetMapping("/delete/manual/user")
     public Integer deleteUserMappingManually(@RequestParam Long mobile) {
         LOGGER.info("Obtained manual req for user deletion: {}", mobile);
-        return deleteUserMapping(UserMappingProto.UserMapping.newBuilder()
-                .setMobile(mobile)
-                .build());
+        return deleteUserMapping(generateUserMappingFromMobile(mobile));
     }
 
     @ApiOperation(value = "update user", hidden = true)
@@ -75,10 +73,7 @@ public class UserMappingController {
     public Integer updateUserMappingManually(@RequestParam Long mobile,
                                              @RequestParam String updatedUserName) {
         LOGGER.info("Obtained manual req for user updation: {} -> {}", mobile, updatedUserName);
-        return updateUserMapping(UserMappingProto.UserMapping.newBuilder()
-                .setMobile(mobile)
-                .setUsername(updatedUserName)
-                .build());
+        return updateUserMapping(generateUserMapping(mobile, updatedUserName));
     }
 
     @ApiOperation(value = "retrieve all users", hidden = true)
@@ -97,4 +92,20 @@ public class UserMappingController {
                 .map(AbstractMessage::toString)
                 .collect(Collectors.toList());
     }
+
+    @ApiOperation(value = "check if user exists", hidden = true)
+    @GetMapping("/check/user")
+    public Boolean checkIfUserExists(@RequestParam UserMappingProto.UserMapping userMapping) {
+        LOGGER.info("Checking if user exists for mobile: {}", userMapping.getMobile());
+        boolean checkIfUserExists = diurnalTableUserMapping.checkEntity(userMapping);
+        LOGGER.info("Result: {}", checkIfUserExists);
+        return checkIfUserExists;
+    }
+
+    @GetMapping("/check/manual/user")
+    public Boolean checkIfUserExistsManually(@RequestParam Long mobile) {
+        LOGGER.info("Checking if user exists for mobile: {}", mobile);
+        return checkIfUserExists(generateUserMappingFromMobile(mobile));
+    }
+
 }

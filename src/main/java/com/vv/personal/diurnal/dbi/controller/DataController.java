@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import static com.vv.personal.diurnal.dbi.constants.Constants.INT_RESPONSE_WONT_PROCESS;
-import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.generateUserMappingFromMobile;
+import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.generateUserMappingOnPk;
 
 /**
  * @author Vivek
@@ -35,7 +35,7 @@ public class DataController {
     @PostMapping("/push/entry")
     public Integer pushEntry(@RequestBody EntryProto.Entry entry) {
         LOGGER.info("Rx-ed new entry to push to DB: {} x {} x {}", entry.getMobile(), entry.getDate(), entry.getSerial());
-        if (!userMappingController.checkIfUserExists(generateUserMappingFromMobile(entry.getMobile()))) {
+        if (!userMappingController.checkIfUserExists(generateUserMappingOnPk(entry.getMobile()))) {
             LOGGER.warn("User doesn't exist for mobile: {}", entry.getMobile());
             return INT_RESPONSE_WONT_PROCESS;
         }

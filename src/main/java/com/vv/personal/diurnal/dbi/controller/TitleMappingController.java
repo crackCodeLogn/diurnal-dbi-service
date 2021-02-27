@@ -13,6 +13,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.generateTitleMapping;
+import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.generateTitleMappingOnPk;
+
 /**
  * @author Vivek
  * @since 24/02/21
@@ -40,11 +43,7 @@ public class TitleMappingController {
                                               @RequestParam Integer date,
                                               @RequestParam String title) {
         LOGGER.info("Obtained manual req for new title creation: {} x {} -> {}", mobile, date, title);
-        return createTitleMapping(TitleMappingProto.TitleMapping.newBuilder()
-                .setMobile(mobile)
-                .setDate(date)
-                .setTitle(title)
-                .build());
+        return createTitleMapping(generateTitleMapping(mobile, date, title));
     }
 
     @ApiOperation(value = "delete title", hidden = true)
@@ -60,10 +59,7 @@ public class TitleMappingController {
     public Integer deleteTitleMappingManually(@RequestParam Long mobile,
                                               @RequestParam Integer date) {
         LOGGER.info("Obtained manual req for title deletion: {} x {}", mobile, date);
-        return deleteTitleMapping(TitleMappingProto.TitleMapping.newBuilder()
-                .setMobile(mobile)
-                .setDate(date)
-                .build());
+        return deleteTitleMapping(generateTitleMappingOnPk(mobile, date));
     }
 
     @ApiOperation(value = "update title", hidden = true)
@@ -80,11 +76,7 @@ public class TitleMappingController {
                                               @RequestParam Integer date,
                                               @RequestParam String updatedTitle) {
         LOGGER.info("Obtained manual req for title updation: {} x {} -> {}", mobile, date, updatedTitle);
-        return updateTitleMapping(TitleMappingProto.TitleMapping.newBuilder()
-                .setMobile(mobile)
-                .setDate(date)
-                .setTitle(updatedTitle)
-                .build());
+        return updateTitleMapping(generateTitleMapping(mobile, date, updatedTitle));
     }
 
     @ApiOperation(value = "retrieve all titles", hidden = true)

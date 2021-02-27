@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.vv.personal.diurnal.dbi.constants.Constants.INT_RESPONSE_WONT_PROCESS;
+import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.generateEntry;
+import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.generateEntryOnPk;
 
 /**
  * @author Vivek
@@ -46,12 +48,7 @@ public class EntryController {
                                        @RequestParam Double amount,
                                        @RequestParam String description) {
         LOGGER.info("Obtained manual req for new entry creation: {} x {} x {}", mobile, date, serial);
-        return createEntry(EntryProto.Entry.newBuilder()
-                .setMobile(mobile)
-                .setDate(date)
-                .setSerial(serial)
-                .setSign(sign).setCurrency(currency).setAmount(amount).setDescription(description)
-                .build());
+        return createEntry(generateEntry(mobile, date, serial, sign, currency, amount, description));
     }
 
     @ApiOperation(value = "delete entry", hidden = true)
@@ -68,11 +65,7 @@ public class EntryController {
                                        @RequestParam Integer date,
                                        @RequestParam Integer serial) {
         LOGGER.info("Obtained manual req for entry deletion: {} x {} x {}", mobile, date, serial);
-        return deleteEntry(EntryProto.Entry.newBuilder()
-                .setMobile(mobile)
-                .setDate(date)
-                .setSerial(serial)
-                .build());
+        return deleteEntry(generateEntryOnPk(mobile, date, serial));
     }
 
     @ApiOperation(value = "update entry", hidden = true)
@@ -87,11 +80,7 @@ public class EntryController {
                                        @RequestParam Integer date,
                                        @RequestParam Integer serial) {
         LOGGER.info("Obtained manual req for entry updation: {} x {} x {}", mobile, date, serial);
-        return updateEntry(EntryProto.Entry.newBuilder()
-                .setMobile(mobile)
-                .setDate(date)
-                .setSerial(serial)
-                .build());
+        return updateEntry(generateEntryOnPk(mobile, date, serial));
     }
 
     @ApiOperation(value = "retrieve all entries", hidden = true)

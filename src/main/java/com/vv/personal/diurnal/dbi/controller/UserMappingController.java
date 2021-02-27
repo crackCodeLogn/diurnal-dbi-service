@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.generateUserMapping;
-import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.generateUserMappingFromMobile;
+import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.generateUserMappingOnPk;
 
 /**
  * @author Vivek
@@ -57,7 +57,7 @@ public class UserMappingController {
     @GetMapping("/delete/manual/user")
     public Integer deleteUserMappingManually(@RequestParam Long mobile) {
         LOGGER.info("Obtained manual req for user deletion: {}", mobile);
-        return deleteUserMapping(generateUserMappingFromMobile(mobile));
+        return deleteUserMapping(generateUserMappingOnPk(mobile));
     }
 
     @ApiOperation(value = "update user", hidden = true)
@@ -105,7 +105,7 @@ public class UserMappingController {
     @GetMapping("/check/manual/user")
     public Boolean checkIfUserExistsManually(@RequestParam Long mobile) {
         LOGGER.info("Checking if user exists for mobile: {}", mobile);
-        return checkIfUserExists(generateUserMappingFromMobile(mobile));
+        return checkIfUserExists(generateUserMappingOnPk(mobile));
     }
 
 }

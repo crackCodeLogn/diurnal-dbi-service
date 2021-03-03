@@ -1,7 +1,7 @@
 package com.vv.personal.diurnal.dbi;
 
 import com.vv.personal.diurnal.dbi.config.DbiConfig;
-import com.vv.personal.diurnal.dbi.interactor.diurnal.DiurnalDbi;
+import com.vv.personal.diurnal.dbi.interactor.diurnal.dbi.DiurnalDbi;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

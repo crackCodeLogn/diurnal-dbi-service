@@ -2,7 +2,11 @@ package com.vv.personal.diurnal.dbi.config;
 
 
 import com.vv.personal.diurnal.dbi.constants.DbConstants;
-import com.vv.personal.diurnal.dbi.interactor.diurnal.*;
+import com.vv.personal.diurnal.dbi.interactor.diurnal.cache.CachedDiurnal;
+import com.vv.personal.diurnal.dbi.interactor.diurnal.dbi.DiurnalDbi;
+import com.vv.personal.diurnal.dbi.interactor.diurnal.dbi.tables.DiurnalTableEntry;
+import com.vv.personal.diurnal.dbi.interactor.diurnal.dbi.tables.DiurnalTableTitleMapping;
+import com.vv.personal.diurnal.dbi.interactor.diurnal.dbi.tables.DiurnalTableUserMapping;
 import com.vv.personal.diurnal.dbi.util.DbiUtil;
 import org.apache.commons.lang3.time.StopWatch;
 import org.springframework.beans.factory.annotation.Qualifier;

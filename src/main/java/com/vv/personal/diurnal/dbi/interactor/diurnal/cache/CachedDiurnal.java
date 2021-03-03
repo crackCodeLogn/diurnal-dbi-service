@@ -1,4 +1,4 @@
-package com.vv.personal.diurnal.dbi.interactor.diurnal;
+package com.vv.personal.diurnal.dbi.interactor.diurnal.cache;
 
 import com.vv.personal.diurnal.dbi.constants.DbConstants;
 import org.slf4j.Logger;

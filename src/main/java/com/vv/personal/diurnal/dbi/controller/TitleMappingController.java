@@ -2,7 +2,7 @@ package com.vv.personal.diurnal.dbi.controller;
 
 import com.google.protobuf.AbstractMessage;
 import com.vv.personal.diurnal.artifactory.generated.TitleMappingProto;
-import com.vv.personal.diurnal.dbi.interactor.diurnal.DiurnalTableTitleMapping;
+import com.vv.personal.diurnal.dbi.interactor.diurnal.dbi.tables.DiurnalTableTitleMapping;
 import io.swagger.annotations.ApiOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

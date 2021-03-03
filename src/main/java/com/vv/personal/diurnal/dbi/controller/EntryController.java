@@ -2,7 +2,7 @@ package com.vv.personal.diurnal.dbi.controller;
 
 import com.google.protobuf.AbstractMessage;
 import com.vv.personal.diurnal.artifactory.generated.EntryProto;
-import com.vv.personal.diurnal.dbi.interactor.diurnal.DiurnalTableEntry;
+import com.vv.personal.diurnal.dbi.interactor.diurnal.dbi.tables.DiurnalTableEntry;
 import io.swagger.annotations.ApiOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

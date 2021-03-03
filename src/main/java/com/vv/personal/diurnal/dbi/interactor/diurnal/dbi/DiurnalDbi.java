@@ -1,6 +1,7 @@
-package com.vv.personal.diurnal.dbi.interactor.diurnal;
+package com.vv.personal.diurnal.dbi.interactor.diurnal.dbi;
 
 import com.vv.personal.diurnal.dbi.config.DbiConfigForDiurnal;
+import com.vv.personal.diurnal.dbi.interactor.diurnal.cache.CachedDiurnal;
 import org.apache.commons.lang3.time.StopWatch;
 import org.slf4j.Logger;
 

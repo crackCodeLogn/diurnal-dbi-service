@@ -1,7 +1,9 @@
-package com.vv.personal.diurnal.dbi.interactor.diurnal;
+package com.vv.personal.diurnal.dbi.interactor.diurnal.dbi.tables;
 
 import com.vv.personal.diurnal.artifactory.generated.TitleMappingProto;
 import com.vv.personal.diurnal.dbi.config.DbiConfigForDiurnal;
+import com.vv.personal.diurnal.dbi.interactor.diurnal.cache.CachedDiurnal;
+import com.vv.personal.diurnal.dbi.interactor.diurnal.dbi.DiurnalDbi;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

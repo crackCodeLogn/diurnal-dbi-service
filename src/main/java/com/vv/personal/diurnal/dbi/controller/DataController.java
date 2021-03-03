@@ -1,5 +1,6 @@
 package com.vv.personal.diurnal.dbi.controller;
 
+import com.vv.personal.diurnal.artifactory.generated.DataTransitProto;
 import com.vv.personal.diurnal.artifactory.generated.EntryProto;
 import io.swagger.annotations.ApiOperation;
 import org.slf4j.Logger;
@@ -42,6 +43,19 @@ public class DataController {
         Integer result = entryController.createEntry(entry);
         LOGGER.info("Result of creating new entry: {}", result);
         return result;
+    }
+
+    @ApiOperation(value = "Read whole backup file and generate data for DB", hidden = true)
+    @PostMapping("/push/backup/whole")
+    public Boolean pushWholeBackup(@RequestBody DataTransitProto.DataTransit dataTransit) {
+        LOGGER.info("Rx-ed data in dataTransit to backup to DB: {} bytes", dataTransit.getBackupData().getBytes());
+        if (!userMappingController.checkIfUserExists(generateUserMappingOnPk(dataTransit.getMobile()))) {
+            LOGGER.warn("User doesn't exist for mobile: {}", dataTransit.getMobile());
+            return false;
+        }
+
+
+        return false;
     }
 
 }

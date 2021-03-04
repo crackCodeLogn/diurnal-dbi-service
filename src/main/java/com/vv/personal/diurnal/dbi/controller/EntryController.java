@@ -14,8 +14,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.vv.personal.diurnal.dbi.constants.Constants.INT_RESPONSE_WONT_PROCESS;
-import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.generateEntry;
-import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.generateEntryOnPk;
+import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.*;
 
 /**
  * @author Vivek
@@ -41,11 +40,9 @@ public class EntryController {
 
     @ApiOperation(value = "create bulk entries", hidden = true)
     @PostMapping("/create/entries")
-    public List<Integer> createBulkEntries(@RequestBody EntryProto.EntryList entryList) {
+    public List<Integer> bulkCreateEntries(@RequestBody EntryProto.EntryList entryList) {
         LOGGER.info("Bulk creating {} entries", entryList.getEntryCount());
-        List<Integer> bulkEntriesCreationResult = entryList.getEntryList()
-                .stream().map(this::createEntry)
-                .collect(Collectors.toList());
+        List<Integer> bulkEntriesCreationResult = performBulkOp(entryList.getEntryList(), this::createEntry);
         LOGGER.info("Result of bulk entry creation: {}", bulkEntriesCreationResult);
         return bulkEntriesCreationResult;
     }
@@ -71,12 +68,35 @@ public class EntryController {
         return sqlResult;
     }
 
+    @ApiOperation(value = "delete bulk entries", hidden = true)
+    @PostMapping("/delete/entries")
+    public List<Integer> bulkDeleteEntries(@RequestBody EntryProto.EntryList entryList) {
+        LOGGER.info("Bulk deleting {} entries", entryList.getEntryCount());
+        List<Integer> bulkEntriesDeletionResult = performBulkOp(entryList.getEntryList(), this::deleteEntry);
+        LOGGER.info("Result of bulk entry deletion: {}", bulkEntriesDeletionResult);
+        return bulkEntriesDeletionResult;
+    }
+
     @GetMapping("/delete/manual/entry")
     public Integer deleteEntryManually(@RequestParam Long mobile,
                                        @RequestParam Integer date,
                                        @RequestParam Integer serial) {
         LOGGER.info("Obtained manual req for entry deletion: {} x {} x {}", mobile, date, serial);
         return deleteEntry(generateEntryOnPk(mobile, date, serial));
+    }
+
+    @ApiOperation(value = "delete then create entries", hidden = true)
+    @PostMapping("/delete-create/entries")
+    public List<Integer> deleteAndCreateEntries(@RequestBody EntryProto.EntryList entryList) {
+        LOGGER.info("Received request to perform delete-create op on {} entries", entryList.getEntryCount());
+        bulkDeleteEntries(entryList);
+
+        List<Integer> bulkOpResult = bulkCreateEntries(entryList);
+        if (bulkOpResult.stream().anyMatch(integer -> integer == 0)) {
+            LOGGER.warn("Bulk create had some issues while creating certain entries. Check log for further details");
+        }
+        LOGGER.info("Bulk creation op of entries completed.");
+        return bulkOpResult;
     }
 
     @ApiOperation(value = "update entry", hidden = true)

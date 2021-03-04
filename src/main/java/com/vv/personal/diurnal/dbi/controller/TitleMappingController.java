@@ -13,8 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.generateTitleMapping;
-import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.generateTitleMappingOnPk;
+import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.*;
 
 /**
  * @author Vivek
@@ -40,11 +39,9 @@ public class TitleMappingController {
 
     @ApiOperation(value = "bulk create title", hidden = true)
     @PostMapping("/create/titles")
-    public List<Integer> createBulkTitleMapping(@RequestBody TitleMappingProto.TitleMappingList titleMappingList) {
+    public List<Integer> bulkCreateTitleMapping(@RequestBody TitleMappingProto.TitleMappingList titleMappingList) {
         LOGGER.info("Bulk creating new title mappings for {} titles", titleMappingList.getTitleMappingCount());
-        List<Integer> bulkTitlesCreationResult = titleMappingList.getTitleMappingList()
-                .stream().map(this::createTitleMapping)
-                .collect(Collectors.toList());
+        List<Integer> bulkTitlesCreationResult = performBulkOp(titleMappingList.getTitleMappingList(), this::createTitleMapping);
         LOGGER.info("Result of bulk title creation: {}", bulkTitlesCreationResult);
         return bulkTitlesCreationResult;
     }
@@ -64,6 +61,15 @@ public class TitleMappingController {
         Integer sqlResult = diurnalTableTitleMapping.deleteEntity(titleMapping);
         LOGGER.info("Result of title deletion: {}", sqlResult);
         return sqlResult;
+    }
+
+    @ApiOperation(value = "bulk delete title", hidden = true)
+    @PostMapping("/delete/titles")
+    public List<Integer> bulkDeleteTitleMapping(@RequestBody TitleMappingProto.TitleMappingList titleMappingList) {
+        LOGGER.info("Bulk deleting {} titles", titleMappingList.getTitleMappingCount());
+        List<Integer> bulkTitlesDeletionResult = performBulkOp(titleMappingList.getTitleMappingList(), this::deleteTitleMapping);
+        LOGGER.info("Result of bulk title deletion: {}", bulkTitlesDeletionResult);
+        return bulkTitlesDeletionResult;
     }
 
     @GetMapping("/delete/manual/title")
@@ -88,6 +94,20 @@ public class TitleMappingController {
                                               @RequestParam String updatedTitle) {
         LOGGER.info("Obtained manual req for title updation: {} x {} -> {}", mobile, date, updatedTitle);
         return updateTitleMapping(generateTitleMapping(mobile, date, updatedTitle));
+    }
+
+    @ApiOperation(value = "delete then create titles", hidden = true)
+    @PostMapping("/delete-create/titles")
+    public List<Integer> deleteAndCreateTitles(@RequestBody TitleMappingProto.TitleMappingList titleMappingList) {
+        LOGGER.info("Received request to perform delete-create op on {} titles", titleMappingList.getTitleMappingCount());
+        bulkDeleteTitleMapping(titleMappingList);
+
+        List<Integer> bulkOpResult = bulkCreateTitleMapping(titleMappingList);
+        if (bulkOpResult.stream().anyMatch(integer -> integer == 0)) {
+            LOGGER.warn("Bulk create had some issues while creating certain titles. Check log for further details");
+        }
+        LOGGER.info("Bulk creation op of titles completed.");
+        return bulkOpResult;
     }
 
     @ApiOperation(value = "retrieve all titles", hidden = true)

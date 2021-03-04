@@ -1,8 +1,14 @@
 package com.vv.personal.diurnal.dbi.util;
 
+import com.vv.personal.diurnal.artifactory.generated.DataTransitProto;
 import com.vv.personal.diurnal.artifactory.generated.EntryProto;
 import com.vv.personal.diurnal.artifactory.generated.TitleMappingProto;
 import com.vv.personal.diurnal.artifactory.generated.UserMappingProto;
+import org.apache.commons.lang3.time.StopWatch;
+
+import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static com.vv.personal.diurnal.dbi.constants.Constants.DEFAULT_AMOUNT;
 import static com.vv.personal.diurnal.dbi.constants.Constants.EMPTY_STR;
@@ -49,5 +55,22 @@ public class DiurnalUtil {
                 .setSerial(serial)
                 .setSign(sign).setCurrency(currency).setAmount(amount).setDescription(description)
                 .build();
+    }
+
+    public static DataTransitProto.DataTransit generateDataTransit(Long mobile, Integer date, DataTransitProto.Currency currency, String backupData) {
+        return DataTransitProto.DataTransit.newBuilder()
+                .setMobile(mobile)
+                .setDate(date)
+                .setCurrency(currency)
+                .setBackupData(backupData)
+                .build();
+    }
+
+    public static StopWatch procureStopWatch() {
+        return new StopWatch();
+    }
+
+    public static <V> List<Integer> performBulkOp(List<V> listToOpOn, Function<V, Integer> operation) {
+        return listToOpOn.stream().map(operation).collect(Collectors.toList());
     }
 }

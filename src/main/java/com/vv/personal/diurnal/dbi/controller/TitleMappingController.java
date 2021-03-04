@@ -38,6 +38,17 @@ public class TitleMappingController {
         return sqlResult;
     }
 
+    @ApiOperation(value = "bulk create title", hidden = true)
+    @PostMapping("/create/titles")
+    public List<Integer> createBulkTitleMapping(@RequestBody TitleMappingProto.TitleMappingList titleMappingList) {
+        LOGGER.info("Bulk creating new title mappings for {} titles", titleMappingList.getTitleMappingCount());
+        List<Integer> bulkTitlesCreationResult = titleMappingList.getTitleMappingList()
+                .stream().map(this::createTitleMapping)
+                .collect(Collectors.toList());
+        LOGGER.info("Result of bulk title creation: {}", bulkTitlesCreationResult);
+        return bulkTitlesCreationResult;
+    }
+
     @GetMapping("/create/manual/title")
     public Integer createTitleMappingManually(@RequestParam Long mobile,
                                               @RequestParam Integer date,
@@ -84,14 +95,14 @@ public class TitleMappingController {
     public TitleMappingProto.TitleMappingList retrieveAllTitleMappings() {
         LOGGER.info("Retrieving all title mappings");
         TitleMappingProto.TitleMappingList titleMappingList = diurnalTableTitleMapping.retrieveAll();
-        LOGGER.info("Result of retrieving all title mappings: {} entries", titleMappingList.getTitleMappingsCount());
+        LOGGER.info("Result of retrieving all title mappings: {} entries", titleMappingList.getTitleMappingCount());
         return titleMappingList;
     }
 
     @GetMapping("/retrieve/all/manual/titles")
     public List<String> retrieveAllTitleMappingsManually() {
         LOGGER.info("Obtained manual req for retrieving all title mappings");
-        return retrieveAllTitleMappings().getTitleMappingsList().stream()
+        return retrieveAllTitleMappings().getTitleMappingList().stream()
                 .map(AbstractMessage::toString)
                 .collect(Collectors.toList());
     }

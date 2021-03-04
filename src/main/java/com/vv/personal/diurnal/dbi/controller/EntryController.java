@@ -39,6 +39,17 @@ public class EntryController {
         return sqlResult;
     }
 
+    @ApiOperation(value = "create bulk entries", hidden = true)
+    @PostMapping("/create/entries")
+    public List<Integer> createBulkEntries(@RequestBody EntryProto.EntryList entryList) {
+        LOGGER.info("Bulk creating {} entries", entryList.getEntryCount());
+        List<Integer> bulkEntriesCreationResult = entryList.getEntryList()
+                .stream().map(this::createEntry)
+                .collect(Collectors.toList());
+        LOGGER.info("Result of bulk entry creation: {}", bulkEntriesCreationResult);
+        return bulkEntriesCreationResult;
+    }
+
     @GetMapping("/create/manual/entry")
     public Integer createEntryManually(@RequestParam Long mobile,
                                        @RequestParam Integer date,
@@ -88,14 +99,14 @@ public class EntryController {
     public EntryProto.EntryList retrieveAllEntries() {
         LOGGER.info("Retrieving all entries");
         EntryProto.EntryList entryList = diurnalTableEntry.retrieveAll();
-        LOGGER.info("Result of retrieving all entries: {} entries", entryList.getEntriesCount());
+        LOGGER.info("Result of retrieving all entries: {} entries", entryList.getEntryCount());
         return entryList;
     }
 
     @GetMapping("/retrieve/all/manual/entries")
     public List<String> retrieveAllEntriesManually() {
         LOGGER.info("Obtained manual req for retrieving all entries");
-        return retrieveAllEntries().getEntriesList().stream()
+        return retrieveAllEntries().getEntryList().stream()
                 .map(AbstractMessage::toString)
                 .collect(Collectors.toList());
     }

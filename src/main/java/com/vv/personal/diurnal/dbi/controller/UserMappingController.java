@@ -81,14 +81,14 @@ public class UserMappingController {
     public UserMappingProto.UserMappingList retrieveAllUserMappings() {
         LOGGER.info("Retrieving all user mappings");
         UserMappingProto.UserMappingList userMappingList = diurnalTableUserMapping.retrieveAll();
-        LOGGER.info("Result of retrieving all user mappings: {} entries", userMappingList.getUserMappingsCount());
+        LOGGER.info("Result of retrieving all user mappings: {} entries", userMappingList.getUserMappingCount());
         return userMappingList;
     }
 
     @GetMapping("/retrieve/all/manual/users")
     public List<String> retrieveAllUserMappingsManually() {
         LOGGER.info("Obtained manual req for retrieving all user mappings");
-        return retrieveAllUserMappings().getUserMappingsList().stream()
+        return retrieveAllUserMappings().getUserMappingList().stream()
                 .map(AbstractMessage::toString)
                 .collect(Collectors.toList());
     }

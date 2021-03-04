@@ -92,7 +92,7 @@ public class DiurnalTableTitleMapping extends DiurnalDbi<TitleMappingProto.Title
                 try {
                     if (!resultSet.next()) break;
                     TitleMappingProto.TitleMapping userMapping = generateDetail(resultSet);
-                    titleMappingsBuilder.addTitleMappings(userMapping);
+                    titleMappingsBuilder.addTitleMapping(userMapping);
                     rowsReturned++;
                 } catch (SQLException throwables) {
                     LOGGER.error("Failed to completely extract result from the above select all query. ", throwables);

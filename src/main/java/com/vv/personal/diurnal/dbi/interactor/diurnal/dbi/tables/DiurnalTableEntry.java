@@ -93,7 +93,7 @@ public class DiurnalTableEntry extends DiurnalDbi<EntryProto.Entry, EntryProto.E
                 try {
                     if (!resultSet.next()) break;
                     EntryProto.Entry entry = generateDetail(resultSet);
-                    entriesBuilder.addEntries(entry);
+                    entriesBuilder.addEntry(entry);
                     rowsReturned++;
                 } catch (SQLException throwables) {
                     LOGGER.error("Failed to completely extract result from the above select all query. ", throwables);

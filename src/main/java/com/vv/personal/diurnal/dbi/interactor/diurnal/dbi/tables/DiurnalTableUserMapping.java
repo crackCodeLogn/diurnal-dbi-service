@@ -88,7 +88,7 @@ public class DiurnalTableUserMapping extends DiurnalDbi<UserMappingProto.UserMap
                 try {
                     if (!resultSet.next()) break;
                     UserMappingProto.UserMapping userMapping = generateDetail(resultSet);
-                    userMappingsBuilder.addUserMappings(userMapping);
+                    userMappingsBuilder.addUserMapping(userMapping);
                     rowsReturned++;
                 } catch (SQLException throwables) {
                     LOGGER.error("Failed to completely extract result from the above select all query. ", throwables);

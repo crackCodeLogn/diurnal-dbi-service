@@ -51,7 +51,8 @@ public class DiurnalTableEntry extends DiurnalDbi<EntryProto.Entry, EntryProto.E
     private int insertNewEntry(Long mobile, Integer date, Integer serial,
                                EntryProto.Sign sign, EntryProto.Currency currency, Double amount, String description) {
         String sql = String.format(INSERT_STMT_NEW_ENTRY, TABLE,
-                mobile, date, serial, sign.getNumber(), currency.getNumber(), amount, description);
+                mobile, date, serial, sign.getNumber(), currency.getNumber(), amount,
+                description.replaceAll("'", "''").replaceAll("\"", ""));
         int sqlExecResult = executeUpdateSql(sql);
         return sqlExecResult;
         //return addToCacheOnSqlResult(sqlExecResult, mobile);

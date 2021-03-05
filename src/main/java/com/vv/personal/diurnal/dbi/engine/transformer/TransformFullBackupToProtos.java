@@ -11,8 +11,7 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static com.vv.personal.diurnal.dbi.constants.Constants.NA_INT;
-import static com.vv.personal.diurnal.dbi.constants.Constants.ZERO;
+import static com.vv.personal.diurnal.dbi.constants.Constants.*;
 import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.*;
 
 /**
@@ -45,7 +44,7 @@ public class TransformFullBackupToProtos {
                     ParseTitle title = new ParseTitle(data);
                     title.parse();
                     date = title.getDate();
-                    if (!title.getTitle().equals("-TITLE-")) {
+                    if (!TITLES_TO_EXEMPT.contains(title.getTitle())) {
                         titleMappingListBuilder.addTitleMapping(generateTitleMapping(mobileNumber, date, title.getTitle()));
                     } else {
                         LOGGER.info("Skipping insertion in db for no titles: {}", data);

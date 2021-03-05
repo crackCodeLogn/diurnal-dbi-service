@@ -3,7 +3,9 @@ package com.vv.personal.diurnal.dbi.constants;
 import com.vv.personal.diurnal.artifactory.generated.ResponsePrimitiveProto;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author Vivek
@@ -29,6 +31,14 @@ public class Constants {
     public static final Integer INT_RESPONSE_WONT_PROCESS = -13; //N Proc
 
     public static final ResponsePrimitiveProto.ResponsePrimitive RESPOND_FALSE_BOOL = ResponsePrimitiveProto.ResponsePrimitive.newBuilder().setBoolResponse(false).build();
+
+    public static final Set<String> TITLES_TO_EXEMPT = new HashSet<>();
+
+    static {
+        TITLES_TO_EXEMPT.add("-TITLE-");
+        TITLES_TO_EXEMPT.add("###");
+        TITLES_TO_EXEMPT.add("");
+    }
 
     //FORMATTERS
     public static final String HEROKU_SWAGGER_UI_URL = "https://%s/swagger-ui/index.html";

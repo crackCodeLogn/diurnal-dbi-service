@@ -2,7 +2,7 @@
 //Crushwood
 //200 - obtained cashback
 
-20-12-2020 -TITLE- :: - ₹ 611.00
+20-12-2020 ACCOUNT :: - ₹ 611.00
 - ₹ 611.00 : accounting
 
 25-12-2020 -TITLE- :: + ₹ 81.00

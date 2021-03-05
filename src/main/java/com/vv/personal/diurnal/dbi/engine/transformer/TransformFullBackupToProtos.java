@@ -45,7 +45,11 @@ public class TransformFullBackupToProtos {
                     ParseTitle title = new ParseTitle(data);
                     title.parse();
                     date = title.getDate();
-                    titleMappingListBuilder.addTitleMapping(generateTitleMapping(mobileNumber, date, title.getTitle()));
+                    if (!title.getTitle().equals("-TITLE-")) {
+                        titleMappingListBuilder.addTitleMapping(generateTitleMapping(mobileNumber, date, title.getTitle()));
+                    } else {
+                        LOGGER.info("Skipping insertion in db for no titles: {}", data);
+                    }
                     serial = ZERO;
                 } else if (line_type == LINE_TYPE.ENTRY) {
                     ParseEntry entry = new ParseEntry(data);

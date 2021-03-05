@@ -1,9 +1,6 @@
 package com.vv.personal.diurnal.dbi.controller;
 
-import com.vv.personal.diurnal.artifactory.generated.DataTransitProto;
-import com.vv.personal.diurnal.artifactory.generated.EntryProto;
-import com.vv.personal.diurnal.artifactory.generated.TitleMappingProto;
-import com.vv.personal.diurnal.artifactory.generated.UserMappingProto;
+import com.vv.personal.diurnal.artifactory.generated.*;
 import com.vv.personal.diurnal.dbi.config.GenericConfig;
 import com.vv.personal.diurnal.dbi.interactor.diurnal.dbi.tables.DiurnalTableEntry;
 import com.vv.personal.diurnal.dbi.interactor.diurnal.dbi.tables.DiurnalTableTitleMapping;
@@ -87,10 +84,10 @@ public class DataControllerTest {
         StopWatch stopWatch = procureStopWatch();
         when(genericConfig.procureStopWatch()).thenReturn(stopWatch);
         stopWatch.start();
-        Boolean backupPushResult = dataController.pushWholeBackup(DiurnalUtil.generateDataTransit(mobile, 20210304, DataTransitProto.Currency.INR,
+        ResponsePrimitiveProto.ResponsePrimitive backupPushResult = dataController.pushWholeBackup(DiurnalUtil.generateDataTransit(mobile, 20210304, DataTransitProto.Currency.INR,
                 StringUtils.join(testData, "\n")));
 
-        assertTrue(backupPushResult);
+        assertTrue(backupPushResult.getBoolResponse());
     }
 
 }

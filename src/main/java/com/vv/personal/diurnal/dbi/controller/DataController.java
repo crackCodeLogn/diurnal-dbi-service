@@ -2,6 +2,7 @@ package com.vv.personal.diurnal.dbi.controller;
 
 import com.vv.personal.diurnal.artifactory.generated.DataTransitProto;
 import com.vv.personal.diurnal.artifactory.generated.EntryProto;
+import com.vv.personal.diurnal.artifactory.generated.ResponsePrimitiveProto;
 import com.vv.personal.diurnal.dbi.config.GenericConfig;
 import com.vv.personal.diurnal.dbi.engine.transformer.TransformFullBackupToProtos;
 import io.swagger.annotations.ApiOperation;
@@ -57,14 +58,14 @@ public class DataController {
 
     @ApiOperation(value = "Read whole backup file and generate data for DB", hidden = true)
     @PostMapping("/push/backup/whole")
-    public Boolean pushWholeBackup(@RequestBody DataTransitProto.DataTransit dataTransit) {
+    public ResponsePrimitiveProto.ResponsePrimitive pushWholeBackup(@RequestBody DataTransitProto.DataTransit dataTransit) {
         LOGGER.info("Rx-ed data in dataTransit to backup to DB: {} bytes", dataTransit.getBackupData().getBytes().length);
         StopWatch stopWatch = genericConfig.procureStopWatch();
         if (!userMappingController.checkIfUserExists(generateUserMappingOnPk(dataTransit.getMobile()))) {
             LOGGER.warn("User doesn't exist for mobile: {}", dataTransit.getMobile());
             stopWatch.stop();
             LOGGER.info("Operation took: {} ms", stopWatch.getTime(TimeUnit.MILLISECONDS));
-            return false;
+            return ResponsePrimitiveProto.ResponsePrimitive.newBuilder().setBoolResponse(false).build();
         }
         boolean opResult = false;
         TransformFullBackupToProtos transformFullBackupToProtos = new TransformFullBackupToProtos(
@@ -78,7 +79,7 @@ public class DataController {
         }
         stopWatch.stop();
         LOGGER.info("Operation took: {} ms", stopWatch.getTime(TimeUnit.MILLISECONDS));
-        return opResult;
+        return ResponsePrimitiveProto.ResponsePrimitive.newBuilder().setBoolResponse(opResult).build();
     }
 
     public DataController setEntryController(EntryController entryController) {

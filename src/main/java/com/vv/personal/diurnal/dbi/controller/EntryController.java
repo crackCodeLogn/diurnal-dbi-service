@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.vv.personal.diurnal.dbi.constants.Constants.EMPTY_LIST_INT;
 import static com.vv.personal.diurnal.dbi.constants.Constants.INT_RESPONSE_WONT_PROCESS;
 import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.*;
 
@@ -88,6 +89,7 @@ public class EntryController {
     @ApiOperation(value = "delete then create entries", hidden = true)
     @PostMapping("/delete-create/entries")
     public List<Integer> deleteAndCreateEntries(@RequestBody EntryProto.EntryList entryList) {
+        if (entryList.getEntryList().isEmpty()) return EMPTY_LIST_INT;
         LOGGER.info("Received request to perform delete-create op on {} entries", entryList.getEntryCount());
         bulkDeleteEntries(entryList);
 

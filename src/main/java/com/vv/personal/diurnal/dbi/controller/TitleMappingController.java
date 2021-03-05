@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.vv.personal.diurnal.dbi.constants.Constants.EMPTY_LIST_INT;
 import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.*;
 
 /**
@@ -99,6 +100,7 @@ public class TitleMappingController {
     @ApiOperation(value = "delete then create titles", hidden = true)
     @PostMapping("/delete-create/titles")
     public List<Integer> deleteAndCreateTitles(@RequestBody TitleMappingProto.TitleMappingList titleMappingList) {
+        if (titleMappingList.getTitleMappingList().isEmpty()) return EMPTY_LIST_INT;
         LOGGER.info("Received request to perform delete-create op on {} titles", titleMappingList.getTitleMappingCount());
         bulkDeleteTitleMapping(titleMappingList);
 

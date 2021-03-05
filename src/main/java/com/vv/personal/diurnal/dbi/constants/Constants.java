@@ -1,5 +1,7 @@
 package com.vv.personal.diurnal.dbi.constants;
 
+import com.vv.personal.diurnal.artifactory.generated.ResponsePrimitiveProto;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,6 +27,8 @@ public class Constants {
 
     //RESPONSES
     public static final Integer INT_RESPONSE_WONT_PROCESS = -13; //N Proc
+
+    public static final ResponsePrimitiveProto.ResponsePrimitive RESPOND_FALSE_BOOL = ResponsePrimitiveProto.ResponsePrimitive.newBuilder().setBoolResponse(false).build();
 
     //FORMATTERS
     public static final String HEROKU_SWAGGER_UI_URL = "https://%s/swagger-ui/index.html";

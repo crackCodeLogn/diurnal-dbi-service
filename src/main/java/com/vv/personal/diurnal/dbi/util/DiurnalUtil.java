@@ -1,9 +1,6 @@
 package com.vv.personal.diurnal.dbi.util;
 
-import com.vv.personal.diurnal.artifactory.generated.DataTransitProto;
-import com.vv.personal.diurnal.artifactory.generated.EntryProto;
-import com.vv.personal.diurnal.artifactory.generated.TitleMappingProto;
-import com.vv.personal.diurnal.artifactory.generated.UserMappingProto;
+import com.vv.personal.diurnal.artifactory.generated.*;
 import org.apache.commons.lang3.time.StopWatch;
 
 import java.util.List;
@@ -63,6 +60,12 @@ public class DiurnalUtil {
                 .setDate(date)
                 .setCurrency(currency)
                 .setBackupData(backupData)
+                .build();
+    }
+
+    public static ResponsePrimitiveProto.ResponsePrimitive generateResponsePrimitive(Boolean value) {
+        return ResponsePrimitiveProto.ResponsePrimitive.newBuilder()
+                .setBoolResponse(value)
                 .build();
     }
 

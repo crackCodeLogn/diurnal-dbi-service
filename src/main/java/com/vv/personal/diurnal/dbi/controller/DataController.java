@@ -20,7 +20,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static com.vv.personal.diurnal.dbi.constants.Constants.INT_RESPONSE_WONT_PROCESS;
+import static com.vv.personal.diurnal.dbi.constants.Constants.RESPOND_FALSE_BOOL;
+import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.generateResponsePrimitive;
 import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.generateUserMappingOnPk;
 
 /**
@@ -45,15 +46,15 @@ public class DataController {
 
     @ApiOperation(value = "push new entry", hidden = true)
     @PostMapping("/push/entry")
-    public Integer pushEntry(@RequestBody EntryProto.Entry entry) {
+    public ResponsePrimitiveProto.ResponsePrimitive pushEntry(@RequestBody EntryProto.Entry entry) {
         LOGGER.info("Rx-ed new entry to push to DB: {} x {} x {}", entry.getMobile(), entry.getDate(), entry.getSerial());
         if (!userMappingController.checkIfUserExists(generateUserMappingOnPk(entry.getMobile()))) {
             LOGGER.warn("User doesn't exist for mobile: {}", entry.getMobile());
-            return INT_RESPONSE_WONT_PROCESS;
+            return RESPOND_FALSE_BOOL;
         }
         Integer result = entryController.createEntry(entry);
         LOGGER.info("Result of creating new entry: {}", result);
-        return result;
+        return generateResponsePrimitive(result == 1);
     }
 
     @ApiOperation(value = "Read whole backup file and generate data for DB", hidden = true)
@@ -65,7 +66,7 @@ public class DataController {
             LOGGER.warn("User doesn't exist for mobile: {}", dataTransit.getMobile());
             stopWatch.stop();
             LOGGER.info("Operation took: {} ms", stopWatch.getTime(TimeUnit.MILLISECONDS));
-            return ResponsePrimitiveProto.ResponsePrimitive.newBuilder().setBoolResponse(false).build();
+            return RESPOND_FALSE_BOOL;
         }
         boolean opResult = false;
         TransformFullBackupToProtos transformFullBackupToProtos = new TransformFullBackupToProtos(
@@ -79,7 +80,7 @@ public class DataController {
         }
         stopWatch.stop();
         LOGGER.info("Operation took: {} ms", stopWatch.getTime(TimeUnit.MILLISECONDS));
-        return ResponsePrimitiveProto.ResponsePrimitive.newBuilder().setBoolResponse(opResult).build();
+        return generateResponsePrimitive(opResult);
     }
 
     public DataController setEntryController(EntryController entryController) {

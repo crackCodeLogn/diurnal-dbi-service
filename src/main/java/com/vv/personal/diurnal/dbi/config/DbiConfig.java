@@ -5,6 +5,7 @@ import com.vv.personal.diurnal.dbi.constants.DbConstants;
 import com.vv.personal.diurnal.dbi.interactor.diurnal.cache.CachedDiurnal;
 import com.vv.personal.diurnal.dbi.interactor.diurnal.dbi.DiurnalDbi;
 import com.vv.personal.diurnal.dbi.interactor.diurnal.dbi.tables.DiurnalTableEntry;
+import com.vv.personal.diurnal.dbi.interactor.diurnal.dbi.tables.DiurnalTableEntryDay;
 import com.vv.personal.diurnal.dbi.interactor.diurnal.dbi.tables.DiurnalTableTitleMapping;
 import com.vv.personal.diurnal.dbi.interactor.diurnal.dbi.tables.DiurnalTableUserMapping;
 import com.vv.personal.diurnal.dbi.util.DbiUtil;
@@ -58,6 +59,13 @@ public class DbiConfig {
     }
 
     @Bean
+    @Qualifier("DiurnalTableEntryDay")
+    public DiurnalTableEntryDay diurnalTableEntryDays() {
+        return new DiurnalTableEntryDay(TABLE_DIURNAL_ENTRY_DAY, PRIMARY_COL_ENTRY_DAY, DiurnalDbConnector(), cachedDiurnal(),
+                DbiUtil::generateCreateTableSql, DIURNAL_ENTRY_DAY_SQL);
+    }
+
+    @Bean
     @Qualifier("DiurnalTableTitleMapping")
     public DiurnalTableTitleMapping diurnalTableTitleMapping() {
         return new DiurnalTableTitleMapping(DbConstants.TABLE_DIURNAL_TITLE_MAPPING, DbConstants.PRIMARY_COL_TITLE_MAPPING, DiurnalDbConnector(), cachedDiurnal(),
@@ -74,6 +82,7 @@ public class DbiConfig {
     public void postHaste() {
         diurnalDbis.add(diurnalTableUserMapping());
         diurnalDbis.add(diurnalTableEntries());
+        diurnalDbis.add(diurnalTableEntryDays());
         diurnalDbis.add(diurnalTableTitleMapping());
     }
 

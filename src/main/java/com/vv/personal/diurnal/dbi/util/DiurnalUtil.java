@@ -54,6 +54,18 @@ public class DiurnalUtil {
                 .build();
     }
 
+    public static EntryDayProto.EntryDay generateEntryDayOnPk(Long mobile, Integer date) {
+        return generateEntryDay(mobile, date, EMPTY_STR);
+    }
+
+    public static EntryDayProto.EntryDay generateEntryDay(Long mobile, Integer date, String entriesAsString) {
+        return EntryDayProto.EntryDay.newBuilder()
+                .setMobile(mobile)
+                .setDate(date)
+                .setEntriesAsString(entriesAsString)
+                .build();
+    }
+
     public static DataTransitProto.DataTransit generateDataTransit(Long mobile, Integer date, DataTransitProto.Currency currency, String backupData) {
         return DataTransitProto.DataTransit.newBuilder()
                 .setMobile(mobile)
@@ -73,7 +85,16 @@ public class DiurnalUtil {
         return new StopWatch();
     }
 
-    public static <V> List<Integer> performBulkOp(List<V> listToOpOn, Function<V, Integer> operation) {
+    public static <V> List<Integer> performBulkOpInt(List<V> listToOpOn, Function<V, Integer> operation) {
         return listToOpOn.stream().map(operation).collect(Collectors.toList());
+    }
+
+    public static <V> List<String> performBulkOpStr(List<V> listToOpOn, Function<V, String> operation) {
+        return listToOpOn.stream().map(operation).collect(Collectors.toList());
+    }
+
+    public static String processStringForSqlPush(String input) {
+        return input.replaceAll("'", "''")
+                .replaceAll("\"", EMPTY_STR);
     }
 }

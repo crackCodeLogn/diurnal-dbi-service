@@ -74,6 +74,17 @@ public class UserMappingController {
         return updateUserMapping(generateUserMapping(mobile, updatedUserName));
     }
 
+    @GetMapping("/update/manual/user-power")
+    public Integer updatePowerUserMappingManually(@RequestParam Long mobile,
+                                                  @RequestParam Boolean powerUserStatus) {
+        LOGGER.info("Obtained manual req for user updation: {} -> {}", mobile, powerUserStatus);
+        UserMappingProto.UserMapping userMapping = UserMappingProto.UserMapping.newBuilder()
+                .setMobile(mobile).setPowerUser(powerUserStatus).build();
+        Integer sqlResult = diurnalTableUserMapping.updatePowerUserStatus(userMapping);
+        LOGGER.info("Result of power-user updation: {}", sqlResult);
+        return sqlResult;
+    }
+
     @ApiOperation(value = "retrieve all users", hidden = true)
     @GetMapping("/retrieve/all/users")
     public UserMappingProto.UserMappingList retrieveAllUserMappings() {

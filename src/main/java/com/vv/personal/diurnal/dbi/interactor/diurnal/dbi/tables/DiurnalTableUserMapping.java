@@ -34,6 +34,7 @@ public class DiurnalTableUserMapping extends DiurnalDbi<UserMappingProto.UserMap
 
     private final String COL_USER = "user";
     private final String COL_MOBILE = "mobile";
+    private final String COL_POWER_USER = "power_user";
 
     public DiurnalTableUserMapping(String table, String primaryColumns, DbiConfigForDiurnal dbiConfigForDiurnal, CachedDiurnal cachedDiurnal, Function<String, String> createTableIfNotExistSqlFunction, String createTableIfNotExistSqlLocation) {
         super(table, primaryColumns, dbiConfigForDiurnal, cachedDiurnal, createTableIfNotExistSqlFunction, createTableIfNotExistSqlLocation, LOGGER);
@@ -65,6 +66,14 @@ public class DiurnalTableUserMapping extends DiurnalDbi<UserMappingProto.UserMap
     public int updateEntity(UserMappingProto.UserMapping userMapping) {
         String sql = String.format(UPDATE_STMT_USER, TABLE,
                 COL_USER, userMapping.getUsername(),
+                COL_MOBILE, userMapping.getMobile());
+        int sqlExecResult = executeUpdateSql(sql);
+        return sqlExecResult;
+    }
+
+    public int updatePowerUserStatus(UserMappingProto.UserMapping userMapping) {
+        String sql = String.format(UPDATE_STMT_USER, TABLE,
+                COL_POWER_USER, userMapping.getPowerUser(),
                 COL_MOBILE, userMapping.getMobile());
         int sqlExecResult = executeUpdateSql(sql);
         return sqlExecResult;
@@ -112,6 +121,7 @@ public class DiurnalTableUserMapping extends DiurnalDbi<UserMappingProto.UserMap
         try {
             builder.setMobile(resultSet.getLong(COL_MOBILE));
             builder.setUsername(resultSet.getString(COL_USER));
+            builder.setPowerUser(resultSet.getBoolean(COL_POWER_USER));
         } catch (SQLException throwables) {
             LOGGER.error("Failed to retrieve user-mapping detail from DB. ", throwables);
         }

@@ -143,7 +143,7 @@ public class TitleMappingController {
     }
 
     @PutMapping("/table/create")
-    public Boolean createTableIfNotExists() {
+    public int createTableIfNotExists() {
         return genericCreateTableIfNotExists(diurnalTableTitleMapping);
     }
 

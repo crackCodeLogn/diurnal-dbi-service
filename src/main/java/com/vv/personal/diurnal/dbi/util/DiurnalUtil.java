@@ -101,9 +101,9 @@ public class DiurnalUtil {
         return listToOpOn.stream().map(operation).collect(Collectors.toList());
     }
 
-    public static Boolean genericCreateTableIfNotExists(IDbi dbi) {
+    public static int genericCreateTableIfNotExists(IDbi dbi) {
         LOGGER.warn("Proceeding to create table if not exists: '{}'", dbi.getTableName());
-        Boolean createTableIfNotExistsResult = dbi.createTableIfNotExists() == 0;
+        int createTableIfNotExistsResult = dbi.createTableIfNotExists();
         LOGGER.warn("Table '{}' create if not exists result: {}", dbi.getTableName(), createTableIfNotExistsResult);
         return createTableIfNotExistsResult;
     }

@@ -141,7 +141,7 @@ public class EntryDayController {
     }
 
     @PutMapping("/table/create")
-    public Boolean createTableIfNotExists() {
+    public int createTableIfNotExists() {
         return genericCreateTableIfNotExists(diurnalTableEntryDay);
     }
 

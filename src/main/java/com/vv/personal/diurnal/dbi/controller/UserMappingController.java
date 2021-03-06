@@ -117,7 +117,7 @@ public class UserMappingController {
     }
 
     @PutMapping("/table/create")
-    public Boolean createTableIfNotExists() {
+    public int createTableIfNotExists() {
         return genericCreateTableIfNotExists(diurnalTableUserMapping);
     }
 

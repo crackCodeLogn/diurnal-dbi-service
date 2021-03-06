@@ -30,7 +30,7 @@ public class UserMappingController {
     @ApiOperation(value = "create user", hidden = true)
     @PostMapping("/create/user")
     public Integer createUserMapping(@RequestBody UserMappingProto.UserMapping userMapping) {
-        LOGGER.info("Creating new user mapping: {} x {}", userMapping.getMobile(), userMapping.getUsername());
+        LOGGER.info("Creating new user mapping: {} x {} x {}", userMapping.getMobile(), userMapping.getUsername(), userMapping.getPowerUser());
         Integer sqlResult = diurnalTableUserMapping.pushNewEntity(userMapping);
         LOGGER.info("Result of new user creation: {}", sqlResult);
         return sqlResult;

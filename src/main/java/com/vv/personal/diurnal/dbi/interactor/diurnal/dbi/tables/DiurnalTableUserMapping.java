@@ -22,8 +22,8 @@ import static com.vv.personal.diurnal.dbi.constants.DbConstants.SELECT_ALL;
 public class DiurnalTableUserMapping extends DiurnalDbi<UserMappingProto.UserMapping, UserMappingProto.UserMappingList> {
     private static final Logger LOGGER = LoggerFactory.getLogger(DiurnalTableUserMapping.class);
 
-    private final String INSERT_STMT_NEW_USER = "INSERT INTO %s(\"mobile\", \"user\") " +
-            "VALUES(%d, '%s')";
+    private final String INSERT_STMT_NEW_USER = "INSERT INTO %s(\"mobile\", \"user\", \"power_user\") " +
+            "VALUES(%d, '%s', '%s')";
     private final String DELETE_STMT_USER = "DELETE FROM %s " +
             "WHERE \"%s\"=%d";
     private final String UPDATE_STMT_USER = "UPDATE %s " +
@@ -42,12 +42,13 @@ public class DiurnalTableUserMapping extends DiurnalDbi<UserMappingProto.UserMap
 
     @Override
     public int pushNewEntity(UserMappingProto.UserMapping userMapping) {
-        LOGGER.info("Pushing new User entity: {} x {}", userMapping.getMobile(), userMapping.getUsername());
-        return insertNewUser(userMapping.getMobile(), userMapping.getUsername());
+        LOGGER.info("Pushing new User entity: {} x {} x {}", userMapping.getMobile(), userMapping.getUsername(), userMapping.getPowerUser());
+        return insertNewUser(userMapping.getMobile(), userMapping.getUsername(), userMapping.getPowerUser());
     }
 
-    private int insertNewUser(Long mobile, String username) {
-        String sql = String.format(INSERT_STMT_NEW_USER, TABLE, mobile, username);
+    private int insertNewUser(Long mobile, String username, Boolean powerUser) {
+        String sql = String.format(INSERT_STMT_NEW_USER, TABLE,
+                mobile, username, powerUser);
         int sqlExecResult = executeUpdateSql(sql);
         return sqlExecResult;
         //return addToCacheOnSqlResult(sqlExecResult, mobile);

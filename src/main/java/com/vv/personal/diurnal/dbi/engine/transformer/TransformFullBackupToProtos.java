@@ -53,7 +53,8 @@ public class TransformFullBackupToProtos {
                     title.parse();
                     date = title.getDate();
                     if (!TITLES_TO_EXEMPT.contains(title.getTitle())) {
-                        titleMappingListBuilder.addTitleMapping(generateTitleMapping(mobileNumber, date, title.getTitle()));
+                        titleMappingListBuilder.addTitleMapping(generateTitleMapping(mobileNumber, date,
+                                processStringForSqlPush(title.getTitle())));
                     } else {
                         LOGGER.info("Skipping insertion in db for no titles: {}", data);
                     }

@@ -46,16 +46,16 @@ public abstract class DiurnalDbi<T, K> implements IDiurnalDbi<T, K> {
 
     @Override
     public ResultSet executeNonUpdateSql(String sql) {
-        LOGGER.info("Executing SQL => {}", sql);
+        //LOGGER.info("Executing SQL => {}", sql);
         Callable<ResultSet> nonUpdateSqlTask = () -> {
             StopWatch stopWatch = new StopWatch();
             stopWatch.start();
             try {
                 ResultSet sqlResult = dbiConfigForDiurnal.getStatement().executeQuery(sql);
-                LOGGER.info("SQL completed => {}", sql);
+                LOGGER.info("SQL completed => [{}]", sql);
                 return sqlResult;
             } catch (SQLException throwables) {
-                LOGGER.error("Failed to execute above SQL. ", throwables);
+                LOGGER.error("Failed to execute SQL => [{}]. ", sql, throwables);
             } finally {
                 stopWatch.stop();
                 LOGGER.info("Non-update SQL execution complete in {}ms", stopWatch.getTime(TimeUnit.MILLISECONDS));
@@ -72,16 +72,16 @@ public abstract class DiurnalDbi<T, K> implements IDiurnalDbi<T, K> {
 
     @Override
     public int executeUpdateSql(String sql) {
-        LOGGER.info("Executing SQL => {}", sql);
+        //LOGGER.info("Executing SQL => {}", sql);
         Callable<Integer> updateSqlTask = () -> {
             StopWatch stopWatch = new StopWatch();
             stopWatch.start();
             try {
                 int sqlResult = dbiConfigForDiurnal.getStatement().executeUpdate(sql);
-                LOGGER.info("Result of above SQL {} => {}", sql, sqlResult);
+                LOGGER.info("Result of SQL [{}] => {}", sql, sqlResult);
                 return sqlResult;
             } catch (SQLException throwables) {
-                LOGGER.error("Failed to execute above SQL. ", throwables);
+                LOGGER.error("Failed to execute SQL => [{}]. ", sql, throwables);
             } finally {
                 stopWatch.stop();
                 LOGGER.info("Update SQL execution complete in {}ms", stopWatch.getTime(TimeUnit.MILLISECONDS));

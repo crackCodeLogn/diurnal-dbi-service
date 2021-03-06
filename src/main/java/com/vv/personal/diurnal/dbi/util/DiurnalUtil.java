@@ -7,8 +7,7 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static com.vv.personal.diurnal.dbi.constants.Constants.DEFAULT_AMOUNT;
-import static com.vv.personal.diurnal.dbi.constants.Constants.EMPTY_STR;
+import static com.vv.personal.diurnal.dbi.constants.Constants.*;
 
 /**
  * @author Vivek
@@ -100,6 +99,16 @@ public class DiurnalUtil {
 
     public static String processStringForSqlPush(String input) {
         return input.replaceAll("'", "''")
-                .replaceAll("\"", EMPTY_STR);
+                .replaceAll(",\"", "," + REPLACE_JSON_DI) //`@% -- REPLACE_JSON_DI
+                .replaceAll("\",", REPLACE_JSON_DI + ",")
+                .replaceAll("\\{\"", "\\{" + REPLACE_JSON_DI)
+                .replaceAll("\": \"", REPLACE_JSON_DI + ": " + REPLACE_JSON_DI)
+                .replaceAll("\":", REPLACE_JSON_DI + ":")
+                .replaceAll("\"}", REPLACE_JSON_DI + "}");
+    }
+
+    public static String refineDbStringForOriginal(String data) {
+        return data.replaceAll("''", "'")
+                .replaceAll(REPLACE_JSON_DI, "\"");
     }
 }

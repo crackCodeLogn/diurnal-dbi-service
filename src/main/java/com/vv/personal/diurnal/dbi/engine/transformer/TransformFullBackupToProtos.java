@@ -1,15 +1,21 @@
 package com.vv.personal.diurnal.dbi.engine.transformer;
 
+import com.vv.personal.diurnal.artifactory.generated.EntryDayProto;
 import com.vv.personal.diurnal.artifactory.generated.EntryProto;
 import com.vv.personal.diurnal.artifactory.generated.TitleMappingProto;
 import com.vv.personal.diurnal.dbi.engine.transformer.parser.ParseEntry;
 import com.vv.personal.diurnal.dbi.engine.transformer.parser.ParseTitle;
+import com.vv.personal.diurnal.dbi.util.DiurnalUtil;
+import com.vv.personal.diurnal.dbi.util.JsonConverterUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import static com.vv.personal.diurnal.dbi.constants.Constants.*;
 import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.*;
@@ -24,6 +30,7 @@ public class TransformFullBackupToProtos {
     private final List<String> fullBackupText;
     private final Long mobileNumber;
     private final EntryProto.EntryList.Builder entryListBuilder = EntryProto.EntryList.newBuilder();
+    private final EntryDayProto.EntryDayList.Builder entryDayListBuilder = EntryDayProto.EntryDayList.newBuilder();
     private final TitleMappingProto.TitleMappingList.Builder titleMappingListBuilder = TitleMappingProto.TitleMappingList.newBuilder();
 
     public TransformFullBackupToProtos(List<String> fullBackupText, Long mobileNumber) {
@@ -36,6 +43,7 @@ public class TransformFullBackupToProtos {
         StopWatch stopWatch = procureStopWatch();
         stopWatch.start();
         try {
+            List<EntryProto.Entry> entries = new ArrayList<>(fullBackupText.size());
             for (String data : fullBackupText) {
                 if (data.isEmpty()) continue;
 
@@ -50,15 +58,23 @@ public class TransformFullBackupToProtos {
                         LOGGER.info("Skipping insertion in db for no titles: {}", data);
                     }
                     serial = ZERO;
+                    if (!entries.isEmpty()) {
+                        EntryDayProto.EntryDay entryDay = computeEntryDay(entries);
+                        entryDayListBuilder.addEntryDay(entryDay);
+                    }
                 } else if (line_type == LINE_TYPE.ENTRY) {
                     ParseEntry entry = new ParseEntry(data);
                     entry.parse();
-                    entryListBuilder.addEntry(generateEntry(mobileNumber, date, serial, entry.getSign(), entry.getCurrency(), entry.getAmount(), entry.getDescription()));
+                    entries.add(generateEntry(mobileNumber, date, serial, entry.getSign(), entry.getCurrency(), entry.getAmount(), entry.getDescription()));
                     serial++;
                 }
             }
-            LOGGER.info("Completed transformation of backup data to DB compatible data. Generated {} titles and {} entries",
-                    titleMappingListBuilder.getTitleMappingCount(), entryListBuilder.getEntryCount());
+            if (!entries.isEmpty()) {
+                EntryDayProto.EntryDay entryDay = computeEntryDay(entries);
+                entryDayListBuilder.addEntryDay(entryDay);
+            }
+            LOGGER.info("Completed transformation of backup data to DB compatible data. Generated {} titles and {} entry-days",
+                    titleMappingListBuilder.getTitleMappingCount(), entryDayListBuilder.getEntryDayCount());
             return true;
         } catch (Exception e) {
             LOGGER.error("Failed to completely transform data from backup file. Will not be saving to database. ", e);
@@ -67,6 +83,20 @@ public class TransformFullBackupToProtos {
             LOGGER.info("Took {} ms in backup transformation op", stopWatch.getTime(TimeUnit.MILLISECONDS));
         }
         return false;
+    }
+
+    private EntryDayProto.EntryDay computeEntryDay(List<EntryProto.Entry> entries) {
+        EntryDayProto.EntryDay.Builder entryDayBuilder = EntryDayProto.EntryDay.newBuilder();
+        entryDayBuilder.setMobile(entries.get(0).getMobile());
+        entryDayBuilder.setDate(entries.get(0).getDate());
+        entryDayBuilder.setEntriesAsString(
+                StringUtils.join(entries.stream()
+                                .map(JsonConverterUtil::convertEntryToCompactedJson)
+                                .map(DiurnalUtil::processStringForSqlPush)
+                                .collect(Collectors.toList()),
+                        "<%~@^>"));
+        entries.clear();
+        return entryDayBuilder.build();
     }
 
     private LINE_TYPE deriveLineType(String line) {
@@ -81,6 +111,10 @@ public class TransformFullBackupToProtos {
 
     public TitleMappingProto.TitleMappingList getTitleMapping() {
         return titleMappingListBuilder.build();
+    }
+
+    public EntryDayProto.EntryDayList getEntryDayList() {
+        return entryDayListBuilder.build();
     }
 
     private enum LINE_TYPE {

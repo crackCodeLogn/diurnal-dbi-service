@@ -15,9 +15,11 @@ public class Constants {
 
     public static final String EMPTY_STR = "";
     public static final String SPACE_STR = " ";
+    public static final String NEW_LINE = "\n";
     public static final String COMMA_STR = ",";
     public static final String COLON_STR = ":";
     public static final String DEFAULT_STR_INVALID = "-1";
+    public static final String REPLACE_JSON_DI = "`@%"; //DI - double inverts
 
     public static final int DEFAULT_INT_INVALID = -1;
     public static final int NA_INT = -1;

@@ -4,6 +4,7 @@ import com.vv.personal.diurnal.artifactory.generated.EntryDayProto;
 import com.vv.personal.diurnal.dbi.config.DbiConfigForDiurnal;
 import com.vv.personal.diurnal.dbi.interactor.diurnal.cache.CachedDiurnal;
 import com.vv.personal.diurnal.dbi.interactor.diurnal.dbi.DiurnalDbi;
+import com.vv.personal.diurnal.dbi.util.DiurnalUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,7 +15,6 @@ import java.util.function.Function;
 import static com.vv.personal.diurnal.dbi.constants.Constants.ONE;
 import static com.vv.personal.diurnal.dbi.constants.DbConstants.PRIMARY_COL_ENTRY;
 import static com.vv.personal.diurnal.dbi.constants.DbConstants.SELECT_ALL;
-import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.processStringForSqlPush;
 
 /**
  * @author Vivek
@@ -38,9 +38,9 @@ public class DiurnalTableEntryDay extends DiurnalDbi<EntryDayProto.EntryDay, Ent
         super(table, primaryColumns, dbiConfigForDiurnal, cachedDiurnal, createTableIfNotExistSqlFunction, createTableIfNotExistSqlLocation, LOGGER);
     }
 
-    private int insertNewEntry(Long mobile, Integer date, String description) {
+    private int insertNewEntryDay(Long mobile, Integer date, String description) {
         String sql = String.format(INSERT_STMT_NEW_ENTRY, TABLE,
-                mobile, date, processStringForSqlPush(description));
+                mobile, date, description); //description should already be in the json-ized format + processed
         int sqlExecResult = executeUpdateSql(sql);
         return sqlExecResult;
         //return addToCacheOnSqlResult(sqlExecResult, mobile);
@@ -49,7 +49,7 @@ public class DiurnalTableEntryDay extends DiurnalDbi<EntryDayProto.EntryDay, Ent
     @Override
     public int pushNewEntity(EntryDayProto.EntryDay entryDay) {
         LOGGER.info("Pushing new EntryDay entity: {} x {}", entryDay.getMobile(), entryDay.getDate());
-        return insertNewEntry(entryDay.getMobile(), entryDay.getDate(), entryDay.getEntriesAsString());
+        return insertNewEntryDay(entryDay.getMobile(), entryDay.getDate(), entryDay.getEntriesAsString());
     }
 
     @Override
@@ -110,7 +110,8 @@ public class DiurnalTableEntryDay extends DiurnalDbi<EntryDayProto.EntryDay, Ent
         try {
             builder.setMobile(resultSet.getLong(COL_MOBILE));
             builder.setDate(resultSet.getInt(COL_DATE));
-            builder.setEntriesAsString(resultSet.getString(COL_ENTRIES_AS_STRING));
+            builder.setEntriesAsString(
+                    DiurnalUtil.refineDbStringForOriginal(resultSet.getString(COL_ENTRIES_AS_STRING))); //refinement - for getting quotes back
         } catch (SQLException throwables) {
             LOGGER.error("Failed to retrieve entry detail from DB. ", throwables);
         }

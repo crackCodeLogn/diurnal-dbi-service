@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import static com.vv.personal.diurnal.dbi.constants.Constants.NEW_LINE;
 import static com.vv.personal.diurnal.dbi.constants.Constants.RESPOND_FALSE_BOOL;
 import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.generateResponsePrimitive;
 import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.generateUserMappingOnPk;
@@ -37,6 +38,8 @@ public class DataController {
 
     @Autowired
     private EntryController entryController;
+    @Autowired
+    private EntryDayController entryDayController;
     @Autowired
     private TitleMappingController titleMappingController;
     @Autowired
@@ -70,13 +73,13 @@ public class DataController {
         }
         boolean opResult = false;
         TransformFullBackupToProtos transformFullBackupToProtos = new TransformFullBackupToProtos(
-                Arrays.asList(StringUtils.split(dataTransit.getBackupData(), "\n")),
+                Arrays.asList(StringUtils.split(dataTransit.getBackupData(), NEW_LINE)),
                 dataTransit.getMobile());
         if (transformFullBackupToProtos.transformWithoutSuppliedDate()) {
             List<Integer> bulkTitleOpResult = titleMappingController.deleteAndCreateTitles(transformFullBackupToProtos.getTitleMapping());
-            List<Integer> bulkEntryOpResult = entryController.deleteAndCreateEntries(transformFullBackupToProtos.getEntryList());
+            List<Integer> bulkEntryDayOpResult = entryDayController.deleteAndCreateEntryDays(transformFullBackupToProtos.getEntryDayList());
             if (bulkTitleOpResult.stream().allMatch(integer -> integer == 1) &&
-                    bulkEntryOpResult.stream().allMatch(integer -> integer == 1)) opResult = true;
+                    bulkEntryDayOpResult.stream().allMatch(integer -> integer == 1)) opResult = true;
         }
         stopWatch.stop();
         LOGGER.info("Operation took: {} ms", stopWatch.getTime(TimeUnit.MILLISECONDS));

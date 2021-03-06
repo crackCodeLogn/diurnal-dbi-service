@@ -116,4 +116,13 @@ public class UserMappingController {
         return checkIfUserExists(generateUserMappingOnPk(mobile));
     }
 
+    @DeleteMapping("/drop/table")
+    public Boolean dropTable(@RequestParam(defaultValue = "false") Boolean absolutelyDropTable) {
+        return absolutelyDropTable ? genericDropTable(diurnalTableUserMapping) : false;
+    }
+
+    @DeleteMapping("/truncate/table")
+    public Boolean truncateTable(@RequestParam(defaultValue = "false") Boolean absolutelyTruncateTable) {
+        return absolutelyTruncateTable ? genericTruncateTable(diurnalTableUserMapping) : false;
+    }
 }

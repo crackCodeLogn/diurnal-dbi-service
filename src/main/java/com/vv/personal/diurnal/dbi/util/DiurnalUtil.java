@@ -1,7 +1,10 @@
 package com.vv.personal.diurnal.dbi.util;
 
 import com.vv.personal.diurnal.artifactory.generated.*;
+import com.vv.personal.diurnal.dbi.interactor.IDbi;
 import org.apache.commons.lang3.time.StopWatch;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.function.Function;
@@ -14,6 +17,7 @@ import static com.vv.personal.diurnal.dbi.constants.Constants.*;
  * @since 27/02/21
  */
 public class DiurnalUtil {
+    public static final Logger LOGGER = LoggerFactory.getLogger(DiurnalUtil.class);
 
     public static UserMappingProto.UserMapping generateUserMappingOnPk(Long mobile) {
         return generateUserMapping(mobile, EMPTY_STR);
@@ -95,6 +99,20 @@ public class DiurnalUtil {
 
     public static <V> List<String> performBulkOpStr(List<V> listToOpOn, Function<V, String> operation) {
         return listToOpOn.stream().map(operation).collect(Collectors.toList());
+    }
+
+    public static Boolean genericDropTable(IDbi dbi) {
+        LOGGER.warn("Proceeding to drop table: '{}'", dbi.getTableName());
+        Boolean dropResult = dbi.dropTable() == 0;
+        LOGGER.warn("Table '{}' drop result: {}", dbi.getTableName(), dropResult);
+        return dropResult;
+    }
+
+    public static Boolean genericTruncateTable(IDbi dbi) {
+        LOGGER.warn("Proceeding to truncate table: '{}'", dbi.getTableName());
+        Boolean truncateResult = dbi.truncateTable() == 0;
+        LOGGER.warn("Table '{}' truncate result: {}", dbi.getTableName(), truncateResult);
+        return truncateResult;
     }
 
     public static String processStringForSqlPush(String input) {

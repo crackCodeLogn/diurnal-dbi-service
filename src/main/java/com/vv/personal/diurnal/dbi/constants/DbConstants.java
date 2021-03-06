@@ -24,6 +24,8 @@ public class DbConstants {
 
     public static final String SELECT_ALL_IDS = "SELECT %s FROM %s";
     public static final String SELECT_ALL = "SELECT * FROM %s";
+    public static final String DROP_TABLE = "DROP TABLE %s";
+    public static final String TRUNCATE_TABLE = "TRUNCATE TABLE %s";
 
     public static final String FILE_SQL_LOCATION_BASE_CREATETABLES = "sql/createTables";
     public static final String DIURNAL_USER_MAPPING_SQL = "diurnal.user_mapping";

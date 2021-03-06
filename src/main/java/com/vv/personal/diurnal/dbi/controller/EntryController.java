@@ -147,4 +147,14 @@ public class EntryController {
         return checkIfEntryExists(generateEntryOnPk(mobile, date, serial));
     }
 
+    @DeleteMapping("/drop/table")
+    public Boolean dropTable(@RequestParam(defaultValue = "false") Boolean absolutelyDropTable) {
+        return absolutelyDropTable ? genericDropTable(diurnalTableEntry) : false;
+    }
+
+    @DeleteMapping("/truncate/table")
+    public Boolean truncateTable(@RequestParam(defaultValue = "false") Boolean absolutelyTruncateTable) {
+        return absolutelyTruncateTable ? genericTruncateTable(diurnalTableEntry) : false;
+    }
+
 }

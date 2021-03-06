@@ -141,4 +141,14 @@ public class TitleMappingController {
         LOGGER.info("Checking if title exists for: {} x {}", mobile, date);
         return checkIfTitleExists(generateTitleMappingOnPk(mobile, date));
     }
+
+    @DeleteMapping("/drop/table")
+    public Boolean dropTable(@RequestParam(defaultValue = "false") Boolean absolutelyDropTable) {
+        return absolutelyDropTable ? genericDropTable(diurnalTableTitleMapping) : false;
+    }
+
+    @DeleteMapping("/truncate/table")
+    public Boolean truncateTable(@RequestParam(defaultValue = "false") Boolean absolutelyTruncateTable) {
+        return absolutelyTruncateTable ? genericTruncateTable(diurnalTableTitleMapping) : false;
+    }
 }

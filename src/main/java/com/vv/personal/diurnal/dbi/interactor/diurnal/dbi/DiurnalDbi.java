@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.concurrent.*;
 import java.util.function.Function;
 
-import static com.vv.personal.diurnal.dbi.constants.DbConstants.SELECT_ALL_IDS;
+import static com.vv.personal.diurnal.dbi.constants.DbConstants.*;
 
 
 /**
@@ -125,6 +125,16 @@ public abstract class DiurnalDbi<T, K> implements IDiurnalDbi<T, K> {
                 createTableIfNotExistSqlFunction.apply(createTableIfNotExistSqlLocation));
     }
 
+    @Override
+    public int dropTable() {
+        return executeUpdateSql(String.format(DROP_TABLE, TABLE));
+    }
+
+    @Override
+    public int truncateTable() {
+        return executeUpdateSql(String.format(TRUNCATE_TABLE, TABLE));
+    }
+
     protected boolean checkIfEntityExists(String sql, int expectedCount) {
         ResultSet resultSet = executeNonUpdateSql(sql);
         int rowsReturned = 0;
@@ -153,6 +163,11 @@ public abstract class DiurnalDbi<T, K> implements IDiurnalDbi<T, K> {
 
     public String getCreateTableIfNotExistSqlLocation() {
         return createTableIfNotExistSqlLocation;
+    }
+
+    @Override
+    public String getTableName() {
+        return TABLE;
     }
 
     /*@Override

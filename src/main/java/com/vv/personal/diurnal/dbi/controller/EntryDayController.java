@@ -140,12 +140,17 @@ public class EntryDayController {
         return checkIfEntryDayExists(generateEntryDayOnPk(mobile, date));
     }
 
-    @DeleteMapping("/drop/table")
+    @PutMapping("/table/create")
+    public Boolean createTableIfNotExists() {
+        return genericCreateTableIfNotExists(diurnalTableEntryDay);
+    }
+
+    @DeleteMapping("/table/drop")
     public Boolean dropTable(@RequestParam(defaultValue = "false") Boolean absolutelyDropTable) {
         return absolutelyDropTable ? genericDropTable(diurnalTableEntryDay) : false;
     }
 
-    @DeleteMapping("/truncate/table")
+    @DeleteMapping("/table/truncate")
     public Boolean truncateTable(@RequestParam(defaultValue = "false") Boolean absolutelyTruncateTable) {
         return absolutelyTruncateTable ? genericTruncateTable(diurnalTableEntryDay) : false;
     }

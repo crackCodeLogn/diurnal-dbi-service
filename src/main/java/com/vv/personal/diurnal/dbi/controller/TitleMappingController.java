@@ -142,12 +142,17 @@ public class TitleMappingController {
         return checkIfTitleExists(generateTitleMappingOnPk(mobile, date));
     }
 
-    @DeleteMapping("/drop/table")
+    @PutMapping("/table/create")
+    public Boolean createTableIfNotExists() {
+        return genericCreateTableIfNotExists(diurnalTableTitleMapping);
+    }
+
+    @DeleteMapping("/table/drop")
     public Boolean dropTable(@RequestParam(defaultValue = "false") Boolean absolutelyDropTable) {
         return absolutelyDropTable ? genericDropTable(diurnalTableTitleMapping) : false;
     }
 
-    @DeleteMapping("/truncate/table")
+    @DeleteMapping("/table/truncate")
     public Boolean truncateTable(@RequestParam(defaultValue = "false") Boolean absolutelyTruncateTable) {
         return absolutelyTruncateTable ? genericTruncateTable(diurnalTableTitleMapping) : false;
     }

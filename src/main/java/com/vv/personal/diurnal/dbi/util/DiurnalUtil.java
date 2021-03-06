@@ -101,6 +101,13 @@ public class DiurnalUtil {
         return listToOpOn.stream().map(operation).collect(Collectors.toList());
     }
 
+    public static Boolean genericCreateTableIfNotExists(IDbi dbi) {
+        LOGGER.warn("Proceeding to create table if not exists: '{}'", dbi.getTableName());
+        Boolean createTableIfNotExistsResult = dbi.createTableIfNotExists() == 0;
+        LOGGER.warn("Table '{}' create if not exists result: {}", dbi.getTableName(), createTableIfNotExistsResult);
+        return createTableIfNotExistsResult;
+    }
+
     public static Boolean genericDropTable(IDbi dbi) {
         LOGGER.warn("Proceeding to drop table: '{}'", dbi.getTableName());
         Boolean dropResult = dbi.dropTable() == 0;

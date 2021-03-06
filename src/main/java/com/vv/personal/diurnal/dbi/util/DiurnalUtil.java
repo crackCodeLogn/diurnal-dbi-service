@@ -21,9 +21,14 @@ public class DiurnalUtil {
     }
 
     public static UserMappingProto.UserMapping generateUserMapping(Long mobile, String user) {
+        return generateUserMapping(mobile, user, false);
+    }
+
+    public static UserMappingProto.UserMapping generateUserMapping(Long mobile, String user, Boolean powerUser) {
         return UserMappingProto.UserMapping.newBuilder()
                 .setMobile(mobile)
                 .setUsername(user)
+                .setPowerUser(powerUser)
                 .build();
     }
 

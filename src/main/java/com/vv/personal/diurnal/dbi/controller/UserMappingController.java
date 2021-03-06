@@ -38,9 +38,10 @@ public class UserMappingController {
 
     @GetMapping("/create/manual/user")
     public Integer createUserMappingManually(@RequestParam Long mobile,
-                                             @RequestParam String user) {
-        LOGGER.info("Obtained manual req for new user creation: {} x {}", mobile, user);
-        return createUserMapping(generateUserMapping(mobile, user));
+                                             @RequestParam String user,
+                                             @RequestParam(defaultValue = "false", required = false) Boolean powerUser) {
+        LOGGER.info("Obtained manual req for new user creation: {} x {} x {}", mobile, user, powerUser);
+        return createUserMapping(generateUserMapping(mobile, user, powerUser));
     }
 
     @ApiOperation(value = "delete user", hidden = true)

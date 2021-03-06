@@ -36,7 +36,7 @@ public class UserMappingController {
         return sqlResult;
     }
 
-    @GetMapping("/create/manual/user")
+    @PutMapping("/create/manual/user")
     public Integer createUserMappingManually(@RequestParam Long mobile,
                                              @RequestParam String user,
                                              @RequestParam(defaultValue = "false", required = false) Boolean powerUser) {
@@ -53,7 +53,7 @@ public class UserMappingController {
         return sqlResult;
     }
 
-    @GetMapping("/delete/manual/user")
+    @DeleteMapping("/create/manual/user")
     public Integer deleteUserMappingManually(@RequestParam Long mobile) {
         LOGGER.info("Obtained manual req for user deletion: {}", mobile);
         return deleteUserMapping(generateUserMappingOnPk(mobile));
@@ -68,14 +68,14 @@ public class UserMappingController {
         return sqlResult;
     }
 
-    @GetMapping("/update/manual/user")
+    @PatchMapping("/create/manual/user")
     public Integer updateUserMappingManually(@RequestParam Long mobile,
                                              @RequestParam String updatedUserName) {
         LOGGER.info("Obtained manual req for user updation: {} -> {}", mobile, updatedUserName);
         return updateUserMapping(generateUserMapping(mobile, updatedUserName));
     }
 
-    @GetMapping("/update/manual/user-power")
+    @PatchMapping("/create/manual/user-power")
     public Integer updatePowerUserMappingManually(@RequestParam Long mobile,
                                                   @RequestParam Boolean powerUserStatus) {
         LOGGER.info("Obtained manual req for user updation: {} -> {}", mobile, powerUserStatus);

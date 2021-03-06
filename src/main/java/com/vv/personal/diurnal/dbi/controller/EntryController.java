@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static com.vv.personal.diurnal.dbi.constants.Constants.EMPTY_LIST_INT;
 import static com.vv.personal.diurnal.dbi.constants.Constants.INT_RESPONSE_WONT_PROCESS;
@@ -43,7 +42,7 @@ public class EntryController {
     @PostMapping("/create/entries")
     public List<Integer> bulkCreateEntries(@RequestBody EntryProto.EntryList entryList) {
         LOGGER.info("Bulk creating {} entries", entryList.getEntryCount());
-        List<Integer> bulkEntriesCreationResult = performBulkOp(entryList.getEntryList(), this::createEntry);
+        List<Integer> bulkEntriesCreationResult = performBulkOpInt(entryList.getEntryList(), this::createEntry);
         LOGGER.info("Result of bulk entry creation: {}", bulkEntriesCreationResult);
         return bulkEntriesCreationResult;
     }
@@ -73,7 +72,7 @@ public class EntryController {
     @PostMapping("/delete/entries")
     public List<Integer> bulkDeleteEntries(@RequestBody EntryProto.EntryList entryList) {
         LOGGER.info("Bulk deleting {} entries", entryList.getEntryCount());
-        List<Integer> bulkEntriesDeletionResult = performBulkOp(entryList.getEntryList(), this::deleteEntry);
+        List<Integer> bulkEntriesDeletionResult = performBulkOpInt(entryList.getEntryList(), this::deleteEntry);
         LOGGER.info("Result of bulk entry deletion: {}", bulkEntriesDeletionResult);
         return bulkEntriesDeletionResult;
     }
@@ -128,9 +127,7 @@ public class EntryController {
     @GetMapping("/retrieve/all/manual/entries")
     public List<String> retrieveAllEntriesManually() {
         LOGGER.info("Obtained manual req for retrieving all entries");
-        return retrieveAllEntries().getEntryList().stream()
-                .map(AbstractMessage::toString)
-                .collect(Collectors.toList());
+        return performBulkOpStr(retrieveAllEntries().getEntryList(), AbstractMessage::toString);
     }
 
     @ApiOperation(value = "check if entry exists", hidden = true)

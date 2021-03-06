@@ -11,10 +11,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
-import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.generateUserMapping;
-import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.generateUserMappingOnPk;
+import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.*;
 
 /**
  * @author Vivek
@@ -88,9 +86,7 @@ public class UserMappingController {
     @GetMapping("/retrieve/all/manual/users")
     public List<String> retrieveAllUserMappingsManually() {
         LOGGER.info("Obtained manual req for retrieving all user mappings");
-        return retrieveAllUserMappings().getUserMappingList().stream()
-                .map(AbstractMessage::toString)
-                .collect(Collectors.toList());
+        return performBulkOpStr(retrieveAllUserMappings().getUserMappingList(), AbstractMessage::toString);
     }
 
     @ApiOperation(value = "check if user exists", hidden = true)

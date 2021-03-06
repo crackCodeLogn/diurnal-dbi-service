@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static com.vv.personal.diurnal.dbi.constants.Constants.EMPTY_LIST_INT;
 import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.*;
@@ -42,7 +41,7 @@ public class TitleMappingController {
     @PostMapping("/create/titles")
     public List<Integer> bulkCreateTitleMapping(@RequestBody TitleMappingProto.TitleMappingList titleMappingList) {
         LOGGER.info("Bulk creating new title mappings for {} titles", titleMappingList.getTitleMappingCount());
-        List<Integer> bulkTitlesCreationResult = performBulkOp(titleMappingList.getTitleMappingList(), this::createTitleMapping);
+        List<Integer> bulkTitlesCreationResult = performBulkOpInt(titleMappingList.getTitleMappingList(), this::createTitleMapping);
         LOGGER.info("Result of bulk title creation: {}", bulkTitlesCreationResult);
         return bulkTitlesCreationResult;
     }
@@ -68,7 +67,7 @@ public class TitleMappingController {
     @PostMapping("/delete/titles")
     public List<Integer> bulkDeleteTitleMapping(@RequestBody TitleMappingProto.TitleMappingList titleMappingList) {
         LOGGER.info("Bulk deleting {} titles", titleMappingList.getTitleMappingCount());
-        List<Integer> bulkTitlesDeletionResult = performBulkOp(titleMappingList.getTitleMappingList(), this::deleteTitleMapping);
+        List<Integer> bulkTitlesDeletionResult = performBulkOpInt(titleMappingList.getTitleMappingList(), this::deleteTitleMapping);
         LOGGER.info("Result of bulk title deletion: {}", bulkTitlesDeletionResult);
         return bulkTitlesDeletionResult;
     }
@@ -124,9 +123,7 @@ public class TitleMappingController {
     @GetMapping("/retrieve/all/manual/titles")
     public List<String> retrieveAllTitleMappingsManually() {
         LOGGER.info("Obtained manual req for retrieving all title mappings");
-        return retrieveAllTitleMappings().getTitleMappingList().stream()
-                .map(AbstractMessage::toString)
-                .collect(Collectors.toList());
+        return performBulkOpStr(retrieveAllTitleMappings().getTitleMappingList(), AbstractMessage::toString);
     }
 
     @ApiOperation(value = "check if title exists", hidden = true)

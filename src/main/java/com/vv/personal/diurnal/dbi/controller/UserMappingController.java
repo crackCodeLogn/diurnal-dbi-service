@@ -53,7 +53,7 @@ public class UserMappingController {
         return sqlResult;
     }
 
-    @DeleteMapping("/create/manual/user")
+    @DeleteMapping("/delete/manual/user")
     public Integer deleteUserMappingManually(@RequestParam Long mobile) {
         LOGGER.info("Obtained manual req for user deletion: {}", mobile);
         return deleteUserMapping(generateUserMappingOnPk(mobile));
@@ -68,14 +68,14 @@ public class UserMappingController {
         return sqlResult;
     }
 
-    @PatchMapping("/create/manual/user")
+    @PatchMapping("/update/manual/user")
     public Integer updateUserMappingManually(@RequestParam Long mobile,
                                              @RequestParam String updatedUserName) {
         LOGGER.info("Obtained manual req for user updation: {} -> {}", mobile, updatedUserName);
         return updateUserMapping(generateUserMapping(mobile, updatedUserName));
     }
 
-    @PatchMapping("/create/manual/user-power")
+    @PatchMapping("/update/manual/user-power")
     public Integer updatePowerUserMappingManually(@RequestParam Long mobile,
                                                   @RequestParam Boolean powerUserStatus) {
         LOGGER.info("Obtained manual req for user updation: {} -> {}", mobile, powerUserStatus);

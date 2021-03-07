@@ -73,7 +73,7 @@ public class EntryDayController {
         return bulkEntriesDeletionResult;
     }
 
-    @DeleteMapping("/create/manual/entry-day")
+    @DeleteMapping("/delete/manual/entry-day")
     public Integer deleteEntryDayManually(@RequestParam Long mobile,
                                           @RequestParam Integer date) {
         LOGGER.info("Obtained manual req for entry-day deletion: {} x {}", mobile, date);
@@ -102,7 +102,7 @@ public class EntryDayController {
         return INT_RESPONSE_WONT_PROCESS;
     }
 
-    @PatchMapping("/create/manual/entry-day")
+    @PatchMapping("/update/manual/entry-day")
     public Integer updateEntryDayManually(@RequestParam Long mobile,
                                           @RequestParam Integer date) {
         LOGGER.info("Obtained manual req for entry-day updation: {} x {}", mobile, date);

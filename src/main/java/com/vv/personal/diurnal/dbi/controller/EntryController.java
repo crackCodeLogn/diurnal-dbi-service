@@ -77,7 +77,7 @@ public class EntryController {
         return bulkEntriesDeletionResult;
     }
 
-    @DeleteMapping("/create/manual/entry")
+    @DeleteMapping("/delete/manual/entry")
     public Integer deleteEntryManually(@RequestParam Long mobile,
                                        @RequestParam Integer date,
                                        @RequestParam Integer serial) {
@@ -107,7 +107,7 @@ public class EntryController {
         return INT_RESPONSE_WONT_PROCESS;
     }
 
-    @PatchMapping("/create/manual/entry")
+    @PatchMapping("/update/manual/entry")
     public Integer updateEntryManually(@RequestParam Long mobile,
                                        @RequestParam Integer date,
                                        @RequestParam Integer serial) {

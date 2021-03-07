@@ -74,7 +74,7 @@ public class TitleMappingController {
         return bulkTitlesDeletionResult;
     }
 
-    @DeleteMapping("/create/manual/title")
+    @DeleteMapping("/delete/manual/title")
     public Integer deleteTitleMappingManually(@RequestParam Long mobile,
                                               @RequestParam Integer date) {
         LOGGER.info("Obtained manual req for title deletion: {} x {}", mobile, date);
@@ -90,7 +90,7 @@ public class TitleMappingController {
         return sqlResult;
     }
 
-    @PatchMapping("/create/manual/title")
+    @PatchMapping("/update/manual/title")
     public Integer updateTitleMappingManually(@RequestParam Long mobile,
                                               @RequestParam Integer date,
                                               @RequestParam String updatedTitle) {

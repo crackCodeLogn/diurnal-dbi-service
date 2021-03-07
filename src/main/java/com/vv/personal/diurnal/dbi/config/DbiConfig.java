@@ -52,13 +52,6 @@ public class DbiConfig {
     }
 
     @Bean
-    @Qualifier("DiurnalTableEntry")
-    public DiurnalTableEntry diurnalTableEntries() {
-        return new DiurnalTableEntry(DbConstants.TABLE_DIURNAL_ENTRY, DbConstants.PRIMARY_COL_ENTRY, DiurnalDbConnector(), cachedDiurnal(),
-                DbiUtil::generateCreateTableSql, DIURNAL_ENTRY_SQL);
-    }
-
-    @Bean
     @Qualifier("DiurnalTableEntryDay")
     public DiurnalTableEntryDay diurnalTableEntryDays() {
         return new DiurnalTableEntryDay(TABLE_DIURNAL_ENTRY_DAY, PRIMARY_COL_ENTRY_DAY, DiurnalDbConnector(), cachedDiurnal(),
@@ -66,7 +59,15 @@ public class DbiConfig {
     }
 
     @Bean
+    @Qualifier("DiurnalTableEntry")
+    public DiurnalTableEntry diurnalTableEntries() {
+        return new DiurnalTableEntry(DbConstants.TABLE_DIURNAL_ENTRY, DbConstants.PRIMARY_COL_ENTRY, DiurnalDbConnector(), cachedDiurnal(),
+                DbiUtil::generateCreateTableSql, DIURNAL_ENTRY_SQL);
+    }
+
+    @Bean
     @Qualifier("DiurnalTableTitleMapping")
+    @Deprecated
     public DiurnalTableTitleMapping diurnalTableTitleMapping() {
         return new DiurnalTableTitleMapping(DbConstants.TABLE_DIURNAL_TITLE_MAPPING, DbConstants.PRIMARY_COL_TITLE_MAPPING, DiurnalDbConnector(), cachedDiurnal(),
                 DbiUtil::generateCreateTableSql, DIURNAL_TITLE_MAPPING_SQL);
@@ -83,7 +84,7 @@ public class DbiConfig {
         diurnalDbis.add(diurnalTableUserMapping());
         diurnalDbis.add(diurnalTableEntries());
         diurnalDbis.add(diurnalTableEntryDays());
-        diurnalDbis.add(diurnalTableTitleMapping());
+        //diurnalDbis.add(diurnalTableTitleMapping());
     }
 
     public boolean isCreateTablesOnStartup() {

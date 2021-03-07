@@ -62,6 +62,15 @@ public class DiurnalUtil {
                 .build();
     }
 
+    public static EntryProto.Entry generateLightEntry(Integer date, Integer serial,
+                                                      EntryProto.Sign sign, EntryProto.Currency currency, Double amount, String description) {
+        return EntryProto.Entry.newBuilder()
+                .setDate(date)
+                .setSerial(serial)
+                .setSign(sign).setCurrency(currency).setAmount(amount).setDescription(description)
+                .build();
+    }
+
     public static EntryDayProto.EntryDay generateEntryDayOnPk(Long mobile, Integer date) {
         return generateEntryDay(mobile, date, EMPTY_STR);
     }

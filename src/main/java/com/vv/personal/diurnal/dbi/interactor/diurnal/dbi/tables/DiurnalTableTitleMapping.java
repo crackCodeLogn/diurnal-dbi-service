@@ -19,6 +19,7 @@ import static com.vv.personal.diurnal.dbi.constants.DbConstants.SELECT_ALL;
  * @author Vivek
  * @since 24/02/21
  */
+@Deprecated
 public class DiurnalTableTitleMapping extends DiurnalDbi<TitleMappingProto.TitleMapping, TitleMappingProto.TitleMappingList> {
     private static final Logger LOGGER = LoggerFactory.getLogger(DiurnalTableTitleMapping.class);
 

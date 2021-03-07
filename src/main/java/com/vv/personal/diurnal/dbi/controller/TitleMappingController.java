@@ -19,8 +19,10 @@ import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.*;
  * @author Vivek
  * @since 24/02/21
  */
+@Deprecated
 @RestController("title-mapping-controller")
 @RequestMapping("/diurnal/mapping-title")
+@ApiOperation(value = "Now deprecated title mapping controller, as of 20210307", hidden = true)
 public class TitleMappingController {
     private static final Logger LOGGER = LoggerFactory.getLogger(TitleMappingController.class);
 

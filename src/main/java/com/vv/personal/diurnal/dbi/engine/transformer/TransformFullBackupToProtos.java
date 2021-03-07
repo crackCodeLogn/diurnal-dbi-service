@@ -43,7 +43,10 @@ public class TransformFullBackupToProtos {
         StopWatch stopWatch = procureStopWatch();
         stopWatch.start();
         try {
+            String currentTitle = DEFAULT_TITLE, lastTitle = "-1";
+            Integer currentDate = NA_INT, lastDate = NA_INT;
             List<EntryProto.Entry> entries = new ArrayList<>(fullBackupText.size());
+
             for (String data : fullBackupText) {
                 if (data.isEmpty()) continue;
 
@@ -52,26 +55,35 @@ public class TransformFullBackupToProtos {
                     ParseTitle title = new ParseTitle(data);
                     title.parse();
                     date = title.getDate();
+                    currentDate = date;
                     if (!TITLES_TO_EXEMPT.contains(title.getTitle())) {
-                        titleMappingListBuilder.addTitleMapping(generateTitleMapping(mobileNumber, date,
-                                processStringForSqlPush(title.getTitle())));
+                        currentTitle = processStringForSqlPush(title.getTitle());
+                        titleMappingListBuilder.addTitleMapping(generateTitleMapping(mobileNumber, date, currentTitle));
+                        if (titleMappingListBuilder.getTitleMappingCount() == 1) {
+                            lastTitle = currentTitle;
+                            lastDate = date;
+                        }
                     } else {
+                        currentTitle = DEFAULT_TITLE;
                         LOGGER.info("Skipping insertion in db for no titles: {}", data);
                     }
                     serial = ZERO;
-                    if (!entries.isEmpty()) {
-                        EntryDayProto.EntryDay entryDay = computeEntryDay(entries);
+                    if (!entries.isEmpty() || titleMappingListBuilder.getTitleMappingCount() > 1) {
+                        EntryDayProto.EntryDay entryDay = computeEntryDay(entries, lastTitle, lastDate);
                         entryDayListBuilder.addEntryDay(entryDay);
+                        lastTitle = currentTitle;
+                        lastDate = currentDate;
                     }
+
                 } else if (line_type == LINE_TYPE.ENTRY) {
                     ParseEntry entry = new ParseEntry(data);
                     entry.parse();
-                    entries.add(generateEntry(mobileNumber, date, serial, entry.getSign(), entry.getCurrency(), entry.getAmount(), entry.getDescription()));
+                    entries.add(generateLightEntry(date, serial, entry.getSign(), entry.getCurrency(), entry.getAmount(), entry.getDescription()));
                     serial++;
                 }
             }
-            if (!entries.isEmpty()) {
-                EntryDayProto.EntryDay entryDay = computeEntryDay(entries);
+            if (!entries.isEmpty()) { //last one
+                EntryDayProto.EntryDay entryDay = computeEntryDay(entries, currentTitle, currentDate);
                 entryDayListBuilder.addEntryDay(entryDay);
             }
             LOGGER.info("Completed transformation of backup data to DB compatible data. Generated {} titles and {} entry-days",
@@ -86,10 +98,11 @@ public class TransformFullBackupToProtos {
         return false;
     }
 
-    private EntryDayProto.EntryDay computeEntryDay(List<EntryProto.Entry> entries) {
+    private EntryDayProto.EntryDay computeEntryDay(List<EntryProto.Entry> entries, String title, Integer date) {
         EntryDayProto.EntryDay.Builder entryDayBuilder = EntryDayProto.EntryDay.newBuilder();
-        entryDayBuilder.setMobile(entries.get(0).getMobile());
-        entryDayBuilder.setDate(entries.get(0).getDate());
+        entryDayBuilder.setMobile(mobileNumber);
+        entryDayBuilder.setDate(date);
+        entryDayBuilder.setTitle(title);
         entryDayBuilder.setEntriesAsString(
                 StringUtils.join(entries.stream()
                                 .map(JsonConverterUtil::convertEntryToCompactedJson)

@@ -76,10 +76,10 @@ public class DataController {
                 Arrays.asList(StringUtils.split(dataTransit.getBackupData(), NEW_LINE)),
                 dataTransit.getMobile());
         if (transformFullBackupToProtos.transformWithoutSuppliedDate()) {
-            List<Integer> bulkTitleOpResult = titleMappingController.deleteAndCreateTitles(transformFullBackupToProtos.getTitleMapping());
+            //List<Integer> bulkTitleOpResult = titleMappingController.deleteAndCreateTitles(transformFullBackupToProtos.getTitleMapping());
             List<Integer> bulkEntryDayOpResult = entryDayController.deleteAndCreateEntryDays(transformFullBackupToProtos.getEntryDayList());
-            if (bulkTitleOpResult.stream().allMatch(integer -> integer == 1) &&
-                    bulkEntryDayOpResult.stream().allMatch(integer -> integer == 1)) opResult = true;
+            //if (bulkTitleOpResult.stream().allMatch(integer -> integer == 1) &&
+            if (bulkEntryDayOpResult.stream().allMatch(integer -> integer == 1)) opResult = true;
         }
         stopWatch.stop();
         LOGGER.info("Operation took: {} ms", stopWatch.getTime(TimeUnit.MILLISECONDS));

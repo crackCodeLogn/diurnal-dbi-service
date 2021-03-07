@@ -23,8 +23,8 @@ import static com.vv.personal.diurnal.dbi.constants.DbConstants.SELECT_ALL;
 public class DiurnalTableEntryDay extends DiurnalDbi<EntryDayProto.EntryDay, EntryDayProto.EntryDayList> {
     private static final Logger LOGGER = LoggerFactory.getLogger(DiurnalTableEntryDay.class);
 
-    private final String INSERT_STMT_NEW_ENTRY = "INSERT INTO %s(\"mobile\", \"date\", \"entries_as_string\") " +
-            "VALUES(%d, %d, '%s')";
+    private final String INSERT_STMT_NEW_ENTRY = "INSERT INTO %s(\"mobile\", \"date\", \"title\", \"entries_as_string\") " +
+            "VALUES(%d, %d, '%s', '%s')";
     private final String DELETE_STMT_ENTRY = "DELETE FROM %s " +
             "WHERE \"%s\"=%d and \"%s\"=%d";
     private final String CHECK_STMT_ENTRY_EXISTS = "SELECT %s from %s " +
@@ -32,15 +32,16 @@ public class DiurnalTableEntryDay extends DiurnalDbi<EntryDayProto.EntryDay, Ent
 
     private final String COL_DATE = "date";
     private final String COL_MOBILE = "mobile";
+    private final String COL_TITLE = "title";
     private final String COL_ENTRIES_AS_STRING = "entries_as_string";
 
     public DiurnalTableEntryDay(String table, String primaryColumns, DbiConfigForDiurnal dbiConfigForDiurnal, CachedDiurnal cachedDiurnal, Function<String, String> createTableIfNotExistSqlFunction, String createTableIfNotExistSqlLocation) {
         super(table, primaryColumns, dbiConfigForDiurnal, cachedDiurnal, createTableIfNotExistSqlFunction, createTableIfNotExistSqlLocation, LOGGER);
     }
 
-    private int insertNewEntryDay(Long mobile, Integer date, String description) {
+    private int insertNewEntryDay(Long mobile, Integer date, String title, String description) {
         String sql = String.format(INSERT_STMT_NEW_ENTRY, TABLE,
-                mobile, date, description); //description should already be in the json-ized format + processed
+                mobile, date, title, description); //description should already be in the json-ized format + processed
         int sqlExecResult = executeUpdateSql(sql);
         return sqlExecResult;
         //return addToCacheOnSqlResult(sqlExecResult, mobile);
@@ -48,8 +49,8 @@ public class DiurnalTableEntryDay extends DiurnalDbi<EntryDayProto.EntryDay, Ent
 
     @Override
     public int pushNewEntity(EntryDayProto.EntryDay entryDay) {
-        LOGGER.info("Pushing new EntryDay entity: {} x {}", entryDay.getMobile(), entryDay.getDate());
-        return insertNewEntryDay(entryDay.getMobile(), entryDay.getDate(), entryDay.getEntriesAsString());
+        LOGGER.info("Pushing new EntryDay entity: {} x {} x {}", entryDay.getMobile(), entryDay.getDate(), entryDay.getTitle());
+        return insertNewEntryDay(entryDay.getMobile(), entryDay.getDate(), entryDay.getTitle(), entryDay.getEntriesAsString());
     }
 
     @Override
@@ -110,6 +111,8 @@ public class DiurnalTableEntryDay extends DiurnalDbi<EntryDayProto.EntryDay, Ent
         try {
             builder.setMobile(resultSet.getLong(COL_MOBILE));
             builder.setDate(resultSet.getInt(COL_DATE));
+            builder.setTitle(
+                    DiurnalUtil.refineDbStringForOriginal(resultSet.getString(COL_TITLE)));
             builder.setEntriesAsString(
                     DiurnalUtil.refineDbStringForOriginal(resultSet.getString(COL_ENTRIES_AS_STRING))); //refinement - for getting quotes back
         } catch (SQLException throwables) {

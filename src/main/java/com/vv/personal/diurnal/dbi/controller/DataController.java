@@ -22,7 +22,7 @@ import java.util.concurrent.TimeUnit;
 
 import static com.vv.personal.diurnal.dbi.constants.Constants.NEW_LINE;
 import static com.vv.personal.diurnal.dbi.constants.Constants.RESPOND_FALSE_BOOL;
-import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.generateResponsePrimitive;
+import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.generateResponsePrimitiveBool;
 import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.generateUserMappingOnPk;
 
 /**
@@ -57,7 +57,7 @@ public class DataController {
         }
         Integer result = entryController.createEntry(entry);
         LOGGER.info("Result of creating new entry: {}", result);
-        return generateResponsePrimitive(result == 1);
+        return generateResponsePrimitiveBool(result == 1);
     }
 
     @ApiOperation(value = "Read whole backup file and generate data for DB", hidden = true)
@@ -83,7 +83,7 @@ public class DataController {
         }
         stopWatch.stop();
         LOGGER.info("Operation took: {} ms", stopWatch.getTime(TimeUnit.MILLISECONDS));
-        return generateResponsePrimitive(opResult);
+        return generateResponsePrimitiveBool(opResult);
     }
 
     public DataController setEntryController(EntryController entryController) {

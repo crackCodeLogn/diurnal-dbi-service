@@ -1,6 +1,7 @@
 package com.vv.personal.diurnal.dbi.controller;
 
 import com.google.protobuf.AbstractMessage;
+import com.vv.personal.diurnal.artifactory.generated.ResponsePrimitiveProto;
 import com.vv.personal.diurnal.artifactory.generated.UserMappingProto;
 import com.vv.personal.diurnal.dbi.interactor.diurnal.dbi.tables.DiurnalTableUserMapping;
 import io.swagger.annotations.ApiOperation;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import static com.vv.personal.diurnal.dbi.constants.Constants.EMPTY_STR;
 import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.*;
 
 /**
@@ -39,9 +41,11 @@ public class UserMappingController {
     @PutMapping("/create/manual/user")
     public Integer createUserMappingManually(@RequestParam Long mobile,
                                              @RequestParam String user,
-                                             @RequestParam(defaultValue = "false", required = false) Boolean powerUser) {
-        LOGGER.info("Obtained manual req for new user creation: {} x {} x {}", mobile, user, powerUser);
-        return createUserMapping(generateUserMapping(mobile, user, powerUser));
+                                             @RequestParam(defaultValue = "false", required = false) Boolean powerUser,
+                                             //@Parameter(schema = @Schema(type = "string", format = "password")) String hashedCred) {
+                                             @RequestParam String hashedCred) {
+        LOGGER.info("Obtained manual req for new user creation: {} x {} x {} x {}", mobile, user, powerUser, hashedCred);
+        return createUserMapping(generateUserMapping(mobile, user, powerUser, hashedCred));
     }
 
     @ApiOperation(value = "delete user", hidden = true)
@@ -59,28 +63,43 @@ public class UserMappingController {
         return deleteUserMapping(generateUserMappingOnPk(mobile));
     }
 
-    @ApiOperation(value = "update user", hidden = true)
-    @PostMapping("/update/user")
-    public Integer updateUserMapping(@RequestBody UserMappingProto.UserMapping userMapping) {
-        LOGGER.info("Updating user mapping: {} -> {}", userMapping.getMobile(), userMapping.getUsername());
+    @ApiOperation(value = "update user-name", hidden = true)
+    @PostMapping("/update/user/name")
+    public Integer updateUserMappingName(@RequestBody UserMappingProto.UserMapping userMapping) {
+        LOGGER.info("Updating user mapping: {} -> name: {}", userMapping.getMobile(), userMapping.getUsername());
         Integer sqlResult = diurnalTableUserMapping.updateEntity(userMapping);
         LOGGER.info("Result of user updation: {}", sqlResult);
         return sqlResult;
     }
 
-    @PatchMapping("/update/manual/user")
+    @PatchMapping("/update/manual/user/name")
     public Integer updateUserMappingManually(@RequestParam Long mobile,
                                              @RequestParam String updatedUserName) {
-        LOGGER.info("Obtained manual req for user updation: {} -> {}", mobile, updatedUserName);
-        return updateUserMapping(generateUserMapping(mobile, updatedUserName));
+        LOGGER.info("Obtained manual req for user updation: {} -> name: {}", mobile, updatedUserName);
+        return updateUserMappingName(generateUserMapping(mobile, updatedUserName));
+    }
+
+    @ApiOperation(value = "update user-cred", hidden = true)
+    @PostMapping("/update/user/cred")
+    public Integer updateUserMappingCred(@RequestBody UserMappingProto.UserMapping userMapping) {
+        LOGGER.info("Updating user mapping: {} -> cred: {}", userMapping.getMobile(), userMapping.getCred());
+        Integer sqlResult = diurnalTableUserMapping.updateCred(userMapping);
+        LOGGER.info("Result of user updation: {}", sqlResult);
+        return sqlResult;
+    }
+
+    @PatchMapping("/update/manual/user/cred")
+    public Integer updateUserMappingCredManually(@RequestParam Long mobile,
+                                                 @RequestParam String hashedCred) {
+        LOGGER.info("Obtained manual req for user updation: {} -> cred: {}", mobile, hashedCred);
+        return updateUserMappingCred(generateUserMapping(mobile, EMPTY_STR, false, hashedCred));
     }
 
     @PatchMapping("/update/manual/user-power")
     public Integer updatePowerUserMappingManually(@RequestParam Long mobile,
                                                   @RequestParam Boolean powerUserStatus) {
         LOGGER.info("Obtained manual req for user updation: {} -> {}", mobile, powerUserStatus);
-        UserMappingProto.UserMapping userMapping = UserMappingProto.UserMapping.newBuilder()
-                .setMobile(mobile).setPowerUser(powerUserStatus).build();
+        UserMappingProto.UserMapping userMapping = generateUserMapping(mobile, EMPTY_STR, powerUserStatus, EMPTY_STR);
         Integer sqlResult = diurnalTableUserMapping.updatePowerUserStatus(userMapping);
         LOGGER.info("Result of power-user updation: {}", sqlResult);
         return sqlResult;
@@ -99,6 +118,20 @@ public class UserMappingController {
     public List<String> retrieveAllUserMappingsManually() {
         LOGGER.info("Obtained manual req for retrieving all user mappings");
         return performBulkOpStr(retrieveAllUserMappings().getUserMappingList(), AbstractMessage::toString);
+    }
+
+    @ApiOperation(value = "retrieve hashed cred from db", hidden = true)
+    @GetMapping("/retrieve/cred")
+    public ResponsePrimitiveProto.ResponsePrimitive retrieveCredential(@RequestParam UserMappingProto.UserMapping userMapping) {
+        LOGGER.info("Retrieve cred for: {}", userMapping.getMobile());
+        String retrieveCred = diurnalTableUserMapping.retrieveCred(userMapping);
+        LOGGER.info("Result: {}", retrieveCred);
+        return generateResponsePrimitiveString(retrieveCred);
+    }
+
+    @GetMapping("/retrieve/manual/cred")
+    public String verifyCredentialManually(@RequestParam Long mobile) {
+        return retrieveCredential(generateUserMappingOnPk(mobile)).getResponse();
     }
 
     @ApiOperation(value = "check if user exists", hidden = true)

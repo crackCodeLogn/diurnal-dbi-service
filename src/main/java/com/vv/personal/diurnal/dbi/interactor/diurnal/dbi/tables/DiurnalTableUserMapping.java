@@ -22,19 +22,20 @@ import static com.vv.personal.diurnal.dbi.constants.DbConstants.SELECT_ALL;
 public class DiurnalTableUserMapping extends DiurnalDbi<UserMappingProto.UserMapping, UserMappingProto.UserMappingList> {
     private static final Logger LOGGER = LoggerFactory.getLogger(DiurnalTableUserMapping.class);
 
-    private final String INSERT_STMT_NEW_USER = "INSERT INTO %s(\"mobile\", \"user\", \"power_user\") " +
-            "VALUES(%d, '%s', '%s')";
+    private final String INSERT_STMT_NEW_USER = "INSERT INTO %s(\"mobile\", \"user\", \"power_user\", \"cred\") " +
+            "VALUES(%d, '%s', '%s', '%s')";
     private final String DELETE_STMT_USER = "DELETE FROM %s " +
             "WHERE \"%s\"=%d";
     private final String UPDATE_STMT_USER = "UPDATE %s " +
             "SET \"%s\"='%s' " +
             "WHERE \"%s\"=%d";
-    private final String CHECK_STMT_ENTRY_EXISTS = "SELECT %s from %s " +
+    private final String CHECK_STMT_ENTRY_SINGLE_COL = "SELECT %s from %s " +
             "WHERE \"%s\"=%d";
 
     private final String COL_USER = "user";
     private final String COL_MOBILE = "mobile";
     private final String COL_POWER_USER = "power_user";
+    private final String COL_CRED = "cred";
 
     public DiurnalTableUserMapping(String table, String primaryColumns, DbiConfigForDiurnal dbiConfigForDiurnal, CachedDiurnal cachedDiurnal, Function<String, String> createTableIfNotExistSqlFunction, String createTableIfNotExistSqlLocation) {
         super(table, primaryColumns, dbiConfigForDiurnal, cachedDiurnal, createTableIfNotExistSqlFunction, createTableIfNotExistSqlLocation, LOGGER);
@@ -43,12 +44,12 @@ public class DiurnalTableUserMapping extends DiurnalDbi<UserMappingProto.UserMap
     @Override
     public int pushNewEntity(UserMappingProto.UserMapping userMapping) {
         LOGGER.info("Pushing new User entity: {} x {} x {}", userMapping.getMobile(), userMapping.getUsername(), userMapping.getPowerUser());
-        return insertNewUser(userMapping.getMobile(), userMapping.getUsername(), userMapping.getPowerUser());
+        return insertNewUser(userMapping.getMobile(), userMapping.getUsername(), userMapping.getPowerUser(), userMapping.getCred());
     }
 
-    private int insertNewUser(Long mobile, String username, Boolean powerUser) {
+    private int insertNewUser(Long mobile, String username, Boolean powerUser, String cred) {
         String sql = String.format(INSERT_STMT_NEW_USER, TABLE,
-                mobile, username, powerUser);
+                mobile, username, powerUser, cred);
         int sqlExecResult = executeUpdateSql(sql);
         return sqlExecResult;
         //return addToCacheOnSqlResult(sqlExecResult, mobile);
@@ -80,9 +81,23 @@ public class DiurnalTableUserMapping extends DiurnalDbi<UserMappingProto.UserMap
         return sqlExecResult;
     }
 
+    public int updateCred(UserMappingProto.UserMapping userMapping) {
+        String sql = String.format(UPDATE_STMT_USER, TABLE,
+                COL_CRED, userMapping.getCred(),
+                COL_MOBILE, userMapping.getMobile());
+        int sqlExecResult = executeUpdateSql(sql);
+        return sqlExecResult;
+    }
+
+    public String retrieveCred(UserMappingProto.UserMapping userMapping) {
+        String sql = String.format(CHECK_STMT_ENTRY_SINGLE_COL, COL_CRED, TABLE,
+                COL_MOBILE, userMapping.getMobile());
+        return generateCredDetail(executeNonUpdateSql(sql)).getCred();
+    }
+
     @Override
     public boolean checkEntity(UserMappingProto.UserMapping userMapping) {
-        String sql = String.format(CHECK_STMT_ENTRY_EXISTS, PRIMARY_COL_USER_MAPPING, TABLE,
+        String sql = String.format(CHECK_STMT_ENTRY_SINGLE_COL, PRIMARY_COL_USER_MAPPING, TABLE,
                 COL_MOBILE, userMapping.getMobile());
         return checkIfEntityExists(sql, ONE);
     }
@@ -123,8 +138,19 @@ public class DiurnalTableUserMapping extends DiurnalDbi<UserMappingProto.UserMap
             builder.setMobile(resultSet.getLong(COL_MOBILE));
             builder.setUsername(resultSet.getString(COL_USER));
             builder.setPowerUser(resultSet.getBoolean(COL_POWER_USER));
+            builder.setCred(resultSet.getString(COL_CRED));
         } catch (SQLException throwables) {
             LOGGER.error("Failed to retrieve user-mapping detail from DB. ", throwables);
+        }
+        return builder.build();
+    }
+
+    public UserMappingProto.UserMapping generateCredDetail(ResultSet resultSet) {
+        UserMappingProto.UserMapping.Builder builder = UserMappingProto.UserMapping.newBuilder();
+        try {
+            builder.setCred(resultSet.getString(COL_CRED));
+        } catch (SQLException throwables) {
+            LOGGER.error("Failed to retrieve user-mapping cred detail from DB. ", throwables);
         }
         return builder.build();
     }

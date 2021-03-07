@@ -24,14 +24,15 @@ public class DiurnalUtil {
     }
 
     public static UserMappingProto.UserMapping generateUserMapping(Long mobile, String user) {
-        return generateUserMapping(mobile, user, false);
+        return generateUserMapping(mobile, user, false, EMPTY_STR);
     }
 
-    public static UserMappingProto.UserMapping generateUserMapping(Long mobile, String user, Boolean powerUser) {
+    public static UserMappingProto.UserMapping generateUserMapping(Long mobile, String user, Boolean powerUser, String hashedCred) {
         return UserMappingProto.UserMapping.newBuilder()
                 .setMobile(mobile)
                 .setUsername(user)
                 .setPowerUser(powerUser)
+                .setCred(hashedCred)
                 .build();
     }
 
@@ -92,9 +93,15 @@ public class DiurnalUtil {
                 .build();
     }
 
-    public static ResponsePrimitiveProto.ResponsePrimitive generateResponsePrimitive(Boolean value) {
+    public static ResponsePrimitiveProto.ResponsePrimitive generateResponsePrimitiveBool(Boolean value) {
         return ResponsePrimitiveProto.ResponsePrimitive.newBuilder()
                 .setBoolResponse(value)
+                .build();
+    }
+
+    public static ResponsePrimitiveProto.ResponsePrimitive generateResponsePrimitiveString(String value) {
+        return ResponsePrimitiveProto.ResponsePrimitive.newBuilder()
+                .setResponse(value)
                 .build();
     }
 

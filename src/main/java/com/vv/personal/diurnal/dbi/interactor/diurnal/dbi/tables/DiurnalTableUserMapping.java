@@ -95,8 +95,7 @@ public class DiurnalTableUserMapping extends DiurnalDbi<UserMappingProto.UserMap
                 COL_MOBILE, userMapping.getMobile());
         ResultSet resultSet = executeNonUpdateSql(sql);
         try {
-            resultSet.next();
-            return generateCredDetail(resultSet).getCred();
+            if (resultSet.next()) return generateCredDetail(resultSet).getCred();
         } catch (SQLException throwables) {
             LOGGER.error("Failed to retrieve cred hash from db. ", throwables);
         }

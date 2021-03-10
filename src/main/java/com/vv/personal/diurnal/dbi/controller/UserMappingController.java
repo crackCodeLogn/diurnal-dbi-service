@@ -125,7 +125,7 @@ public class UserMappingController {
     public ResponsePrimitiveProto.ResponsePrimitive retrieveCredential(@RequestParam UserMappingProto.UserMapping userMapping) {
         LOGGER.info("Retrieve cred for: {}", userMapping.getMobile());
         String retrieveCred = diurnalTableUserMapping.retrieveCred(userMapping);
-        LOGGER.info("Result: {}", retrieveCred);
+        LOGGER.info("Result: [{}]", retrieveCred);
         return generateResponsePrimitiveString(retrieveCred);
     }
 

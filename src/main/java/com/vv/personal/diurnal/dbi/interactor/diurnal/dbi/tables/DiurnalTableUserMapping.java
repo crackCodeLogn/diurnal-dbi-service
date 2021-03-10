@@ -11,6 +11,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.function.Function;
 
+import static com.vv.personal.diurnal.dbi.constants.Constants.EMPTY_STR;
 import static com.vv.personal.diurnal.dbi.constants.Constants.ONE;
 import static com.vv.personal.diurnal.dbi.constants.DbConstants.PRIMARY_COL_USER_MAPPING;
 import static com.vv.personal.diurnal.dbi.constants.DbConstants.SELECT_ALL;
@@ -92,7 +93,14 @@ public class DiurnalTableUserMapping extends DiurnalDbi<UserMappingProto.UserMap
     public String retrieveCred(UserMappingProto.UserMapping userMapping) {
         String sql = String.format(CHECK_STMT_ENTRY_SINGLE_COL, COL_CRED, TABLE,
                 COL_MOBILE, userMapping.getMobile());
-        return generateCredDetail(executeNonUpdateSql(sql)).getCred();
+        ResultSet resultSet = executeNonUpdateSql(sql);
+        try {
+            resultSet.next();
+            return generateCredDetail(resultSet).getCred();
+        } catch (SQLException throwables) {
+            LOGGER.error("Failed to retrieve cred hash from db. ", throwables);
+        }
+        return EMPTY_STR;
     }
 
     @Override

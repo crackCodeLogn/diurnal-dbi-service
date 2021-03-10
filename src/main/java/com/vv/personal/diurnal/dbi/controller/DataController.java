@@ -3,6 +3,7 @@ package com.vv.personal.diurnal.dbi.controller;
 import com.vv.personal.diurnal.artifactory.generated.DataTransitProto;
 import com.vv.personal.diurnal.artifactory.generated.EntryProto;
 import com.vv.personal.diurnal.artifactory.generated.ResponsePrimitiveProto;
+import com.vv.personal.diurnal.artifactory.generated.UserMappingProto;
 import com.vv.personal.diurnal.dbi.config.GenericConfig;
 import com.vv.personal.diurnal.dbi.engine.transformer.TransformFullBackupToProtos;
 import io.swagger.annotations.ApiOperation;
@@ -11,10 +12,7 @@ import org.apache.commons.lang3.time.StopWatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
 import java.util.List;
@@ -85,6 +83,19 @@ public class DataController {
         LOGGER.info("Operation took: {} ms", stopWatch.getTime(TimeUnit.MILLISECONDS));
         return generateResponsePrimitiveBool(opResult);
     }
+
+    @ApiOperation(value = "retrieve hash for user", hidden = true)
+    @PostMapping("/retrieve/hash/user")
+    public ResponsePrimitiveProto.ResponsePrimitive retrieveUserHashFromDb(@RequestBody UserMappingProto.UserMapping userMapping) {
+        LOGGER.info("Received req to extract hash for user: {}", userMapping.getMobile());
+        return userMappingController.retrieveCredential(userMapping);
+    }
+
+    @GetMapping("/retrieve/hash/manual/user")
+    public String retrieveUserHashFromDbManually(@RequestParam Long contactNumber) {
+        return retrieveUserHashFromDb(generateUserMappingOnPk(contactNumber)).getResponse();
+    }
+
 
     public DataController setEntryController(EntryController entryController) {
         this.entryController = entryController;

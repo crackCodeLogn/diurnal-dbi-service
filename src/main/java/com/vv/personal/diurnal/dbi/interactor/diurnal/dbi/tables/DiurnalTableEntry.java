@@ -19,6 +19,7 @@ import static com.vv.personal.diurnal.dbi.constants.DbConstants.SELECT_ALL;
  * @author Vivek
  * @since 24/02/21
  */
+@Deprecated
 public class DiurnalTableEntry extends DiurnalDbi<EntryProto.Entry, EntryProto.EntryList> {
     private static final Logger LOGGER = LoggerFactory.getLogger(DiurnalTableEntry.class);
 

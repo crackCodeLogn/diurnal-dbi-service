@@ -20,6 +20,7 @@ import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.*;
  * @author Vivek
  * @since 24/02/21
  */
+@Deprecated
 @RestController("entry-controller")
 @RequestMapping("/diurnal/entry")
 public class EntryController {

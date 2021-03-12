@@ -12,9 +12,10 @@ import java.sql.SQLException;
 import java.util.function.Function;
 
 import static com.vv.personal.diurnal.dbi.constants.Constants.EMPTY_STR;
-import static com.vv.personal.diurnal.dbi.constants.Constants.ONE;
-import static com.vv.personal.diurnal.dbi.constants.DbConstants.PRIMARY_COL_USER_MAPPING;
+import static com.vv.personal.diurnal.dbi.constants.Constants.NA_INT;
 import static com.vv.personal.diurnal.dbi.constants.DbConstants.SELECT_ALL;
+import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.generateHash;
+import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.refineEmail;
 
 /**
  * @author Vivek
@@ -23,8 +24,8 @@ import static com.vv.personal.diurnal.dbi.constants.DbConstants.SELECT_ALL;
 public class DiurnalTableUserMapping extends DiurnalDbi<UserMappingProto.UserMapping, UserMappingProto.UserMappingList> {
     private static final Logger LOGGER = LoggerFactory.getLogger(DiurnalTableUserMapping.class);
 
-    private final String INSERT_STMT_NEW_USER = "INSERT INTO %s(\"mobile\", \"user\", \"power_user\", \"cred\") " +
-            "VALUES(%d, '%s', '%s', '%s')";
+    private final String INSERT_STMT_NEW_USER = "INSERT INTO %s(\"mobile\", \"email\", \"user\", \"power_user\", \"hash_cred\", \"hash_email\") " +
+            "VALUES(%d, '%s', '%s', '%s', '%s', %d)";
     private final String DELETE_STMT_USER = "DELETE FROM %s " +
             "WHERE \"%s\"=%d";
     private final String UPDATE_STMT_USER = "UPDATE %s " +
@@ -32,11 +33,15 @@ public class DiurnalTableUserMapping extends DiurnalDbi<UserMappingProto.UserMap
             "WHERE \"%s\"=%d";
     private final String CHECK_STMT_ENTRY_SINGLE_COL = "SELECT %s from %s " +
             "WHERE \"%s\"=%d";
+    private final String SELECT_STMT_ENTRY_SINGLE_COL_STR = "SELECT %s from %s " +
+            "WHERE \"%s\"='%s'";
 
-    private final String COL_USER = "user";
     private final String COL_MOBILE = "mobile";
+    private final String COL_EMAIL = "email";
+    private final String COL_USER = "user";
     private final String COL_POWER_USER = "power_user";
-    private final String COL_CRED = "cred";
+    private final String COL_HASH_CRED = "hash_cred";
+    private final String COL_HASH_EMAIL = "hash_email";
 
     public DiurnalTableUserMapping(String table, String primaryColumns, DbiConfigForDiurnal dbiConfigForDiurnal, CachedDiurnal cachedDiurnal, Function<String, String> createTableIfNotExistSqlFunction, String createTableIfNotExistSqlLocation) {
         super(table, primaryColumns, dbiConfigForDiurnal, cachedDiurnal, createTableIfNotExistSqlFunction, createTableIfNotExistSqlLocation, LOGGER);
@@ -44,13 +49,15 @@ public class DiurnalTableUserMapping extends DiurnalDbi<UserMappingProto.UserMap
 
     @Override
     public int pushNewEntity(UserMappingProto.UserMapping userMapping) {
-        LOGGER.info("Pushing new User entity: {} x {} x {}", userMapping.getMobile(), userMapping.getUsername(), userMapping.getPowerUser());
-        return insertNewUser(userMapping.getMobile(), userMapping.getUsername(), userMapping.getPowerUser(), userMapping.getCred());
+        String email = refineEmail(userMapping.getEmail());
+        LOGGER.info("Pushing new User entity: {} x {} x {}", email, userMapping.getUsername(), userMapping.getPowerUser());
+        return insertNewUser(userMapping.getMobile(), email, userMapping.getUsername(), userMapping.getPowerUser(), userMapping.getHashCred(),
+                generateHash(email));
     }
 
-    private int insertNewUser(Long mobile, String username, Boolean powerUser, String cred) {
+    private int insertNewUser(Long mobile, String email, String username, Boolean powerUser, String credHash, Integer emailHash) {
         String sql = String.format(INSERT_STMT_NEW_USER, TABLE,
-                mobile, username, powerUser, cred);
+                mobile, email, username, powerUser, credHash, emailHash);
         int sqlExecResult = executeUpdateSql(sql);
         return sqlExecResult;
         //return addToCacheOnSqlResult(sqlExecResult, mobile);
@@ -59,17 +66,16 @@ public class DiurnalTableUserMapping extends DiurnalDbi<UserMappingProto.UserMap
     @Override
     public int deleteEntity(UserMappingProto.UserMapping userMapping) {
         String sql = String.format(DELETE_STMT_USER, TABLE,
-                COL_MOBILE, userMapping.getMobile());
+                COL_HASH_EMAIL, userMapping.getHashEmail());
         int sqlExecResult = executeUpdateSql(sql);
         return sqlExecResult;
-        //return removeFromCacheOnSqlResult(sqlExecResult, userMapping.getMobile());
     }
 
     @Override
     public int updateEntity(UserMappingProto.UserMapping userMapping) {
         String sql = String.format(UPDATE_STMT_USER, TABLE,
                 COL_USER, userMapping.getUsername(),
-                COL_MOBILE, userMapping.getMobile());
+                COL_HASH_EMAIL, userMapping.getHashEmail());
         int sqlExecResult = executeUpdateSql(sql);
         return sqlExecResult;
     }
@@ -77,36 +83,46 @@ public class DiurnalTableUserMapping extends DiurnalDbi<UserMappingProto.UserMap
     public int updatePowerUserStatus(UserMappingProto.UserMapping userMapping) {
         String sql = String.format(UPDATE_STMT_USER, TABLE,
                 COL_POWER_USER, userMapping.getPowerUser(),
-                COL_MOBILE, userMapping.getMobile());
+                COL_HASH_EMAIL, userMapping.getHashEmail());
         int sqlExecResult = executeUpdateSql(sql);
         return sqlExecResult;
     }
 
-    public int updateCred(UserMappingProto.UserMapping userMapping) {
+    public int updateHashCred(UserMappingProto.UserMapping userMapping) {
         String sql = String.format(UPDATE_STMT_USER, TABLE,
-                COL_CRED, userMapping.getCred(),
-                COL_MOBILE, userMapping.getMobile());
+                COL_HASH_CRED, userMapping.getHashCred(),
+                COL_HASH_EMAIL, userMapping.getHashEmail());
         int sqlExecResult = executeUpdateSql(sql);
         return sqlExecResult;
     }
 
-    public String retrieveCred(UserMappingProto.UserMapping userMapping) {
-        String sql = String.format(CHECK_STMT_ENTRY_SINGLE_COL, COL_CRED, TABLE,
-                COL_MOBILE, userMapping.getMobile());
+    public String retrieveHashCred(UserMappingProto.UserMapping userMapping) {
+        String sql = String.format(CHECK_STMT_ENTRY_SINGLE_COL, COL_HASH_CRED, TABLE,
+                COL_HASH_EMAIL, userMapping.getHashEmail());
         ResultSet resultSet = executeNonUpdateSql(sql);
         try {
-            if (resultSet.next()) return generateCredDetail(resultSet).getCred();
+            if (resultSet.next()) return generateHashCredDetail(resultSet).getHashCred();
         } catch (SQLException throwables) {
             LOGGER.error("Failed to retrieve cred hash from db. ", throwables);
         }
         return EMPTY_STR;
     }
 
+    public Integer retrieveHashEmail(UserMappingProto.UserMapping userMapping) {
+        String sql = String.format(SELECT_STMT_ENTRY_SINGLE_COL_STR, COL_HASH_EMAIL, TABLE,
+                COL_EMAIL, userMapping.getEmail());
+        ResultSet resultSet = executeNonUpdateSql(sql);
+        try {
+            if (resultSet.next()) return generateHashEmailDetail(resultSet).getHashEmail();
+        } catch (SQLException throwables) {
+            LOGGER.error("Failed to retrieve email hash from db. ", throwables);
+        }
+        return NA_INT;
+    }
+
     @Override
     public boolean checkEntity(UserMappingProto.UserMapping userMapping) {
-        String sql = String.format(CHECK_STMT_ENTRY_SINGLE_COL, PRIMARY_COL_USER_MAPPING, TABLE,
-                COL_MOBILE, userMapping.getMobile());
-        return checkIfEntityExists(sql, ONE);
+        throw new UnsupportedOperationException("Check Entity to be done by hash retrieval attempt. Refer to #retrieveHashEmail method");
     }
 
     @Override
@@ -143,38 +159,35 @@ public class DiurnalTableUserMapping extends DiurnalDbi<UserMappingProto.UserMap
         UserMappingProto.UserMapping.Builder builder = UserMappingProto.UserMapping.newBuilder();
         try {
             builder.setMobile(resultSet.getLong(COL_MOBILE));
+            builder.setEmail(resultSet.getString(COL_EMAIL));
             builder.setUsername(resultSet.getString(COL_USER));
             builder.setPowerUser(resultSet.getBoolean(COL_POWER_USER));
-            builder.setCred(resultSet.getString(COL_CRED));
+            builder.setHashCred(resultSet.getString(COL_HASH_CRED));
+            builder.setHashEmail(resultSet.getInt(COL_HASH_EMAIL));
         } catch (SQLException throwables) {
             LOGGER.error("Failed to retrieve user-mapping detail from DB. ", throwables);
         }
         return builder.build();
     }
 
-    public UserMappingProto.UserMapping generateCredDetail(ResultSet resultSet) {
+    public UserMappingProto.UserMapping generateHashCredDetail(ResultSet resultSet) {
         UserMappingProto.UserMapping.Builder builder = UserMappingProto.UserMapping.newBuilder();
         try {
-            builder.setCred(resultSet.getString(COL_CRED));
+            builder.setHashCred(resultSet.getString(COL_HASH_CRED));
         } catch (SQLException throwables) {
             LOGGER.error("Failed to retrieve user-mapping cred detail from DB. ", throwables);
         }
         return builder.build();
     }
 
-    /*@Override
-    public int addToCacheOnSqlResult(Integer sqlResult, String table, Integer id) {
-        return 0;
-    }*/
-
-    /*@Override
-    public int pushNewEntity(Problem problem) {
-        LOGGER.info("Pushing new problem '{}' into the DB", problem);
-        if (cachedDiurnal.isIdPresentInEntityCache(TABLE, problem.getProblemId())) {
-            LOGGER.info("Problem '{}' already present", problem.getProblemName());
-            return 0;
+    public UserMappingProto.UserMapping generateHashEmailDetail(ResultSet resultSet) {
+        UserMappingProto.UserMapping.Builder builder = UserMappingProto.UserMapping.newBuilder();
+        try {
+            builder.setHashEmail(resultSet.getInt(COL_HASH_EMAIL));
+        } catch (SQLException throwables) {
+            LOGGER.error("Failed to retrieve user-mapping hash email detail from DB. ", throwables);
         }
-        return insertNewIntegerAndString(TABLE, problem.getProblemId(), problem.getProblemName());
-    }*/
+        return builder.build();
+    }
 
 }

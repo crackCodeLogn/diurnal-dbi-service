@@ -18,15 +18,13 @@ public class Constants {
     public static final String NEW_LINE = "\n";
     public static final String COMMA_STR = ",";
     public static final String COLON_STR = ":";
-    public static final String DEFAULT_STR_INVALID = "-1";
     public static final String REPLACE_JSON_DI = "`@%"; //DI - double inverts
     public static final String DEFAULT_TITLE = "-TITLE-";
 
-    public static final int DEFAULT_INT_INVALID = -1;
     public static final int NA_INT = -1;
     public static final int ONE = 1;
-    public static final int ZERO = 0;
     public static final double DEFAULT_AMOUNT = 0.0;
+    public static final long NA_LONG = -1L;
 
     public static final List<Integer> EMPTY_LIST_INT = new ArrayList<>(0);
 

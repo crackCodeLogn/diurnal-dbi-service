@@ -13,7 +13,7 @@ import java.sql.SQLException;
 import java.util.function.Function;
 
 import static com.vv.personal.diurnal.dbi.constants.Constants.ONE;
-import static com.vv.personal.diurnal.dbi.constants.DbConstants.PRIMARY_COL_ENTRY;
+import static com.vv.personal.diurnal.dbi.constants.DbConstants.PRIMARY_COL_ENTRY_DAY;
 import static com.vv.personal.diurnal.dbi.constants.DbConstants.SELECT_ALL;
 
 /**
@@ -23,7 +23,7 @@ import static com.vv.personal.diurnal.dbi.constants.DbConstants.SELECT_ALL;
 public class DiurnalTableEntryDay extends DiurnalDbi<EntryDayProto.EntryDay, EntryDayProto.EntryDayList> {
     private static final Logger LOGGER = LoggerFactory.getLogger(DiurnalTableEntryDay.class);
 
-    private final String INSERT_STMT_NEW_ENTRY = "INSERT INTO %s(\"mobile\", \"date\", \"title\", \"entries_as_string\") " +
+    private final String INSERT_STMT_NEW_ENTRY_DAY = "INSERT INTO %s(\"hash_email\", \"date\", \"title\", \"entries_as_string\") " +
             "VALUES(%d, %d, '%s', '%s')";
     private final String DELETE_STMT_ENTRY = "DELETE FROM %s " +
             "WHERE \"%s\"=%d and \"%s\"=%d";
@@ -31,7 +31,7 @@ public class DiurnalTableEntryDay extends DiurnalDbi<EntryDayProto.EntryDay, Ent
             "WHERE \"%s\"=%d and \"%s\"=%d";
 
     private final String COL_DATE = "date";
-    private final String COL_MOBILE = "mobile";
+    private final String COL_HASH_EMAIL = "hash_email";
     private final String COL_TITLE = "title";
     private final String COL_ENTRIES_AS_STRING = "entries_as_string";
 
@@ -39,24 +39,24 @@ public class DiurnalTableEntryDay extends DiurnalDbi<EntryDayProto.EntryDay, Ent
         super(table, primaryColumns, dbiConfigForDiurnal, cachedDiurnal, createTableIfNotExistSqlFunction, createTableIfNotExistSqlLocation, LOGGER);
     }
 
-    private int insertNewEntryDay(Long mobile, Integer date, String title, String description) {
-        String sql = String.format(INSERT_STMT_NEW_ENTRY, TABLE,
-                mobile, date, title, description); //description should already be in the json-ized format + processed
+    private int insertNewEntryDay(Integer emailHash, Integer date, String title, String description) {
+        String sql = String.format(INSERT_STMT_NEW_ENTRY_DAY, TABLE,
+                emailHash, date, title, description); //description should already be in the json-ized format + processed
         int sqlExecResult = executeUpdateSql(sql);
         return sqlExecResult;
-        //return addToCacheOnSqlResult(sqlExecResult, mobile);
+        //return addToCacheOnSqlResult(sqlExecResult, emailHash);
     }
 
     @Override
     public int pushNewEntity(EntryDayProto.EntryDay entryDay) {
-        LOGGER.info("Pushing new EntryDay entity: {} x {} x {}", entryDay.getMobile(), entryDay.getDate(), entryDay.getTitle());
-        return insertNewEntryDay(entryDay.getMobile(), entryDay.getDate(), entryDay.getTitle(), entryDay.getEntriesAsString());
+        LOGGER.info("Pushing new EntryDay entity: {} x {} x {}", entryDay.getHashEmail(), entryDay.getDate(), entryDay.getTitle());
+        return insertNewEntryDay(entryDay.getHashEmail(), entryDay.getDate(), entryDay.getTitle(), entryDay.getEntriesAsString());
     }
 
     @Override
     public int deleteEntity(EntryDayProto.EntryDay entryDay) {
         String sql = String.format(DELETE_STMT_ENTRY, TABLE,
-                COL_MOBILE, entryDay.getMobile(),
+                COL_HASH_EMAIL, entryDay.getHashEmail(),
                 COL_DATE, entryDay.getDate());
         int sqlExecResult = executeUpdateSql(sql);
         return sqlExecResult;
@@ -70,8 +70,8 @@ public class DiurnalTableEntryDay extends DiurnalDbi<EntryDayProto.EntryDay, Ent
 
     @Override
     public boolean checkEntity(EntryDayProto.EntryDay entryDay) {
-        String sql = String.format(CHECK_STMT_ENTRY_EXISTS, PRIMARY_COL_ENTRY, TABLE,
-                COL_MOBILE, entryDay.getMobile(),
+        String sql = String.format(CHECK_STMT_ENTRY_EXISTS, PRIMARY_COL_ENTRY_DAY, TABLE,
+                COL_HASH_EMAIL, entryDay.getHashEmail(),
                 COL_DATE, entryDay.getDate());
         return checkIfEntityExists(sql, ONE);
     }
@@ -109,7 +109,7 @@ public class DiurnalTableEntryDay extends DiurnalDbi<EntryDayProto.EntryDay, Ent
     public EntryDayProto.EntryDay generateDetail(ResultSet resultSet) {
         EntryDayProto.EntryDay.Builder builder = EntryDayProto.EntryDay.newBuilder();
         try {
-            builder.setMobile(resultSet.getLong(COL_MOBILE));
+            builder.setHashEmail(resultSet.getInt(COL_HASH_EMAIL));
             builder.setDate(resultSet.getInt(COL_DATE));
             builder.setTitle(
                     DiurnalUtil.refineDbStringForOriginal(resultSet.getString(COL_TITLE)));

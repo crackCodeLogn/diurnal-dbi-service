@@ -1,8 +1,11 @@
 package com.vv.personal.diurnal.dbi.controller;
 
-import com.vv.personal.diurnal.artifactory.generated.*;
+import com.vv.personal.diurnal.artifactory.generated.DataTransitProto;
+import com.vv.personal.diurnal.artifactory.generated.EntryDayProto;
+import com.vv.personal.diurnal.artifactory.generated.ResponsePrimitiveProto;
 import com.vv.personal.diurnal.dbi.config.GenericConfig;
 import com.vv.personal.diurnal.dbi.interactor.diurnal.dbi.tables.DiurnalTableEntry;
+import com.vv.personal.diurnal.dbi.interactor.diurnal.dbi.tables.DiurnalTableEntryDay;
 import com.vv.personal.diurnal.dbi.interactor.diurnal.dbi.tables.DiurnalTableTitleMapping;
 import com.vv.personal.diurnal.dbi.util.DiurnalUtil;
 import org.apache.commons.lang3.StringUtils;
@@ -22,6 +25,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.generateHash;
 import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.procureStopWatch;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -41,12 +45,16 @@ public class DataControllerTest {
     private final TitleMappingController titleMappingController = new TitleMappingController();
     @InjectMocks
     private final EntryController entryController = new EntryController();
+    @InjectMocks
+    private final EntryDayController entryDayController = new EntryDayController();
     @Mock
     private UserMappingController userMappingController;
     @Mock
     private DiurnalTableTitleMapping diurnalTableTitleMapping;
     @Mock
     private DiurnalTableEntry diurnalTableEntry;
+    @Mock
+    private DiurnalTableEntryDay diurnalTableEntryDay;
     @Mock
     private GenericConfig genericConfig;
 
@@ -68,6 +76,7 @@ public class DataControllerTest {
     public void preHaste() {
         dataController.setTitleMappingController(titleMappingController);
         dataController.setEntryController(entryController);
+        dataController.setEntryDayController(entryDayController);
     }
 
     @Test
@@ -75,17 +84,18 @@ public class DataControllerTest {
         List<String> testData = readFileFromLocation("src/test/resources/sample.backup.txt");
         System.out.println(testData);
         long mobile = 1234567890L;
+        String email = "something@somewhere.com";
+        Integer emailHash = generateHash(email);
 
-        when(userMappingController.checkIfUserExists(any(UserMappingProto.UserMapping.class))).thenReturn(true);
-        when(diurnalTableTitleMapping.deleteEntity(any(TitleMappingProto.TitleMapping.class))).thenReturn(0);
-        when(diurnalTableTitleMapping.pushNewEntity(any(TitleMappingProto.TitleMapping.class))).thenReturn(1);
-        when(diurnalTableEntry.deleteEntity(any(EntryProto.Entry.class))).thenReturn(0);
-        when(diurnalTableEntry.pushNewEntity(any(EntryProto.Entry.class))).thenReturn(1);
+        when(userMappingController.retrieveHashEmail(email)).thenReturn(emailHash);
+        when(diurnalTableEntryDay.deleteEntity(any(EntryDayProto.EntryDay.class))).thenReturn(0);
+        when(diurnalTableEntryDay.pushNewEntity(any(EntryDayProto.EntryDay.class))).thenReturn(1);
         StopWatch stopWatch = procureStopWatch();
         when(genericConfig.procureStopWatch()).thenReturn(stopWatch);
         stopWatch.start();
-        ResponsePrimitiveProto.ResponsePrimitive backupPushResult = dataController.pushWholeBackup(DiurnalUtil.generateDataTransit(mobile, 20210304, DataTransitProto.Currency.INR,
-                StringUtils.join(testData, "\n")));
+        ResponsePrimitiveProto.ResponsePrimitive backupPushResult = dataController.pushWholeBackup(
+                DiurnalUtil.generateDataTransit(mobile, email, 20210304, DataTransitProto.Currency.INR,
+                        StringUtils.join(testData, "\n")));
 
         assertTrue(backupPushResult.getBoolResponse());
     }

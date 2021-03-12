@@ -2,7 +2,6 @@ package com.vv.personal.diurnal.dbi.engine.transformer;
 
 import com.vv.personal.diurnal.artifactory.generated.EntryDayProto;
 import com.vv.personal.diurnal.artifactory.generated.EntryProto;
-import com.vv.personal.diurnal.artifactory.generated.TitleMappingProto;
 import com.vv.personal.diurnal.dbi.engine.transformer.parser.ParseEntry;
 import com.vv.personal.diurnal.dbi.engine.transformer.parser.ParseTitle;
 import com.vv.personal.diurnal.dbi.util.DiurnalUtil;
@@ -12,13 +11,14 @@ import org.apache.commons.lang3.time.StopWatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import static com.vv.personal.diurnal.dbi.constants.Constants.*;
-import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.*;
+import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.generateLiteEntry;
+import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.procureStopWatch;
 
 /**
  * @author Vivek
@@ -28,58 +28,61 @@ public class TransformFullBackupToProtos {
     private static final Logger LOGGER = LoggerFactory.getLogger(TransformFullBackupToProtos.class);
 
     private final List<String> fullBackupText;
-    private final Long mobileNumber;
-    private final EntryProto.EntryList.Builder entryListBuilder = EntryProto.EntryList.newBuilder();
+    private final Integer emailHash;
     private final EntryDayProto.EntryDayList.Builder entryDayListBuilder = EntryDayProto.EntryDayList.newBuilder();
-    private final TitleMappingProto.TitleMappingList.Builder titleMappingListBuilder = TitleMappingProto.TitleMappingList.newBuilder();
 
-    public TransformFullBackupToProtos(List<String> fullBackupText, Long mobileNumber) {
+    public TransformFullBackupToProtos(List<String> fullBackupText, Integer emailHash) {
         this.fullBackupText = fullBackupText;
-        this.mobileNumber = mobileNumber;
+        this.emailHash = emailHash;
     }
 
     public boolean transformWithoutSuppliedDate() {
-        int date = NA_INT, serial = ZERO;
         StopWatch stopWatch = procureStopWatch();
         stopWatch.start();
         try {
-            String currentTitle = DEFAULT_TITLE, lastTitle = "-1";
-            Integer currentDate = NA_INT, lastDate = NA_INT;
-            List<EntryProto.Entry> entries = new ArrayList<>(fullBackupText.size());
+            String currentTitle;
+            Integer currentDate;
+            Queue<EntryProto.Entry> entries = new LinkedList<>();
+            int i = 0, serial = 0;
+            for (i = 0; fullBackupText.get(i).trim().isEmpty(); i++) ; //cycling fwd on empty lines if any
+            if (i >= fullBackupText.size()) {
+                LOGGER.warn("Strange backup file acquired - no good lines present.");
+                return false;
+            }
+            LINE_TYPE line_type = deriveLineType(fullBackupText.get(i));
+            if (line_type == LINE_TYPE.ENTRY) {
+                LOGGER.warn("Not a good backup file. First good line cannot be an entry!");
+                return false;
+            }
+            ParseTitle title = new ParseTitle(fullBackupText.get(i)); //first sentient line to be a title
+            title.parse();
+            currentTitle = title.getRefinedTitle();
+            currentDate = title.getDate();
+            i++;
 
-            for (String data : fullBackupText) {
+            int exemptTitles = 0;
+            if (title.isTitleToExempt()) exemptTitles++;
+            for (; i < fullBackupText.size(); i++) {
+                String data = fullBackupText.get(i);
                 if (data.isEmpty()) continue;
 
-                LINE_TYPE line_type = deriveLineType(data);
-                if (line_type == LINE_TYPE.TITLE) {
-                    ParseTitle title = new ParseTitle(data);
-                    title.parse();
-                    date = title.getDate();
-                    currentDate = date;
-                    if (!TITLES_TO_EXEMPT.contains(title.getTitle())) {
-                        currentTitle = processStringForSqlPush(title.getTitle());
-                        titleMappingListBuilder.addTitleMapping(generateTitleMapping(mobileNumber, date, currentTitle));
-                        if (titleMappingListBuilder.getTitleMappingCount() == 1) {
-                            lastTitle = currentTitle;
-                            lastDate = date;
-                        }
-                    } else {
-                        currentTitle = DEFAULT_TITLE;
-                        LOGGER.info("Skipping insertion in db for no titles: {}", data);
-                    }
-                    serial = ZERO;
-                    if (!entries.isEmpty() || titleMappingListBuilder.getTitleMappingCount() > 1) {
-                        EntryDayProto.EntryDay entryDay = computeEntryDay(entries, lastTitle, lastDate);
-                        entryDayListBuilder.addEntryDay(entryDay);
-                        lastTitle = currentTitle;
-                        lastDate = currentDate;
-                    }
-
-                } else if (line_type == LINE_TYPE.ENTRY) {
+                line_type = deriveLineType(data);
+                if (line_type == LINE_TYPE.ENTRY) {
                     ParseEntry entry = new ParseEntry(data);
                     entry.parse();
-                    entries.add(generateLightEntry(date, serial, entry.getSign(), entry.getCurrency(), entry.getAmount(), entry.getDescription()));
+                    entries.offer(generateLiteEntry(serial, entry.getSign(), entry.getCurrency(), entry.getAmount(), entry.getDescription()));
                     serial++;
+
+                } else if (line_type == LINE_TYPE.TITLE) {
+                    serial = 0;
+                    entryDayListBuilder.addEntryDay(computeEntryDay(entries, currentTitle, currentDate));
+                    entries.clear();
+
+                    title = new ParseTitle(data);
+                    title.parse();
+                    currentTitle = title.getRefinedTitle();
+                    currentDate = title.getDate();
+                    if (title.isTitleToExempt()) exemptTitles++;
                 }
             }
             if (!entries.isEmpty()) { //last one
@@ -87,7 +90,7 @@ public class TransformFullBackupToProtos {
                 entryDayListBuilder.addEntryDay(entryDay);
             }
             LOGGER.info("Completed transformation of backup data to DB compatible data. Generated {} titles and {} entry-days",
-                    titleMappingListBuilder.getTitleMappingCount(), entryDayListBuilder.getEntryDayCount());
+                    entryDayListBuilder.getEntryDayCount() - exemptTitles, entryDayListBuilder.getEntryDayCount());
             return true;
         } catch (Exception e) {
             LOGGER.error("Failed to completely transform data from backup file. Will not be saving to database. ", e);
@@ -98,9 +101,9 @@ public class TransformFullBackupToProtos {
         return false;
     }
 
-    private EntryDayProto.EntryDay computeEntryDay(List<EntryProto.Entry> entries, String title, Integer date) {
+    private EntryDayProto.EntryDay computeEntryDay(Queue<EntryProto.Entry> entries, String title, Integer date) {
         EntryDayProto.EntryDay.Builder entryDayBuilder = EntryDayProto.EntryDay.newBuilder();
-        entryDayBuilder.setMobile(mobileNumber);
+        entryDayBuilder.setHashEmail(emailHash);
         entryDayBuilder.setDate(date);
         entryDayBuilder.setTitle(title);
         entryDayBuilder.setEntriesAsString(
@@ -117,14 +120,6 @@ public class TransformFullBackupToProtos {
         if (line.contains("::")) return LINE_TYPE.TITLE;
         if (line.contains(":") || line.startsWith("//")) return LINE_TYPE.ENTRY;
         return null;
-    }
-
-    public EntryProto.EntryList getEntryList() {
-        return entryListBuilder.build();
-    }
-
-    public TitleMappingProto.TitleMappingList getTitleMapping() {
-        return titleMappingListBuilder.build();
     }
 
     public EntryDayProto.EntryDayList getEntryDayList() {

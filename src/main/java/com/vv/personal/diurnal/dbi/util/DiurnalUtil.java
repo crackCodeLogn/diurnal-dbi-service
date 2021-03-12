@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -19,40 +20,81 @@ import static com.vv.personal.diurnal.dbi.constants.Constants.*;
 public class DiurnalUtil {
     public static final Logger LOGGER = LoggerFactory.getLogger(DiurnalUtil.class);
 
-    public static UserMappingProto.UserMapping generateUserMappingOnPk(Long mobile) {
-        return generateUserMapping(mobile, EMPTY_STR);
+    public static Integer generateHash(String data) {
+        return Objects.hashCode(data);
     }
 
-    public static UserMappingProto.UserMapping generateUserMapping(Long mobile, String user) {
-        return generateUserMapping(mobile, user, false, EMPTY_STR);
+    public static String refineEmail(String email) {
+        return email.toLowerCase().trim();
     }
 
-    public static UserMappingProto.UserMapping generateUserMapping(Long mobile, String user, Boolean powerUser, String hashedCred) {
+    public static Boolean isEmailHashAbsent(Integer emailHash) {
+        return emailHash == NA_INT;
+    }
+
+    public static UserMappingProto.UserMapping generateUserMapping(String email) {
+        return generateUserMapping(refineEmail(email), EMPTY_STR);
+    }
+
+    public static UserMappingProto.UserMapping generateUserMapping(String email, String user) {
+        return generateUserMapping(NA_LONG, refineEmail(email), user, false, EMPTY_STR);
+    }
+
+    public static UserMappingProto.UserMapping generateUserMapping(Long mobile, String email, String user, Boolean powerUser, String credHash) {
+        return generateCompleteUserMapping(mobile, refineEmail(email), user, powerUser, credHash, NA_INT);
+    }
+
+    public static UserMappingProto.UserMapping generateUserMappingOnPk(Integer emailHash) {
+        return generateCompleteUserMapping(NA_LONG, EMPTY_STR, EMPTY_STR, false, EMPTY_STR, emailHash);
+    }
+
+    public static UserMappingProto.UserMapping generateCompleteUserMapping(UserMappingProto.UserMapping userMapping, Integer emailHash) {
         return UserMappingProto.UserMapping.newBuilder()
-                .setMobile(mobile)
-                .setUsername(user)
-                .setPowerUser(powerUser)
-                .setCred(hashedCred)
+                .mergeFrom(userMapping)
+                .setHashEmail(emailHash)
                 .build();
     }
 
+    public static UserMappingProto.UserMapping generateCompleteUserMapping(Long mobile, String email, String user, Boolean powerUser, String credHash, Integer emailHash) {
+        return UserMappingProto.UserMapping.newBuilder()
+                .setMobile(mobile)
+                .setEmail(email)
+                .setUsername(user)
+                .setPowerUser(powerUser)
+                .setHashCred(credHash)
+                .setHashEmail(emailHash)
+                .build();
+    }
+
+    @Deprecated
     public static TitleMappingProto.TitleMapping generateTitleMappingOnPk(Long mobile, Integer date) {
         return generateTitleMapping(mobile, date, EMPTY_STR);
     }
 
     public static TitleMappingProto.TitleMapping generateTitleMapping(Long mobile, Integer date, String title) {
+        return generateTitleMapping(mobile, NA_INT, date, title);
+    }
+
+    public static TitleMappingProto.TitleMapping generateTitleMapping(Integer emailHash, Integer date, String title) {
+        return generateTitleMapping(NA_LONG, emailHash, date, title);
+    }
+
+    public static TitleMappingProto.TitleMapping generateTitleMapping(Long mobile, Integer emailHash, Integer date, String title) {
         return TitleMappingProto.TitleMapping.newBuilder()
                 .setMobile(mobile)
+                .setHashEmail(emailHash)
                 .setDate(date)
                 .setTitle(title)
                 .build();
     }
 
+    @Deprecated
     public static EntryProto.Entry generateEntryOnPk(Long mobile, Integer date, Integer serial) {
         return generateEntry(mobile, date, serial,
                 EntryProto.Sign.NEGATIVE, EntryProto.Currency.INR, DEFAULT_AMOUNT, EMPTY_STR);
     }
 
+    @Deprecated
     public static EntryProto.Entry generateEntry(Long mobile, Integer date, Integer serial,
                                                  EntryProto.Sign sign, EntryProto.Currency currency, Double amount, String description) {
         return EntryProto.Entry.newBuilder()
@@ -63,30 +105,38 @@ public class DiurnalUtil {
                 .build();
     }
 
-    public static EntryProto.Entry generateLightEntry(Integer date, Integer serial,
-                                                      EntryProto.Sign sign, EntryProto.Currency currency, Double amount, String description) {
+    // generates an instance of entry which is not distinct on it's own - for insertion in entryday
+    public static EntryProto.Entry generateLiteEntry(Integer serial, EntryProto.Sign sign, EntryProto.Currency currency, Double amount, String description) {
         return EntryProto.Entry.newBuilder()
-                .setDate(date)
                 .setSerial(serial)
-                .setSign(sign).setCurrency(currency).setAmount(amount).setDescription(description)
+                .setSign(sign)
+                .setCurrency(currency)
+                .setAmount(amount)
+                .setDescription(description)
                 .build();
     }
 
-    public static EntryDayProto.EntryDay generateEntryDayOnPk(Long mobile, Integer date) {
-        return generateEntryDay(mobile, date, EMPTY_STR);
+    public static EntryDayProto.EntryDay generateEntryDayOnPk(Integer emailHash, Integer date) {
+        return generateEntryDay(emailHash, date, EMPTY_STR);
     }
 
-    public static EntryDayProto.EntryDay generateEntryDay(Long mobile, Integer date, String entriesAsString) {
+    public static EntryDayProto.EntryDay generateEntryDay(Integer emailHash, Integer date, String entriesAsString) {
+        return generateCompleteEntryDay(emailHash, date, EMPTY_STR, entriesAsString);
+    }
+
+    public static EntryDayProto.EntryDay generateCompleteEntryDay(Integer emailHash, Integer date, String title, String entriesAsString) {
         return EntryDayProto.EntryDay.newBuilder()
-                .setMobile(mobile)
+                .setHashEmail(emailHash)
                 .setDate(date)
+                .setTitle(title)
                 .setEntriesAsString(entriesAsString)
                 .build();
     }
 
-    public static DataTransitProto.DataTransit generateDataTransit(Long mobile, Integer date, DataTransitProto.Currency currency, String backupData) {
+    public static DataTransitProto.DataTransit generateDataTransit(Long mobile, String email, Integer date, DataTransitProto.Currency currency, String backupData) {
         return DataTransitProto.DataTransit.newBuilder()
                 .setMobile(mobile)
+                .setEmail(email)
                 .setDate(date)
                 .setCurrency(currency)
                 .setBackupData(backupData)
@@ -102,6 +152,12 @@ public class DiurnalUtil {
     public static ResponsePrimitiveProto.ResponsePrimitive generateResponsePrimitiveString(String value) {
         return ResponsePrimitiveProto.ResponsePrimitive.newBuilder()
                 .setResponse(value)
+                .build();
+    }
+
+    public static ResponsePrimitiveProto.ResponsePrimitive generateResponsePrimitiveInt(Integer value) {
+        return ResponsePrimitiveProto.ResponsePrimitive.newBuilder()
+                .setIntegralResponse(value)
                 .build();
     }
 

@@ -17,10 +17,12 @@ public class DbConstants {
     public static final String TABLE_DIURNAL_ENTRY = "entry";
     public static final String TABLE_DIURNAL_ENTRY_DAY = "entry_day";
 
+    @Deprecated
     public static final String PRIMARY_COL_ENTRY = "mobile,date,serial";
-    public static final String PRIMARY_COL_ENTRY_DAY = "mobile,date";
-    public static final String PRIMARY_COL_USER_MAPPING = "mobile";
+    @Deprecated
     public static final String PRIMARY_COL_TITLE_MAPPING = "mobile,date";
+    public static final String PRIMARY_COL_ENTRY_DAY = "hash_email,date";
+    public static final String PRIMARY_COL_USER_MAPPING = "hash_email";
 
     public static final String SELECT_ALL_IDS = "SELECT %s FROM %s";
     public static final String SELECT_ALL = "SELECT * FROM %s";

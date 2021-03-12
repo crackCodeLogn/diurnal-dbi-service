@@ -1,7 +1,11 @@
 package com.vv.personal.diurnal.dbi.engine.transformer.parser;
 
 import com.vv.personal.diurnal.artifactory.generated.EntryProto;
+import com.vv.personal.diurnal.dbi.util.DiurnalUtil;
 import org.apache.commons.lang3.StringUtils;
+
+import static com.vv.personal.diurnal.dbi.constants.Constants.DEFAULT_TITLE;
+import static com.vv.personal.diurnal.dbi.constants.Constants.TITLES_TO_EXEMPT;
 
 /**
  * @author Vivek
@@ -41,5 +45,14 @@ public class ParseTitle extends AbstractLineParser {
 
     public String getTitle() {
         return title;
+    }
+
+    public String getRefinedTitle() {
+        return isTitleToExempt() ? DEFAULT_TITLE :
+                DiurnalUtil.processStringForSqlPush(title);
+    }
+
+    public boolean isTitleToExempt() {
+        return TITLES_TO_EXEMPT.contains(title);
     }
 }

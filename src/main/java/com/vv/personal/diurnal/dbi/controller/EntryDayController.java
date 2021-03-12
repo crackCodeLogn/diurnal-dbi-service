@@ -12,8 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-import static com.vv.personal.diurnal.dbi.constants.Constants.EMPTY_LIST_INT;
-import static com.vv.personal.diurnal.dbi.constants.Constants.INT_RESPONSE_WONT_PROCESS;
+import static com.vv.personal.diurnal.dbi.constants.Constants.*;
 import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.*;
 
 /**
@@ -29,10 +28,13 @@ public class EntryDayController {
     @Qualifier("DiurnalTableEntryDay")
     private DiurnalTableEntryDay diurnalTableEntryDay;
 
+    @Autowired
+    private UserMappingController userMappingController;
+
     @ApiOperation(value = "create entry day", hidden = true)
     @PostMapping("/create/entry-day")
     public Integer createEntryDay(@RequestBody EntryDayProto.EntryDay entryDay) {
-        LOGGER.info("Creating new entry-day: {} x {}", entryDay.getMobile(), entryDay.getDate());
+        LOGGER.info("Creating new entry-day: {} x {}", entryDay.getHashEmail(), entryDay.getDate());
         Integer sqlResult = diurnalTableEntryDay.pushNewEntity(entryDay);
         LOGGER.info("Result of new entry-day creation: {}", sqlResult);
         return sqlResult;
@@ -47,18 +49,24 @@ public class EntryDayController {
         return bulkEntriesCreationResult;
     }
 
-    @PutMapping("/create/manual/entry-day")
-    public Integer createEntryDayManually(@RequestParam Long mobile,
+    @PutMapping("/manual/create/entry-day")
+    public Integer createEntryDayManually(@RequestParam String email,
                                           @RequestParam Integer date,
+                                          @RequestParam(defaultValue = EMPTY_STR, required = false) String title,
                                           @RequestParam String entriesAsString) {
-        LOGGER.info("Obtained manual req for new entry-day creation: {} x {}", mobile, date);
-        return createEntryDay(generateEntryDay(mobile, date, entriesAsString));
+        Integer emailHash = userMappingController.retrieveHashEmail(email);
+        if (isEmailHashAbsent(emailHash)) {
+            LOGGER.warn("User not found for entry-day insertion for email [{}]", email);
+            return INT_RESPONSE_WONT_PROCESS;
+        }
+        LOGGER.info("Obtained manual req for new entry-day creation: {} x {}", email, date);
+        return createEntryDay(generateCompleteEntryDay(emailHash, date, title, entriesAsString));
     }
 
     @ApiOperation(value = "delete entry-day", hidden = true)
     @PostMapping("/delete/entry-day")
     public Integer deleteEntryDay(@RequestBody EntryDayProto.EntryDay entryDay) {
-        LOGGER.info("Deleting entry-day: {} x {}", entryDay.getMobile(), entryDay.getDate());
+        LOGGER.info("Deleting entry-day: {} x {}", entryDay.getHashEmail(), entryDay.getDate());
         Integer sqlResult = diurnalTableEntryDay.deleteEntity(entryDay);
         LOGGER.info("Result of entry-day deletion: {}", sqlResult);
         return sqlResult;
@@ -73,11 +81,16 @@ public class EntryDayController {
         return bulkEntriesDeletionResult;
     }
 
-    @DeleteMapping("/delete/manual/entry-day")
-    public Integer deleteEntryDayManually(@RequestParam Long mobile,
+    @DeleteMapping("/manual/delete/entry-day")
+    public Integer deleteEntryDayManually(@RequestParam String email,
                                           @RequestParam Integer date) {
-        LOGGER.info("Obtained manual req for entry-day deletion: {} x {}", mobile, date);
-        return deleteEntryDay(generateEntryDayOnPk(mobile, date));
+        Integer emailHash = userMappingController.retrieveHashEmail(email);
+        if (isEmailHashAbsent(emailHash)) {
+            LOGGER.warn("User not found for entry-day deletion for email [{}]", email);
+            return INT_RESPONSE_WONT_PROCESS;
+        }
+        LOGGER.info("Obtained manual req for entry-day deletion: {} x {}", email, date);
+        return deleteEntryDay(generateEntryDayOnPk(emailHash, date));
     }
 
     @ApiOperation(value = "delete then create entry-days", hidden = true)
@@ -102,11 +115,16 @@ public class EntryDayController {
         return INT_RESPONSE_WONT_PROCESS;
     }
 
-    @PatchMapping("/update/manual/entry-day")
-    public Integer updateEntryDayManually(@RequestParam Long mobile,
+    @PatchMapping("/manual/update/entry-day")
+    public Integer updateEntryDayManually(@RequestParam String email,
                                           @RequestParam Integer date) {
-        LOGGER.info("Obtained manual req for entry-day updation: {} x {}", mobile, date);
-        return updateEntryDay(generateEntryDayOnPk(mobile, date));
+        Integer emailHash = userMappingController.retrieveHashEmail(email);
+        if (isEmailHashAbsent(emailHash)) {
+            LOGGER.warn("User not found for entry-day updation for email [{}]", email);
+            return INT_RESPONSE_WONT_PROCESS;
+        }
+        LOGGER.info("Obtained manual req for entry-day updation: {} x {}", email, date);
+        return updateEntryDay(generateEntryDayOnPk(emailHash, date));
     }
 
     @ApiOperation(value = "retrieve all entry-days", hidden = true)
@@ -118,7 +136,7 @@ public class EntryDayController {
         return entryDayList;
     }
 
-    @GetMapping("/retrieve/all/manual/entry-days")
+    @GetMapping("/manual/retrieve/all/entry-days")
     public List<String> retrieveAllEntryDaysManually() {
         LOGGER.info("Obtained manual req for retrieving all entry-days");
         return performBulkOpStr(retrieveAllEntryDays().getEntryDayList(), AbstractMessage::toString);
@@ -127,17 +145,22 @@ public class EntryDayController {
     @ApiOperation(value = "check if entry-day exists", hidden = true)
     @GetMapping("/check/entry-day")
     public Boolean checkIfEntryDayExists(@RequestParam EntryDayProto.EntryDay entryDay) {
-        LOGGER.info("Checking if entry-day exists for: {} x {}", entryDay.getMobile(), entryDay.getDate());
+        LOGGER.info("Checking if entry-day exists for: {} x {}", entryDay.getHashEmail(), entryDay.getDate());
         boolean checkIfEntryDayExists = diurnalTableEntryDay.checkEntity(entryDay);
         LOGGER.info("Result: {}", checkIfEntryDayExists);
         return checkIfEntryDayExists;
     }
 
-    @GetMapping("/check/manual/entry-entry")
-    public Boolean checkIfEntryDayExistsManually(@RequestParam Long mobile,
+    @GetMapping("/manual/check/entry-day")
+    public Boolean checkIfEntryDayExistsManually(@RequestParam String email,
                                                  @RequestParam Integer date) {
-        LOGGER.info("Checking if entry-day exists for: {} x {}", mobile, date);
-        return checkIfEntryDayExists(generateEntryDayOnPk(mobile, date));
+        Integer emailHash = userMappingController.retrieveHashEmail(email);
+        if (isEmailHashAbsent(emailHash)) {
+            LOGGER.warn("User not found for entry-day updation for email [{}]", email);
+            return false;
+        }
+        LOGGER.info("Checking if entry-day exists for: {} x {}", email, date);
+        return checkIfEntryDayExists(generateEntryDayOnPk(emailHash, date));
     }
 
     @PutMapping("/table/create")

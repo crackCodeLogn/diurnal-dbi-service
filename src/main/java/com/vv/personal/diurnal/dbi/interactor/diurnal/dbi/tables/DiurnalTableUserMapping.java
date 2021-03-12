@@ -120,6 +120,18 @@ public class DiurnalTableUserMapping extends DiurnalDbi<UserMappingProto.UserMap
         return NA_INT;
     }
 
+    public Boolean retrievePowerUserStatus(UserMappingProto.UserMapping userMapping) {
+        String sql = String.format(CHECK_STMT_ENTRY_SINGLE_COL, COL_POWER_USER, TABLE,
+                COL_HASH_EMAIL, userMapping.getHashEmail());
+        ResultSet resultSet = executeNonUpdateSql(sql);
+        try {
+            if (resultSet.next()) return generatePowerUserDetail(resultSet).getPowerUser();
+        } catch (SQLException throwables) {
+            LOGGER.error("Failed to retrieve cred hash from db. ", throwables);
+        }
+        return false;
+    }
+
     @Override
     public boolean checkEntity(UserMappingProto.UserMapping userMapping) {
         throw new UnsupportedOperationException("Check Entity to be done by hash retrieval attempt. Refer to #retrieveHashEmail method");
@@ -186,6 +198,16 @@ public class DiurnalTableUserMapping extends DiurnalDbi<UserMappingProto.UserMap
             builder.setHashEmail(resultSet.getInt(COL_HASH_EMAIL));
         } catch (SQLException throwables) {
             LOGGER.error("Failed to retrieve user-mapping hash email detail from DB. ", throwables);
+        }
+        return builder.build();
+    }
+
+    public UserMappingProto.UserMapping generatePowerUserDetail(ResultSet resultSet) {
+        UserMappingProto.UserMapping.Builder builder = UserMappingProto.UserMapping.newBuilder();
+        try {
+            builder.setPowerUser(resultSet.getBoolean(COL_POWER_USER));
+        } catch (SQLException throwables) {
+            LOGGER.error("Failed to retrieve user-mapping power-user detail from DB. ", throwables);
         }
         return builder.build();
     }

@@ -155,7 +155,17 @@ public class UserMappingController {
         return performBulkOpStr(retrieveAllUserMappings().getUserMappingList(), AbstractMessage::toString);
     }
 
-    @ApiOperation(value = "retrieve hashed email from db", hidden = true, notes = "This will be internal to dbi-service only.")
+    @ApiOperation(value = "retrieve hashed cred from db")
+    @GetMapping("/retrieve/hash/cred")
+    public String retrieveHashCred(@RequestParam Integer emailHash) {
+        LOGGER.info("Retrieve cred-hash for: {}", emailHash);
+        UserMappingProto.UserMapping userMapping = generateUserMappingOnPk(emailHash);
+        String retrievedCred = diurnalTableUserMapping.retrieveHashCred(userMapping);
+        LOGGER.info("Result: [{}]", retrievedCred);
+        return retrievedCred;
+    }
+
+    @ApiOperation(value = "retrieve hashed email from db", notes = "This will be internal to dbi-service only.")
     @GetMapping("/retrieve/hash/email")
     public Integer retrieveHashEmail(@RequestParam String email) {
         email = refineEmail(email);
@@ -165,20 +175,14 @@ public class UserMappingController {
         return retrievedHashEmail;
     }
 
-    @ApiOperation(value = "retrieve hashed cred from db")
-    @GetMapping("/retrieve/hash/cred")
-    public String retrieveHashCred(@RequestParam String email) {
-        email = refineEmail(email);
-        LOGGER.info("Retrieve cred-hash for: {}", email);
-        Integer emailHash = retrieveHashEmail(email);
-        if (isEmailHashAbsent(emailHash)) {
-            LOGGER.warn("User not found for email [{}]", email);
-            return EMPTY_STR;
-        }
+    @ApiOperation(value = "retrieve power user status from db")
+    @GetMapping("/retrieve/status/user-power")
+    public Boolean retrievePowerUserStatus(@RequestParam Integer emailHash) {
+        LOGGER.info("Retrieve power user status for: {}", emailHash);
         UserMappingProto.UserMapping userMapping = generateUserMappingOnPk(emailHash);
-        String retrievedCred = diurnalTableUserMapping.retrieveHashCred(userMapping);
-        LOGGER.info("Result: [{}]", retrievedCred);
-        return retrievedCred;
+        Boolean powerUserStatus = diurnalTableUserMapping.retrievePowerUserStatus(userMapping);
+        LOGGER.info("Result: [{}]", powerUserStatus);
+        return powerUserStatus;
     }
 
     @ApiOperation(value = "check if user exists", hidden = true)

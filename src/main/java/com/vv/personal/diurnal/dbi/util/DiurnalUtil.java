@@ -21,7 +21,9 @@ public class DiurnalUtil {
     public static final Logger LOGGER = LoggerFactory.getLogger(DiurnalUtil.class);
 
     public static Integer generateHash(String data) {
-        return Objects.hashCode(data);
+        final Integer hash = Objects.hashCode(data);
+        LOGGER.info("Generated hash [{}] for [{}]", hash, data);
+        return hash;
     }
 
     public static String refineEmail(String email) {

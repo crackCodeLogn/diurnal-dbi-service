@@ -18,8 +18,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static com.vv.personal.diurnal.dbi.constants.Constants.NEW_LINE;
-import static com.vv.personal.diurnal.dbi.constants.Constants.RESPOND_FALSE_BOOL;
+import static com.vv.personal.diurnal.dbi.constants.Constants.*;
 import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.*;
 
 /**
@@ -39,6 +38,23 @@ public class DataController {
     private UserMappingController userMappingController;
     @Autowired
     private GenericConfig genericConfig;
+
+    @ApiOperation(value = "Sign up new user", hidden = true)
+    @PostMapping("/signup")
+    public ResponsePrimitiveProto.ResponsePrimitive signUpUser(@RequestBody DataTransitProto.DataTransit dataTransit) {
+        LOGGER.info("Rx-ed user to sign up -> [{}]", dataTransit.getEmail());
+        StopWatch stopWatch = genericConfig.procureStopWatch();
+        try {
+            UserMappingProto.UserMapping userMapping = DiurnalUtil.generateUserMapping(dataTransit.getMobile(), dataTransit.getEmail(), dataTransit.getUser(),
+                    dataTransit.getPowerUser(), dataTransit.getHashCred());
+            boolean signUpResult = userMappingController.createUserMapping(userMapping) == ONE;
+            LOGGER.info("Sign up result for [{}] => {}", dataTransit.getEmail(), signUpResult);
+            return signUpResult ? RESPOND_TRUE_BOOL : RESPOND_FALSE_BOOL;
+        } finally {
+            stopWatch.stop();
+            LOGGER.info("SignUp Operation took: {} ms", stopWatch.getTime(TimeUnit.MILLISECONDS));
+        }
+    }
 
     @ApiOperation(value = "Read whole backup file and generate data for DB", hidden = true)
     @PostMapping("/push/backup/whole")
@@ -66,7 +82,7 @@ public class DataController {
             }
         } finally {
             stopWatch.stop();
-            LOGGER.info("Operation took: {} ms", stopWatch.getTime(TimeUnit.MILLISECONDS));
+            LOGGER.info("Pushing backup to cloud operation took: {} ms", stopWatch.getTime(TimeUnit.MILLISECONDS));
         }
         return RESPOND_FALSE_BOOL;
     }

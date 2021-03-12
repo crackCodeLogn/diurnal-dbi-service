@@ -32,6 +32,7 @@ public class Constants {
     public static final Integer INT_RESPONSE_WONT_PROCESS = -13; //N Proc
 
     public static final ResponsePrimitiveProto.ResponsePrimitive RESPOND_FALSE_BOOL = ResponsePrimitiveProto.ResponsePrimitive.newBuilder().setBoolResponse(false).build();
+    public static final ResponsePrimitiveProto.ResponsePrimitive RESPOND_TRUE_BOOL = ResponsePrimitiveProto.ResponsePrimitive.newBuilder().setBoolResponse(true).build();
 
     public static final Set<String> TITLES_TO_EXEMPT = new HashSet<>();
 

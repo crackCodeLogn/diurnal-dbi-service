@@ -87,23 +87,24 @@ public class DataController {
         return RESPOND_FALSE_BOOL;
     }
 
-    @ApiOperation(value = "retrieve hash cred for user", hidden = true)
-    @PostMapping("/retrieve/user/hash/cred")
-    public ResponsePrimitiveProto.ResponsePrimitive retrieveUserHashCredFromDb(@RequestBody UserMappingProto.UserMapping userMapping) {
-        LOGGER.info("Received req to extract hash for user: {}", userMapping.getEmail());
-        Integer emailHash = userMappingController.retrieveHashEmail(userMapping.getEmail());
+    @ApiOperation(value = "retrieve user detail", hidden = true)
+    @PostMapping("/retrieve/user")
+    public UserMappingProto.UserMapping retrieveUserDetailsFromDb(@RequestBody DataTransitProto.DataTransit dataTransit) {
+        LOGGER.info("Received req to extract details for user: {}", dataTransit.getEmail());
+        Integer emailHash = userMappingController.retrieveHashEmail(dataTransit.getEmail());
         if (isEmailHashAbsent(emailHash)) {
-            LOGGER.warn("User doesn't exist for email: {}", userMapping.getEmail());
-            return RESPOND_FALSE_BOOL;
+            LOGGER.warn("User doesn't exist for email: {}", dataTransit.getEmail());
+            return EMPTY_USER_MAPPING;
         }
-        return generateResponsePrimitiveString(
-                userMappingController.retrieveHashCred(emailHash));
+        UserMappingProto.UserMapping retrievedUserMapping = userMappingController.retrieveUserMapping(emailHash);
+        LOGGER.info("Replying with user mapping: {} x {}", retrievedUserMapping.getEmail(), retrievedUserMapping.getUsername());
+        return retrievedUserMapping;
     }
 
     @GetMapping("/manual/retrieve/user/hash/cred")
     public String retrieveUserHashCredFromDbManually(@RequestParam String email) {
         email = refineEmail(email);
-        return retrieveUserHashCredFromDb(DiurnalUtil.generateUserMapping(email)).getResponse();
+        return retrieveUserDetailsFromDb(DiurnalUtil.generateDataTransit(email)).getHashCred();
     }
 
     public DataController setEntryDayController(EntryDayController entryDayController) {

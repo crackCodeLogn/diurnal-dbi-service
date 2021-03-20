@@ -1,6 +1,7 @@
 package com.vv.personal.diurnal.dbi.constants;
 
 import com.vv.personal.diurnal.artifactory.generated.ResponsePrimitiveProto;
+import com.vv.personal.diurnal.artifactory.generated.UserMappingProto;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -33,6 +34,7 @@ public class Constants {
 
     public static final ResponsePrimitiveProto.ResponsePrimitive RESPOND_FALSE_BOOL = ResponsePrimitiveProto.ResponsePrimitive.newBuilder().setBoolResponse(false).build();
     public static final ResponsePrimitiveProto.ResponsePrimitive RESPOND_TRUE_BOOL = ResponsePrimitiveProto.ResponsePrimitive.newBuilder().setBoolResponse(true).build();
+    public static final UserMappingProto.UserMapping EMPTY_USER_MAPPING = UserMappingProto.UserMapping.newBuilder().build();
 
     public static final Set<String> TITLES_TO_EXEMPT = new HashSet<>();
 

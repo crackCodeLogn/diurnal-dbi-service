@@ -109,7 +109,7 @@ public class DiurnalTableEntry extends DiurnalDbi<EntryProto.Entry, EntryProto.E
     }
 
     @Override
-    public EntryProto.EntryList retrieveSelective() {
+    public EntryProto.Entry retrieveSelective(EntryProto.Entry entry) {
         return null;
     }
 

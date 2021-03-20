@@ -101,7 +101,7 @@ public class DiurnalTableEntryDay extends DiurnalDbi<EntryDayProto.EntryDay, Ent
     }
 
     @Override
-    public EntryDayProto.EntryDayList retrieveSelective() {
+    public EntryDayProto.EntryDay retrieveSelective(EntryDayProto.EntryDay entryDay) {
         return null;
     }
 

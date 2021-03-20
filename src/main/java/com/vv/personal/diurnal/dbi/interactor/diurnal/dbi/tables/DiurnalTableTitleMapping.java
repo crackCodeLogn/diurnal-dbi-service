@@ -107,7 +107,7 @@ public class DiurnalTableTitleMapping extends DiurnalDbi<TitleMappingProto.Title
     }
 
     @Override
-    public TitleMappingProto.TitleMappingList retrieveSelective() {
+    public TitleMappingProto.TitleMapping retrieveSelective(TitleMappingProto.TitleMapping titleMapping) {
         return null;
     }
 

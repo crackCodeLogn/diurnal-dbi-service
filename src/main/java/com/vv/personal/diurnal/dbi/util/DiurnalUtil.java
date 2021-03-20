@@ -145,6 +145,12 @@ public class DiurnalUtil {
                 .build();
     }
 
+    public static DataTransitProto.DataTransit generateDataTransit(String email) {
+        return DataTransitProto.DataTransit.newBuilder()
+                .setEmail(email)
+                .build();
+    }
+
     public static ResponsePrimitiveProto.ResponsePrimitive generateResponsePrimitiveBool(Boolean value) {
         return ResponsePrimitiveProto.ResponsePrimitive.newBuilder()
                 .setBoolResponse(value)

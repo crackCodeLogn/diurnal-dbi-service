@@ -140,6 +140,16 @@ public class UserMappingController {
         return sqlResult;
     }
 
+    @ApiOperation(value = "retrieve user detail", hidden = true)
+    @GetMapping("/retrieve/user")
+    public UserMappingProto.UserMapping retrieveUserMapping(@RequestParam Integer emailHash) {
+        LOGGER.info("Retrieving user details for [{}]", emailHash);
+        UserMappingProto.UserMapping retrievedUserMapping = diurnalTableUserMapping.retrieveSelective(
+                generateUserMappingOnPk(emailHash));
+        LOGGER.info("Retrieved user detail");
+        return retrievedUserMapping;
+    }
+
     @ApiOperation(value = "retrieve all users", hidden = true)
     @GetMapping("/retrieve/all/users")
     public UserMappingProto.UserMappingList retrieveAllUserMappings() {

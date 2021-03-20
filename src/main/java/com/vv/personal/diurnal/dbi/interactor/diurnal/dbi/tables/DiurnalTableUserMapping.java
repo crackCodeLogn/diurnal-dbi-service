@@ -11,8 +11,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.function.Function;
 
-import static com.vv.personal.diurnal.dbi.constants.Constants.EMPTY_STR;
-import static com.vv.personal.diurnal.dbi.constants.Constants.NA_INT;
+import static com.vv.personal.diurnal.dbi.constants.Constants.*;
 import static com.vv.personal.diurnal.dbi.constants.DbConstants.SELECT_ALL;
 import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.generateHash;
 import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.refineEmail;
@@ -34,6 +33,8 @@ public class DiurnalTableUserMapping extends DiurnalDbi<UserMappingProto.UserMap
     private final String CHECK_STMT_ENTRY_SINGLE_COL = "SELECT %s from %s " +
             "WHERE \"%s\"=%d";
     private final String SELECT_STMT_ENTRY_SINGLE_COL_STR = "SELECT %s from %s " +
+            "WHERE \"%s\"='%s'";
+    private final String SELECT_STMT_ENTRY_SINGLE_ROW = "SELECT * FROM %s " +
             "WHERE \"%s\"='%s'";
 
     private final String COL_MOBILE = "mobile";
@@ -162,8 +163,16 @@ public class DiurnalTableUserMapping extends DiurnalDbi<UserMappingProto.UserMap
     }
 
     @Override
-    public UserMappingProto.UserMappingList retrieveSelective() {
-        return null;
+    public UserMappingProto.UserMapping retrieveSelective(UserMappingProto.UserMapping userMapping) {
+        String sql = String.format(SELECT_STMT_ENTRY_SINGLE_ROW, TABLE,
+                COL_HASH_EMAIL, userMapping.getHashEmail());
+        ResultSet resultSet = executeNonUpdateSql(sql);
+        try {
+            if (resultSet.next()) return generateDetail(resultSet);
+        } catch (SQLException throwables) {
+            LOGGER.error("Failed to retrieve email hash from db. ", throwables);
+        }
+        return EMPTY_USER_MAPPING;
     }
 
     @Override

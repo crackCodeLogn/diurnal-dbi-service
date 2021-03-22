@@ -56,6 +56,24 @@ public class DataController {
         }
     }
 
+    @ApiOperation(value = "Check if sign up new user already exists", hidden = true)
+    @PostMapping("/signup/check/email")
+    public ResponsePrimitiveProto.ResponsePrimitive checkSignUpUserEmail(@RequestBody DataTransitProto.DataTransit dataTransit) {
+        LOGGER.info("Checking if user with email [{}] exists in DB", dataTransit.getEmail());
+        StopWatch stopWatch = genericConfig.procureStopWatch();
+        try {
+            Integer emailHash = userMappingController.retrieveHashEmail(dataTransit.getEmail());
+            if (isEmailHashAbsent(emailHash)) {
+                LOGGER.info("User doesn't exist for email: {}", dataTransit.getEmail());
+                return RESPOND_FALSE_BOOL;
+            }
+            return RESPOND_TRUE_BOOL;
+        } finally {
+            stopWatch.stop();
+            LOGGER.info("Checking user already exists operation took: {} ms", stopWatch.getTime(TimeUnit.MILLISECONDS));
+        }
+    }
+
     @ApiOperation(value = "Read whole backup file and generate data for DB", hidden = true)
     @PostMapping("/push/backup/whole")
     public ResponsePrimitiveProto.ResponsePrimitive pushWholeBackup(@RequestBody DataTransitProto.DataTransit dataTransit) {

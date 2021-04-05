@@ -127,7 +127,7 @@ public class UserMappingController {
 
     @PatchMapping("/manual/update/user/premium")
     public Integer updatePremiumUserMappingManually(@RequestParam String email,
-                                                    @RequestParam Boolean premiumUserStatus) {
+                                                    @RequestParam(defaultValue = "false") Boolean premiumUserStatus) {
         email = refineEmail(email);
         Integer emailHash = retrieveHashEmail(email);
         if (isEmailHashAbsent(emailHash)) {

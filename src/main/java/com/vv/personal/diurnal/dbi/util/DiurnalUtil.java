@@ -221,7 +221,8 @@ public class DiurnalUtil {
                 .replaceAll("\\{\"", "\\{" + REPLACE_JSON_DI)
                 .replaceAll("\": \"", REPLACE_JSON_DI + ": " + REPLACE_JSON_DI)
                 .replaceAll("\":", REPLACE_JSON_DI + ":")
-                .replaceAll("\"}", REPLACE_JSON_DI + "}");
+                .replaceAll("\"}", REPLACE_JSON_DI + "}")
+                .trim();
     }
 
     public static String refineDbStringForOriginal(String data) {

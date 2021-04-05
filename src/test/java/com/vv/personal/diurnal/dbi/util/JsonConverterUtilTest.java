@@ -1,5 +1,7 @@
 package com.vv.personal.diurnal.dbi.util;
 
+import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.util.JsonFormat;
 import com.vv.personal.diurnal.artifactory.generated.EntryProto;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -46,6 +48,26 @@ public class JsonConverterUtilTest {
         json = convertEntryToCompactedJson(entry);
         System.out.println(json);
         assertEquals("{\"mobile\": \"123456789\",\"date\": 20210306,\"amount\": 121.12,\"description\": \"Sampler s1\\n second line this is !\"}", json);
+    }
+
+    @Test
+    public void testRaw() {
+        EntryProto.Entry entry = EntryProto.Entry.newBuilder().setSerial(0).setDescription("ijafijfiajf").build();
+        EntryProto.Entry entry2 = EntryProto.Entry.newBuilder().setSerial(1).setDescription("fojofjof").build();
+        EntryProto.Entry entry3 = EntryProto.Entry.newBuilder().setSerial(2).setDescription("dfkakfo").build();
+        EntryProto.EntryList entryList = EntryProto.EntryList.newBuilder()
+                .addEntry(entry)
+                .addEntry(entry2)
+                .addEntry(entry3)
+                .build();
+        System.out.println(entry2);
+        System.out.println(entryList);
+
+        try {
+            System.out.println(JsonFormat.printer().print(entryList));
+        } catch (InvalidProtocolBufferException e) {
+            e.printStackTrace();
+        }
     }
 
 }

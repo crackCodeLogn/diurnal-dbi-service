@@ -214,6 +214,14 @@ public class UserMappingController {
         return checkIfUserExists(DiurnalUtil.generateUserMapping(email));
     }
 
+    @GetMapping("/manual/dump/table/csv/")
+    public String dumpTableAsCsv() {
+        LOGGER.info("Dumping content of table '{}' onto csv now", diurnalTableUserMapping.getTableName());
+        String csvFileLocation = diurnalTableUserMapping.dumpTableToCsv();
+        LOGGER.info("Csv file location of the dump => [{}]", csvFileLocation);
+        return csvFileLocation;
+    }
+
     @PutMapping("/table/create")
     public int createTableIfNotExists() {
         return genericCreateTableIfNotExists(diurnalTableUserMapping);

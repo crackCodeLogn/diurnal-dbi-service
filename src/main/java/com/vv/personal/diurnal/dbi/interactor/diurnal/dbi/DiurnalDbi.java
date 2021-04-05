@@ -3,12 +3,14 @@ package com.vv.personal.diurnal.dbi.interactor.diurnal.dbi;
 import com.vv.personal.diurnal.dbi.config.DbiConfigForDiurnal;
 import com.vv.personal.diurnal.dbi.interactor.diurnal.cache.CachedDiurnal;
 import com.vv.personal.diurnal.dbi.util.DiurnalUtil;
+import com.vv.personal.diurnal.dbi.util.TimingUtil;
 import org.apache.commons.lang3.time.StopWatch;
 import org.slf4j.Logger;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -18,7 +20,8 @@ import java.util.Queue;
 import java.util.concurrent.*;
 import java.util.function.Function;
 
-import static com.vv.personal.diurnal.dbi.constants.Constants.*;
+import static com.vv.personal.diurnal.dbi.constants.Constants.EMPTY_STR;
+import static com.vv.personal.diurnal.dbi.constants.Constants.PIPE;
 import static com.vv.personal.diurnal.dbi.constants.DbConstants.*;
 
 
@@ -179,15 +182,13 @@ public abstract class DiurnalDbi<T, K> implements IDiurnalDbi<T, K> {
     @Override
     public String dumpTableToCsv() {
         K dataList = retrieveAll();
-        String csv = String.format("%s/%s.csv", csvDumpLocationFolder, TABLE);
+        String csv = String.format("%s/%s-%d.csv", csvDumpLocationFolder, TABLE, TimingUtil.extractCurrentUtcTimestamp());
         File csvDump = new File(csv);
-        try (FileWriter fileWriter = new FileWriter(csvDump)) {
+        try (PrintWriter printWriter = new PrintWriter(new FileWriter(csvDump))) {
             Queue<String> dataLines = processDataToCsv(dataList);
-            while (!dataLines.isEmpty()) {
-                fileWriter.write(dataLines.poll());
-                fileWriter.write(NEW_LINE);
-            }
-            fileWriter.flush();
+            while (!dataLines.isEmpty())
+                printWriter.println(dataLines.poll());
+            printWriter.flush();
         } catch (IOException e) {
             LOGGER.error("Failed to write table dump to csv. ", e);
             return EMPTY_STR;

@@ -128,10 +128,9 @@ public class DiurnalTableEntryDay extends DiurnalDbi<EntryDayProto.EntryDay, Ent
     protected Queue<String> processDataToCsv(EntryDayProto.EntryDayList dataList) {
         Queue<String> dataLines = new LinkedList<>();
         dataList.getEntryDayList().forEach(entryDay -> dataLines.add(
-                StringUtils.joinWith(String.valueOf(entryDay.getHashEmail()), entryDay.getDate(), entryDay.getTitle(), entryDay.getEntriesAsString()
-                        , csvLineSeparator)
-                )
-        );
+                StringUtils.joinWith(csvLineSeparator,
+                        String.valueOf(entryDay.getHashEmail()), entryDay.getDate(), entryDay.getTitle(), entryDay.getEntriesAsString())
+        ));
         return dataLines;
     }
 

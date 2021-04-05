@@ -212,9 +212,9 @@ public class DiurnalTableUserMapping extends DiurnalDbi<UserMappingProto.UserMap
     protected Queue<String> processDataToCsv(UserMappingProto.UserMappingList dataList) {
         Queue<String> dataLines = new LinkedList<>();
         dataList.getUserMappingList().forEach(userMapping -> dataLines.add(
-                StringUtils.joinWith(String.valueOf(userMapping.getMobile()), userMapping.getEmail(), userMapping.getUsername(), userMapping.getPremiumUser(), userMapping.getHashCred(), userMapping.getHashEmail(),
-                        userMapping.getLastCloudSaveTimestamp(), userMapping.getLastSavedTimestamp(), userMapping.getPaymentExpiryTimestamp(), userMapping.getAccountCreationTimestamp(), userMapping.getCurrency()
-                        , csvLineSeparator)
+                StringUtils.joinWith(csvLineSeparator,
+                        String.valueOf(userMapping.getMobile()), userMapping.getEmail(), userMapping.getUsername(), userMapping.getPremiumUser(), userMapping.getHashCred(), userMapping.getHashEmail(),
+                        userMapping.getLastCloudSaveTimestamp(), userMapping.getLastSavedTimestamp(), userMapping.getPaymentExpiryTimestamp(), userMapping.getAccountCreationTimestamp(), userMapping.getCurrency())
                 )
         );
         return dataLines;

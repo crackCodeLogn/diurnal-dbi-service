@@ -163,6 +163,14 @@ public class EntryDayController {
         return checkIfEntryDayExists(generateEntryDayOnPk(emailHash, date));
     }
 
+    @GetMapping("/manual/dump/table/csv/")
+    public String dumpTableAsCsv() {
+        LOGGER.info("Dumping content of table '{}' onto csv now", diurnalTableEntryDay.getTableName());
+        String csvFileLocation = diurnalTableEntryDay.dumpTableToCsv();
+        LOGGER.info("Csv file location of the dump => [{}]", csvFileLocation);
+        return csvFileLocation;
+    }
+
     @PutMapping("/table/create")
     public int createTableIfNotExists() {
         return genericCreateTableIfNotExists(diurnalTableEntryDay);

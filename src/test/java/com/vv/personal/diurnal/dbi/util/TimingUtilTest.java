@@ -11,7 +11,6 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class TimingUtilTest {
 
-
     @Test
     public void testExtractCurrentUtcTimestamp() {
         System.out.println(TimingUtil.extractCurrentUtcTimestamp());

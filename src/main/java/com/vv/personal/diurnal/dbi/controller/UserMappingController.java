@@ -51,8 +51,8 @@ public class UserMappingController {
                                              @RequestParam(defaultValue = "INR") UserMappingProto.Currency currency) {
         email = refineEmail(email);
         LOGGER.info("Obtained manual req for new user creation: {} x {} x {} x {} x {} x {}", mobile, email, user, premiumUser, hashCred, currency);
-        return createUserMapping(generateCompleteUserMapping(mobile, email, user, premiumUser, hashCred, NA_INT,
-                NA_LONG, NA_LONG, NA_LONG, NA_LONG, currency));
+        return createUserMapping(generateCompleteUserMapping(mobile, email, user, premiumUser, hashCred, DEFAULT_EMAIL_HASH,
+                DEFAULT_LAST_CLOUD_SAVE_TS, DEFAULT_LAST_SAVE_TS, DEFAULT_PAYMENT_EXPIRY_TS, DEFAULT_ACCOUNT_CREATION_TS, currency));
     }
 
     @GetMapping("/manual/generate/hash/cred")
@@ -122,7 +122,7 @@ public class UserMappingController {
                                                  @RequestParam String hashCred) {
         email = refineEmail(email);
         LOGGER.info("Obtained manual req for user updation: {} -> cred: {}", email, hashCred);
-        return updateUserMappingCred(generateUserMapping(NA_LONG, email, EMPTY_STR, false, hashCred));
+        return updateUserMappingCred(generateUserMapping(DEFAULT_MOBILE, email, DEFAULT_USER_NAME, DEFAULT_PREMIUM_USER_STATUS, hashCred));
     }
 
     @PatchMapping("/manual/update/user/premium")

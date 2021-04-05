@@ -27,7 +27,17 @@ public class Constants {
     public static final int ONE = 1;
     public static final double DEFAULT_AMOUNT = 0.0;
     public static final long NA_LONG = -1L;
+    public static final Long DEFAULT_MOBILE = NA_LONG;
+    public static final String DEFAULT_USER_NAME = "someone";
+    public static final String DEFAULT_EMAIL = "someone@somewhere.com";
+    public static final int DEFAULT_EMAIL_HASH = NA_INT;
+    public static final String DEFAULT_USER_CRED_HASH = EMPTY_STR;
+    public static final boolean DEFAULT_PREMIUM_USER_STATUS = false;
     public static final UserMappingProto.Currency DEFAULT_CURRENCY = UserMappingProto.Currency.INR;
+    public static final Long DEFAULT_LAST_CLOUD_SAVE_TS = NA_LONG;
+    public static final Long DEFAULT_LAST_SAVE_TS = NA_LONG;
+    public static final Long DEFAULT_PAYMENT_EXPIRY_TS = NA_LONG;
+    public static final Long DEFAULT_ACCOUNT_CREATION_TS = NA_LONG;
 
     public static final List<Integer> EMPTY_LIST_INT = new ArrayList<>(0);
 

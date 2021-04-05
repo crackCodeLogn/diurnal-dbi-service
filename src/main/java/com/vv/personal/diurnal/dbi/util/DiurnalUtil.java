@@ -31,29 +31,30 @@ public class DiurnalUtil {
     }
 
     public static Boolean isEmailHashAbsent(Integer emailHash) {
-        return emailHash == NA_INT;
+        return emailHash == DEFAULT_EMAIL_HASH;
     }
 
     public static UserMappingProto.UserMapping generateUserMapping(String email) {
-        return generateUserMapping(refineEmail(email), EMPTY_STR);
+        return generateUserMapping(refineEmail(email), DEFAULT_USER_NAME);
     }
 
     public static UserMappingProto.UserMapping generateUserMapping(String email, String user) {
-        return generateUserMapping(NA_LONG, refineEmail(email), user, false, EMPTY_STR);
+        return generateUserMapping(DEFAULT_MOBILE, refineEmail(email), user, DEFAULT_PREMIUM_USER_STATUS, DEFAULT_USER_CRED_HASH);
     }
 
     public static UserMappingProto.UserMapping generateUserMapping(Long mobile, String email, String user, Boolean premiumUser, String credHash) {
-        return generateCompleteUserMapping(mobile, refineEmail(email), user, premiumUser, credHash, NA_INT,
-                NA_LONG, NA_LONG, NA_LONG, NA_LONG, DEFAULT_CURRENCY);
+        return generateCompleteUserMapping(mobile, refineEmail(email), user, premiumUser, credHash, DEFAULT_EMAIL_HASH,
+                DEFAULT_LAST_CLOUD_SAVE_TS, DEFAULT_LAST_SAVE_TS, DEFAULT_PAYMENT_EXPIRY_TS, DEFAULT_ACCOUNT_CREATION_TS, DEFAULT_CURRENCY);
     }
 
     public static UserMappingProto.UserMapping generateUserMapping(Boolean premiumUser, Integer emailHash) {
-        return generateCompleteUserMapping(NA_LONG, EMPTY_STR, EMPTY_STR, premiumUser, EMPTY_STR, emailHash, NA_LONG, NA_LONG, NA_LONG, NA_LONG, DEFAULT_CURRENCY);
+        return generateCompleteUserMapping(DEFAULT_MOBILE, DEFAULT_EMAIL, DEFAULT_USER_NAME, premiumUser, DEFAULT_USER_CRED_HASH, emailHash,
+                DEFAULT_LAST_CLOUD_SAVE_TS, DEFAULT_LAST_SAVE_TS, DEFAULT_PAYMENT_EXPIRY_TS, DEFAULT_ACCOUNT_CREATION_TS, DEFAULT_CURRENCY);
     }
 
     public static UserMappingProto.UserMapping generateUserMappingOnPk(Integer emailHash) {
-        return generateCompleteUserMapping(NA_LONG, EMPTY_STR, EMPTY_STR, false, EMPTY_STR, emailHash,
-                NA_LONG, NA_LONG, NA_LONG, NA_LONG, DEFAULT_CURRENCY);
+        return generateCompleteUserMapping(DEFAULT_MOBILE, DEFAULT_EMAIL, DEFAULT_USER_NAME, DEFAULT_PREMIUM_USER_STATUS, DEFAULT_USER_CRED_HASH, emailHash,
+                DEFAULT_LAST_CLOUD_SAVE_TS, DEFAULT_LAST_SAVE_TS, DEFAULT_PAYMENT_EXPIRY_TS, DEFAULT_ACCOUNT_CREATION_TS, DEFAULT_CURRENCY);
     }
 
     public static UserMappingProto.UserMapping generateCompleteUserMapping(UserMappingProto.UserMapping userMapping, Integer emailHash) {

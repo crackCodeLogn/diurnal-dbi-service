@@ -43,11 +43,17 @@ public class DiurnalUtil {
     }
 
     public static UserMappingProto.UserMapping generateUserMapping(Long mobile, String email, String user, Boolean premiumUser, String credHash) {
-        return generateCompleteUserMapping(mobile, refineEmail(email), user, premiumUser, credHash, NA_INT);
+        return generateCompleteUserMapping(mobile, refineEmail(email), user, premiumUser, credHash, NA_INT,
+                NA_LONG, NA_LONG, NA_LONG, NA_LONG, DEFAULT_CURRENCY);
+    }
+
+    public static UserMappingProto.UserMapping generateUserMapping(Boolean premiumUser, Integer emailHash) {
+        return generateCompleteUserMapping(NA_LONG, EMPTY_STR, EMPTY_STR, premiumUser, EMPTY_STR, emailHash, NA_LONG, NA_LONG, NA_LONG, NA_LONG, DEFAULT_CURRENCY);
     }
 
     public static UserMappingProto.UserMapping generateUserMappingOnPk(Integer emailHash) {
-        return generateCompleteUserMapping(NA_LONG, EMPTY_STR, EMPTY_STR, false, EMPTY_STR, emailHash);
+        return generateCompleteUserMapping(NA_LONG, EMPTY_STR, EMPTY_STR, false, EMPTY_STR, emailHash,
+                NA_LONG, NA_LONG, NA_LONG, NA_LONG, DEFAULT_CURRENCY);
     }
 
     public static UserMappingProto.UserMapping generateCompleteUserMapping(UserMappingProto.UserMapping userMapping, Integer emailHash) {
@@ -57,7 +63,8 @@ public class DiurnalUtil {
                 .build();
     }
 
-    public static UserMappingProto.UserMapping generateCompleteUserMapping(Long mobile, String email, String user, Boolean premiumUser, String credHash, Integer emailHash) {
+    public static UserMappingProto.UserMapping generateCompleteUserMapping(Long mobile, String email, String user, Boolean premiumUser, String credHash, Integer emailHash,
+                                                                           Long lastCloudSaveTs, Long lastSaveTs, Long paymentExpiryTs, Long accountCreationTs, UserMappingProto.Currency currency) {
         return UserMappingProto.UserMapping.newBuilder()
                 .setMobile(mobile)
                 .setEmail(email)
@@ -65,6 +72,11 @@ public class DiurnalUtil {
                 .setPremiumUser(premiumUser)
                 .setHashCred(credHash)
                 .setHashEmail(emailHash)
+                .setLastCloudSaveTimestamp(lastCloudSaveTs)
+                .setLastSavedTimestamp(lastSaveTs)
+                .setPaymentExpiryTimestamp(paymentExpiryTs)
+                .setAccountCreationTimestamp(accountCreationTs)
+                .setCurrency(currency)
                 .build();
     }
 
@@ -215,5 +227,9 @@ public class DiurnalUtil {
     public static String refineDbStringForOriginal(String data) {
         return data.replaceAll("''", "'")
                 .replaceAll(REPLACE_JSON_DI, "\"");
+    }
+
+    public static String getDefaultCsvDumpLocation() {
+        return System.getProperty("java.io.tmpdir");
     }
 }

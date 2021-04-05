@@ -5,11 +5,14 @@ import com.vv.personal.diurnal.dbi.config.DbiConfigForDiurnal;
 import com.vv.personal.diurnal.dbi.interactor.diurnal.cache.CachedDiurnal;
 import com.vv.personal.diurnal.dbi.interactor.diurnal.dbi.DiurnalDbi;
 import com.vv.personal.diurnal.dbi.util.DiurnalUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.function.Function;
 
 import static com.vv.personal.diurnal.dbi.constants.Constants.ONE;
@@ -119,6 +122,17 @@ public class DiurnalTableEntryDay extends DiurnalDbi<EntryDayProto.EntryDay, Ent
             LOGGER.error("Failed to retrieve entry detail from DB. ", throwables);
         }
         return builder.build();
+    }
+
+    @Override
+    protected Queue<String> processDataToCsv(EntryDayProto.EntryDayList dataList) {
+        Queue<String> dataLines = new LinkedList<>();
+        dataList.getEntryDayList().forEach(entryDay -> dataLines.add(
+                StringUtils.joinWith(String.valueOf(entryDay.getHashEmail()), entryDay.getDate(), entryDay.getTitle(), entryDay.getEntriesAsString()
+                        , csvLineSeparator)
+                )
+        );
+        return dataLines;
     }
 
 }

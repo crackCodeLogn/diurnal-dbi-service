@@ -47,11 +47,12 @@ public class UserMappingController {
                                              @RequestParam String email,
                                              @RequestParam String user,
                                              @RequestParam(defaultValue = "false", required = false) Boolean premiumUser,
-                                             @RequestParam String hashCred) {
+                                             @RequestParam String hashCred,
+                                             @RequestParam(defaultValue = "INR") UserMappingProto.Currency currency) {
         email = refineEmail(email);
-        LOGGER.info("Obtained manual req for new user creation: {} x {} x {} x {} x {}", mobile, email, user, premiumUser, hashCred);
-        return createUserMapping(generateCompleteUserMapping(mobile, email, user, premiumUser, hashCred,
-                generateHash(email)));
+        LOGGER.info("Obtained manual req for new user creation: {} x {} x {} x {} x {} x {}", mobile, email, user, premiumUser, hashCred, currency);
+        return createUserMapping(generateCompleteUserMapping(mobile, email, user, premiumUser, hashCred, NA_INT,
+                NA_LONG, NA_LONG, NA_LONG, NA_LONG, currency));
     }
 
     @GetMapping("/manual/generate/hash/cred")
@@ -124,7 +125,7 @@ public class UserMappingController {
         return updateUserMappingCred(generateUserMapping(NA_LONG, email, EMPTY_STR, false, hashCred));
     }
 
-    @PatchMapping("/manual/update/user-premium")
+    @PatchMapping("/manual/update/user/premium")
     public Integer updatePremiumUserMappingManually(@RequestParam String email,
                                                     @RequestParam Boolean premiumUserStatus) {
         email = refineEmail(email);
@@ -134,7 +135,7 @@ public class UserMappingController {
             return INT_RESPONSE_WONT_PROCESS;
         }
         LOGGER.info("Obtained manual req for user updation: {} -> {}", email, premiumUserStatus);
-        UserMappingProto.UserMapping userMapping = generateCompleteUserMapping(NA_LONG, email, EMPTY_STR, premiumUserStatus, EMPTY_STR, emailHash);
+        UserMappingProto.UserMapping userMapping = generateUserMapping(premiumUserStatus, emailHash);
         Integer sqlResult = diurnalTableUserMapping.updatePremiumUserStatus(userMapping);
         LOGGER.info("Result of premium-user updation: {}", sqlResult);
         return sqlResult;

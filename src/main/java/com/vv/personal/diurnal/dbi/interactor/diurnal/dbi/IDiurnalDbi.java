@@ -29,20 +29,5 @@ public interface IDiurnalDbi<T, K> extends IDbi {
 
     void populatePrimaryIds();
 
-    /*
-    void flushCache();
-
-    default int addToCacheOnSqlResult(Integer sqlResult, String table, Integer id) {
-        if (sqlResult == 1) addToCache(table, id);
-        return sqlResult;
-    }
-
-    default int removeFromCacheOnSqlResult(Integer sqlResult, String table, Integer id) {
-        if (sqlResult == 1) removeFromCache(table, id);
-        return sqlResult;
-    }
-
-    void addToCache(String table, Integer id);
-
-    void removeFromCache(String table, Integer id);*/
+    String dumpTableToCsv();
 }

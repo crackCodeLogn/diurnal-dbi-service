@@ -4,11 +4,15 @@ import com.vv.personal.diurnal.artifactory.generated.UserMappingProto;
 import com.vv.personal.diurnal.dbi.config.DbiConfigForDiurnal;
 import com.vv.personal.diurnal.dbi.interactor.diurnal.cache.CachedDiurnal;
 import com.vv.personal.diurnal.dbi.interactor.diurnal.dbi.DiurnalDbi;
+import com.vv.personal.diurnal.dbi.util.TimingUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.function.Function;
 
 import static com.vv.personal.diurnal.dbi.constants.Constants.*;
@@ -23,8 +27,9 @@ import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.refineEmail;
 public class DiurnalTableUserMapping extends DiurnalDbi<UserMappingProto.UserMapping, UserMappingProto.UserMappingList> {
     private static final Logger LOGGER = LoggerFactory.getLogger(DiurnalTableUserMapping.class);
 
-    private final String INSERT_STMT_NEW_USER = "INSERT INTO %s(\"mobile\", \"email\", \"user\", \"premium_user\", \"hash_cred\", \"hash_email\") " +
-            "VALUES(%d, '%s', '%s', '%s', '%s', %d)";
+    private final String INSERT_STMT_NEW_USER = "INSERT INTO %s(\"mobile\", \"email\", \"user\", \"premium_user\", \"hash_cred\", \"hash_email\"," +
+            " \"timestamp_save_cloud_last\", \"timestamp_save_last\", \"timestamp_expiry_payment\", \"timestamp_creation_account\", \"currency\") " +
+            "VALUES(%d, '%s', '%s', '%s', '%s', %d, %d, %d, %d, %d, '%s')";
     private final String DELETE_STMT_USER = "DELETE FROM %s " +
             "WHERE \"%s\"=%d";
     private final String UPDATE_STMT_USER = "UPDATE %s " +
@@ -43,6 +48,11 @@ public class DiurnalTableUserMapping extends DiurnalDbi<UserMappingProto.UserMap
     private final String COL_PREMIUM_USER = "premium_user";
     private final String COL_HASH_CRED = "hash_cred";
     private final String COL_HASH_EMAIL = "hash_email";
+    private final String COL_LAST_CLOUD_SAVE_TIMESTAMP = "timestamp_save_cloud_last";
+    private final String COL_LAST_SAVE_TIMESTAMP = "timestamp_save_last";
+    private final String COL_PAYMENT_EXPIRY_TIMESTAMP = "timestamp_expiry_payment";
+    private final String COL_ACCOUNT_CREATION_TIMESTAMP = "timestamp_creation_account";
+    private final String COL_CURRENCY = "currency";
 
     public DiurnalTableUserMapping(String table, String primaryColumns, DbiConfigForDiurnal dbiConfigForDiurnal, CachedDiurnal cachedDiurnal, Function<String, String> createTableIfNotExistSqlFunction, String createTableIfNotExistSqlLocation) {
         super(table, primaryColumns, dbiConfigForDiurnal, cachedDiurnal, createTableIfNotExistSqlFunction, createTableIfNotExistSqlLocation, LOGGER);
@@ -51,14 +61,16 @@ public class DiurnalTableUserMapping extends DiurnalDbi<UserMappingProto.UserMap
     @Override
     public int pushNewEntity(UserMappingProto.UserMapping userMapping) {
         String email = refineEmail(userMapping.getEmail());
-        LOGGER.info("Pushing new User entity: {} x {} x {}", email, userMapping.getUsername(), userMapping.getPremiumUser());
-        return insertNewUser(userMapping.getMobile(), email, userMapping.getUsername(), userMapping.getPremiumUser(), userMapping.getHashCred(),
-                generateHash(email));
+        LOGGER.info("Pushing new User entity: {} x {} x {}", email, userMapping.getUsername(), false);
+        return insertNewUser(userMapping.getMobile(), email, userMapping.getUsername(), false, userMapping.getHashCred(), generateHash(email),
+                NA_LONG, NA_LONG, NA_LONG, TimingUtil.extractCurrentUtcTimestamp(), userMapping.getCurrency()); //new user is always non-premium
     }
 
-    private int insertNewUser(Long mobile, String email, String username, Boolean premiumUser, String credHash, Integer emailHash) {
+    private int insertNewUser(Long mobile, String email, String username, Boolean premiumUser, String credHash, Integer emailHash,
+                              Long lastCloudSaveTs, Long lastSaveTs, Long paymentExpiryTs, Long accountCreationTs, UserMappingProto.Currency currency) {
         String sql = String.format(INSERT_STMT_NEW_USER, TABLE,
-                mobile, email, username, premiumUser, credHash, emailHash);
+                mobile, email, username, premiumUser, credHash, emailHash,
+                lastCloudSaveTs, lastSaveTs, paymentExpiryTs, accountCreationTs, currency.name());
         int sqlExecResult = executeUpdateSql(sql);
         return sqlExecResult;
         //return addToCacheOnSqlResult(sqlExecResult, mobile);
@@ -185,10 +197,27 @@ public class DiurnalTableUserMapping extends DiurnalDbi<UserMappingProto.UserMap
             builder.setPremiumUser(resultSet.getBoolean(COL_PREMIUM_USER));
             builder.setHashCred(resultSet.getString(COL_HASH_CRED));
             builder.setHashEmail(resultSet.getInt(COL_HASH_EMAIL));
+            builder.setLastCloudSaveTimestamp(resultSet.getLong(COL_LAST_CLOUD_SAVE_TIMESTAMP));
+            builder.setLastSavedTimestamp(resultSet.getLong(COL_LAST_SAVE_TIMESTAMP));
+            builder.setPaymentExpiryTimestamp(resultSet.getLong(COL_PAYMENT_EXPIRY_TIMESTAMP));
+            builder.setAccountCreationTimestamp(resultSet.getLong(COL_ACCOUNT_CREATION_TIMESTAMP));
+            builder.setCurrency(UserMappingProto.Currency.valueOf(resultSet.getString(COL_CURRENCY)));
         } catch (SQLException throwables) {
             LOGGER.error("Failed to retrieve user-mapping detail from DB. ", throwables);
         }
         return builder.build();
+    }
+
+    @Override
+    protected Queue<String> processDataToCsv(UserMappingProto.UserMappingList dataList) {
+        Queue<String> dataLines = new LinkedList<>();
+        dataList.getUserMappingList().forEach(userMapping -> dataLines.add(
+                StringUtils.joinWith(String.valueOf(userMapping.getMobile()), userMapping.getEmail(), userMapping.getUsername(), userMapping.getPremiumUser(), userMapping.getHashCred(), userMapping.getHashEmail(),
+                        userMapping.getLastCloudSaveTimestamp(), userMapping.getLastSavedTimestamp(), userMapping.getPaymentExpiryTimestamp(), userMapping.getAccountCreationTimestamp(), userMapping.getCurrency()
+                        , csvLineSeparator)
+                )
+        );
+        return dataLines;
     }
 
     public UserMappingProto.UserMapping generateHashCredDetail(ResultSet resultSet) {

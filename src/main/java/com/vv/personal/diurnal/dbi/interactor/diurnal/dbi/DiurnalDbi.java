@@ -2,17 +2,23 @@ package com.vv.personal.diurnal.dbi.interactor.diurnal.dbi;
 
 import com.vv.personal.diurnal.dbi.config.DbiConfigForDiurnal;
 import com.vv.personal.diurnal.dbi.interactor.diurnal.cache.CachedDiurnal;
+import com.vv.personal.diurnal.dbi.util.DiurnalUtil;
 import org.apache.commons.lang3.time.StopWatch;
 import org.slf4j.Logger;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Queue;
 import java.util.concurrent.*;
 import java.util.function.Function;
 
+import static com.vv.personal.diurnal.dbi.constants.Constants.*;
 import static com.vv.personal.diurnal.dbi.constants.DbConstants.*;
 
 
@@ -30,6 +36,8 @@ public abstract class DiurnalDbi<T, K> implements IDiurnalDbi<T, K> {
     private final String createTableIfNotExistSqlLocation;
     private final ExecutorService singleWriterThread = Executors.newSingleThreadExecutor();
     private final ExecutorService multiReadThreads = Executors.newFixedThreadPool(4);
+    protected String csvDumpLocationFolder = DiurnalUtil.getDefaultCsvDumpLocation();
+    protected String csvLineSeparator = PIPE;
 
     public DiurnalDbi(String table, String primaryColumns, DbiConfigForDiurnal dbiConfigForDiurnal, CachedDiurnal CACHED_DIURNAL,
                       Function<String, String> createTableIfNotExistSqlFunction, String createTableIfNotExistSqlLocation, Logger logger) {
@@ -161,32 +169,39 @@ public abstract class DiurnalDbi<T, K> implements IDiurnalDbi<T, K> {
         return CACHED_DIURNAL;
     }
 
-    public String getCreateTableIfNotExistSqlLocation() {
-        return createTableIfNotExistSqlLocation;
-    }
-
     @Override
     public String getTableName() {
         return TABLE;
     }
 
-    /*@Override
-    public void addToCache(String table, Integer id) {
-        getCachedRef().addNewIdToEntityCache(table, id);
-    }*/
+    protected abstract Queue<String> processDataToCsv(K dataList);
 
-    /*protected int addToCacheOnSqlResult(Integer sqlExecResult, Object... id) {
-     *//* Ignoring for now - 20210223
-        if (addToCacheOnSqlResult(sqlExecResult, TABLE, id) == 1) {
-            LOGGER.debug("Cache for {} updated with id: {}", TABLE, id);
-        } else {
-            LOGGER.warn("Failed to update cache for {} with id: {}", TABLE, id);
-        }*//*
-        return sqlExecResult;
-    }*/
+    @Override
+    public String dumpTableToCsv() {
+        K dataList = retrieveAll();
+        String csv = String.format("%s/%s.csv", csvDumpLocationFolder, TABLE);
+        File csvDump = new File(csv);
+        try (FileWriter fileWriter = new FileWriter(csvDump)) {
+            Queue<String> dataLines = processDataToCsv(dataList);
+            while (!dataLines.isEmpty()) {
+                fileWriter.write(dataLines.poll());
+                fileWriter.write(NEW_LINE);
+            }
+            fileWriter.flush();
+        } catch (IOException e) {
+            LOGGER.error("Failed to write table dump to csv. ", e);
+            return EMPTY_STR;
+        }
+        return csvDump.getAbsolutePath();
+    }
 
-    /*@Override
-    public void flushCache() {
-        getCachedRef().flushEntityCache(TABLE);
-    }*/
+    public DiurnalDbi<T, K> setCsvDumpLocationFolder(String csvDumpLocationFolder) {
+        this.csvDumpLocationFolder = csvDumpLocationFolder;
+        return this;
+    }
+
+    public DiurnalDbi<T, K> setCsvLineSeparator(String csvLineSeparator) {
+        this.csvLineSeparator = csvLineSeparator;
+        return this;
+    }
 }

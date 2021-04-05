@@ -21,11 +21,13 @@ public class Constants {
     public static final String COLON_STR = ":";
     public static final String REPLACE_JSON_DI = "`@%"; //DI - double inverts
     public static final String DEFAULT_TITLE = "-TITLE-";
+    public static final String PIPE = "|";
 
     public static final int NA_INT = -1;
     public static final int ONE = 1;
     public static final double DEFAULT_AMOUNT = 0.0;
     public static final long NA_LONG = -1L;
+    public static final UserMappingProto.Currency DEFAULT_CURRENCY = UserMappingProto.Currency.INR;
 
     public static final List<Integer> EMPTY_LIST_INT = new ArrayList<>(0);
 

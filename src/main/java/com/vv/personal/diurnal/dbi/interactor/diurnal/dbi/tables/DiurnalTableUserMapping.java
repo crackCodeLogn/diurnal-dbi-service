@@ -23,7 +23,7 @@ import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.refineEmail;
 public class DiurnalTableUserMapping extends DiurnalDbi<UserMappingProto.UserMapping, UserMappingProto.UserMappingList> {
     private static final Logger LOGGER = LoggerFactory.getLogger(DiurnalTableUserMapping.class);
 
-    private final String INSERT_STMT_NEW_USER = "INSERT INTO %s(\"mobile\", \"email\", \"user\", \"power_user\", \"hash_cred\", \"hash_email\") " +
+    private final String INSERT_STMT_NEW_USER = "INSERT INTO %s(\"mobile\", \"email\", \"user\", \"premium_user\", \"hash_cred\", \"hash_email\") " +
             "VALUES(%d, '%s', '%s', '%s', '%s', %d)";
     private final String DELETE_STMT_USER = "DELETE FROM %s " +
             "WHERE \"%s\"=%d";
@@ -40,7 +40,7 @@ public class DiurnalTableUserMapping extends DiurnalDbi<UserMappingProto.UserMap
     private final String COL_MOBILE = "mobile";
     private final String COL_EMAIL = "email";
     private final String COL_USER = "user";
-    private final String COL_POWER_USER = "power_user";
+    private final String COL_PREMIUM_USER = "premium_user";
     private final String COL_HASH_CRED = "hash_cred";
     private final String COL_HASH_EMAIL = "hash_email";
 
@@ -51,14 +51,14 @@ public class DiurnalTableUserMapping extends DiurnalDbi<UserMappingProto.UserMap
     @Override
     public int pushNewEntity(UserMappingProto.UserMapping userMapping) {
         String email = refineEmail(userMapping.getEmail());
-        LOGGER.info("Pushing new User entity: {} x {} x {}", email, userMapping.getUsername(), userMapping.getPowerUser());
-        return insertNewUser(userMapping.getMobile(), email, userMapping.getUsername(), userMapping.getPowerUser(), userMapping.getHashCred(),
+        LOGGER.info("Pushing new User entity: {} x {} x {}", email, userMapping.getUsername(), userMapping.getPremiumUser());
+        return insertNewUser(userMapping.getMobile(), email, userMapping.getUsername(), userMapping.getPremiumUser(), userMapping.getHashCred(),
                 generateHash(email));
     }
 
-    private int insertNewUser(Long mobile, String email, String username, Boolean powerUser, String credHash, Integer emailHash) {
+    private int insertNewUser(Long mobile, String email, String username, Boolean premiumUser, String credHash, Integer emailHash) {
         String sql = String.format(INSERT_STMT_NEW_USER, TABLE,
-                mobile, email, username, powerUser, credHash, emailHash);
+                mobile, email, username, premiumUser, credHash, emailHash);
         int sqlExecResult = executeUpdateSql(sql);
         return sqlExecResult;
         //return addToCacheOnSqlResult(sqlExecResult, mobile);
@@ -81,9 +81,9 @@ public class DiurnalTableUserMapping extends DiurnalDbi<UserMappingProto.UserMap
         return sqlExecResult;
     }
 
-    public int updatePowerUserStatus(UserMappingProto.UserMapping userMapping) {
+    public int updatePremiumUserStatus(UserMappingProto.UserMapping userMapping) {
         String sql = String.format(UPDATE_STMT_USER, TABLE,
-                COL_POWER_USER, userMapping.getPowerUser(),
+                COL_PREMIUM_USER, userMapping.getPremiumUser(),
                 COL_HASH_EMAIL, userMapping.getHashEmail());
         int sqlExecResult = executeUpdateSql(sql);
         return sqlExecResult;
@@ -121,12 +121,12 @@ public class DiurnalTableUserMapping extends DiurnalDbi<UserMappingProto.UserMap
         return NA_INT;
     }
 
-    public Boolean retrievePowerUserStatus(UserMappingProto.UserMapping userMapping) {
-        String sql = String.format(CHECK_STMT_ENTRY_SINGLE_COL, COL_POWER_USER, TABLE,
+    public Boolean retrievePremiumUserStatus(UserMappingProto.UserMapping userMapping) {
+        String sql = String.format(CHECK_STMT_ENTRY_SINGLE_COL, COL_PREMIUM_USER, TABLE,
                 COL_HASH_EMAIL, userMapping.getHashEmail());
         ResultSet resultSet = executeNonUpdateSql(sql);
         try {
-            if (resultSet.next()) return generatePowerUserDetail(resultSet).getPowerUser();
+            if (resultSet.next()) return generatePremiumUserDetail(resultSet).getPremiumUser();
         } catch (SQLException throwables) {
             LOGGER.error("Failed to retrieve cred hash from db. ", throwables);
         }
@@ -182,7 +182,7 @@ public class DiurnalTableUserMapping extends DiurnalDbi<UserMappingProto.UserMap
             builder.setMobile(resultSet.getLong(COL_MOBILE));
             builder.setEmail(resultSet.getString(COL_EMAIL));
             builder.setUsername(resultSet.getString(COL_USER));
-            builder.setPowerUser(resultSet.getBoolean(COL_POWER_USER));
+            builder.setPremiumUser(resultSet.getBoolean(COL_PREMIUM_USER));
             builder.setHashCred(resultSet.getString(COL_HASH_CRED));
             builder.setHashEmail(resultSet.getInt(COL_HASH_EMAIL));
         } catch (SQLException throwables) {
@@ -211,12 +211,12 @@ public class DiurnalTableUserMapping extends DiurnalDbi<UserMappingProto.UserMap
         return builder.build();
     }
 
-    public UserMappingProto.UserMapping generatePowerUserDetail(ResultSet resultSet) {
+    public UserMappingProto.UserMapping generatePremiumUserDetail(ResultSet resultSet) {
         UserMappingProto.UserMapping.Builder builder = UserMappingProto.UserMapping.newBuilder();
         try {
-            builder.setPowerUser(resultSet.getBoolean(COL_POWER_USER));
+            builder.setPremiumUser(resultSet.getBoolean(COL_PREMIUM_USER));
         } catch (SQLException throwables) {
-            LOGGER.error("Failed to retrieve user-mapping power-user detail from DB. ", throwables);
+            LOGGER.error("Failed to retrieve user-mapping premium-user detail from DB. ", throwables);
         }
         return builder.build();
     }

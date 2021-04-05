@@ -36,7 +36,7 @@ public class UserMappingController {
     @ApiOperation(value = "create user", hidden = true)
     @PostMapping("/create/user")
     public Integer createUserMapping(@RequestBody UserMappingProto.UserMapping userMapping) {
-        LOGGER.info("Creating new user mapping: {} x {} x {} x {}", userMapping.getMobile(), userMapping.getEmail(), userMapping.getUsername(), userMapping.getPowerUser());
+        LOGGER.info("Creating new user mapping: {} x {} x {} x {}", userMapping.getMobile(), userMapping.getEmail(), userMapping.getUsername(), userMapping.getPremiumUser());
         Integer sqlResult = diurnalTableUserMapping.pushNewEntity(userMapping);
         LOGGER.info("Result of new user creation: {}", sqlResult);
         return sqlResult;
@@ -46,11 +46,11 @@ public class UserMappingController {
     public Integer createUserMappingManually(@RequestParam(defaultValue = "-1", required = false) Long mobile,
                                              @RequestParam String email,
                                              @RequestParam String user,
-                                             @RequestParam(defaultValue = "false", required = false) Boolean powerUser,
+                                             @RequestParam(defaultValue = "false", required = false) Boolean premiumUser,
                                              @RequestParam String hashCred) {
         email = refineEmail(email);
-        LOGGER.info("Obtained manual req for new user creation: {} x {} x {} x {} x {}", mobile, email, user, powerUser, hashCred);
-        return createUserMapping(generateCompleteUserMapping(mobile, email, user, powerUser, hashCred,
+        LOGGER.info("Obtained manual req for new user creation: {} x {} x {} x {} x {}", mobile, email, user, premiumUser, hashCred);
+        return createUserMapping(generateCompleteUserMapping(mobile, email, user, premiumUser, hashCred,
                 generateHash(email)));
     }
 
@@ -124,19 +124,19 @@ public class UserMappingController {
         return updateUserMappingCred(generateUserMapping(NA_LONG, email, EMPTY_STR, false, hashCred));
     }
 
-    @PatchMapping("/manual/update/user-power")
-    public Integer updatePowerUserMappingManually(@RequestParam String email,
-                                                  @RequestParam Boolean powerUserStatus) {
+    @PatchMapping("/manual/update/user-premium")
+    public Integer updatePremiumUserMappingManually(@RequestParam String email,
+                                                    @RequestParam Boolean premiumUserStatus) {
         email = refineEmail(email);
         Integer emailHash = retrieveHashEmail(email);
         if (isEmailHashAbsent(emailHash)) {
             LOGGER.warn("User not found for updation of hash cred for email [{}]", email);
             return INT_RESPONSE_WONT_PROCESS;
         }
-        LOGGER.info("Obtained manual req for user updation: {} -> {}", email, powerUserStatus);
-        UserMappingProto.UserMapping userMapping = generateCompleteUserMapping(NA_LONG, email, EMPTY_STR, powerUserStatus, EMPTY_STR, emailHash);
-        Integer sqlResult = diurnalTableUserMapping.updatePowerUserStatus(userMapping);
-        LOGGER.info("Result of power-user updation: {}", sqlResult);
+        LOGGER.info("Obtained manual req for user updation: {} -> {}", email, premiumUserStatus);
+        UserMappingProto.UserMapping userMapping = generateCompleteUserMapping(NA_LONG, email, EMPTY_STR, premiumUserStatus, EMPTY_STR, emailHash);
+        Integer sqlResult = diurnalTableUserMapping.updatePremiumUserStatus(userMapping);
+        LOGGER.info("Result of premium-user updation: {}", sqlResult);
         return sqlResult;
     }
 
@@ -185,14 +185,14 @@ public class UserMappingController {
         return retrievedHashEmail;
     }
 
-    @ApiOperation(value = "retrieve power user status from db")
-    @GetMapping("/retrieve/status/user-power")
-    public Boolean retrievePowerUserStatus(@RequestParam Integer emailHash) {
-        LOGGER.info("Retrieve power user status for: {}", emailHash);
+    @ApiOperation(value = "retrieve premium user status from db")
+    @GetMapping("/retrieve/status/user-premium")
+    public Boolean retrievePremiumUserStatus(@RequestParam Integer emailHash) {
+        LOGGER.info("Retrieve premium user status for: {}", emailHash);
         UserMappingProto.UserMapping userMapping = generateUserMappingOnPk(emailHash);
-        Boolean powerUserStatus = diurnalTableUserMapping.retrievePowerUserStatus(userMapping);
-        LOGGER.info("Result: [{}]", powerUserStatus);
-        return powerUserStatus;
+        Boolean premiumUserStatus = diurnalTableUserMapping.retrievePremiumUserStatus(userMapping);
+        LOGGER.info("Result: [{}]", premiumUserStatus);
+        return premiumUserStatus;
     }
 
     @ApiOperation(value = "check if user exists", hidden = true)

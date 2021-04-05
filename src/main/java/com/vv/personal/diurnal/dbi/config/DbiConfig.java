@@ -5,9 +5,7 @@ import com.vv.personal.diurnal.dbi.auth.Authorizer;
 import com.vv.personal.diurnal.dbi.constants.DbConstants;
 import com.vv.personal.diurnal.dbi.interactor.diurnal.cache.CachedDiurnal;
 import com.vv.personal.diurnal.dbi.interactor.diurnal.dbi.DiurnalDbi;
-import com.vv.personal.diurnal.dbi.interactor.diurnal.dbi.tables.DiurnalTableEntry;
 import com.vv.personal.diurnal.dbi.interactor.diurnal.dbi.tables.DiurnalTableEntryDay;
-import com.vv.personal.diurnal.dbi.interactor.diurnal.dbi.tables.DiurnalTableTitleMapping;
 import com.vv.personal.diurnal.dbi.interactor.diurnal.dbi.tables.DiurnalTableUserMapping;
 import com.vv.personal.diurnal.dbi.util.DbiUtil;
 import org.apache.commons.lang3.time.StopWatch;
@@ -65,21 +63,6 @@ public class DbiConfig {
                 DbiUtil::generateCreateTableSql, DIURNAL_ENTRY_DAY_SQL);
     }
 
-    @Bean
-    @Qualifier("DiurnalTableEntry")
-    public DiurnalTableEntry diurnalTableEntries() {
-        return new DiurnalTableEntry(DbConstants.TABLE_DIURNAL_ENTRY, DbConstants.PRIMARY_COL_ENTRY, DiurnalDbConnector(), cachedDiurnal(),
-                DbiUtil::generateCreateTableSql, DIURNAL_ENTRY_SQL);
-    }
-
-    @Bean
-    @Qualifier("DiurnalTableTitleMapping")
-    @Deprecated
-    public DiurnalTableTitleMapping diurnalTableTitleMapping() {
-        return new DiurnalTableTitleMapping(DbConstants.TABLE_DIURNAL_TITLE_MAPPING, DbConstants.PRIMARY_COL_TITLE_MAPPING, DiurnalDbConnector(), cachedDiurnal(),
-                DbiUtil::generateCreateTableSql, DIURNAL_TITLE_MAPPING_SQL);
-    }
-
     @Bean(initMethod = "start")
     @Scope("prototype")
     public StopWatch stopWatch() {
@@ -89,9 +72,7 @@ public class DbiConfig {
     @PostConstruct
     public void postHaste() {
         diurnalDbis.add(diurnalTableUserMapping());
-        diurnalDbis.add(diurnalTableEntries());
         diurnalDbis.add(diurnalTableEntryDays());
-        //diurnalDbis.add(diurnalTableTitleMapping());
     }
 
     public boolean isCreateTablesOnStartup() {

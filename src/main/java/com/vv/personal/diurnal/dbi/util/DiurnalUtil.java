@@ -42,8 +42,8 @@ public class DiurnalUtil {
         return generateUserMapping(NA_LONG, refineEmail(email), user, false, EMPTY_STR);
     }
 
-    public static UserMappingProto.UserMapping generateUserMapping(Long mobile, String email, String user, Boolean powerUser, String credHash) {
-        return generateCompleteUserMapping(mobile, refineEmail(email), user, powerUser, credHash, NA_INT);
+    public static UserMappingProto.UserMapping generateUserMapping(Long mobile, String email, String user, Boolean premiumUser, String credHash) {
+        return generateCompleteUserMapping(mobile, refineEmail(email), user, premiumUser, credHash, NA_INT);
     }
 
     public static UserMappingProto.UserMapping generateUserMappingOnPk(Integer emailHash) {
@@ -57,12 +57,12 @@ public class DiurnalUtil {
                 .build();
     }
 
-    public static UserMappingProto.UserMapping generateCompleteUserMapping(Long mobile, String email, String user, Boolean powerUser, String credHash, Integer emailHash) {
+    public static UserMappingProto.UserMapping generateCompleteUserMapping(Long mobile, String email, String user, Boolean premiumUser, String credHash, Integer emailHash) {
         return UserMappingProto.UserMapping.newBuilder()
                 .setMobile(mobile)
                 .setEmail(email)
                 .setUsername(user)
-                .setPowerUser(powerUser)
+                .setPremiumUser(premiumUser)
                 .setHashCred(credHash)
                 .setHashEmail(emailHash)
                 .build();

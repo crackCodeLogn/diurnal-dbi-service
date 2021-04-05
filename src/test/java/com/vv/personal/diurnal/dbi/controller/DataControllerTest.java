@@ -77,7 +77,7 @@ public class DataControllerTest {
         Integer emailHash = generateHash(email);
 
         when(userMappingController.retrieveHashEmail(email)).thenReturn(emailHash);
-        when(userMappingController.retrievePowerUserStatus(emailHash)).thenReturn(true);
+        when(userMappingController.retrievePremiumUserStatus(emailHash)).thenReturn(true);
         when(diurnalTableEntryDay.deleteEntity(any(EntryDayProto.EntryDay.class))).thenReturn(0);
         when(diurnalTableEntryDay.pushNewEntity(any(EntryDayProto.EntryDay.class))).thenReturn(1);
         StopWatch stopWatch = procureStopWatch();
@@ -90,7 +90,7 @@ public class DataControllerTest {
 
         stopWatch.reset();
         stopWatch.start();
-        when(userMappingController.retrievePowerUserStatus(emailHash)).thenReturn(false);
+        when(userMappingController.retrievePremiumUserStatus(emailHash)).thenReturn(false);
         backupPushResult = dataController.pushWholeBackup(
                 DiurnalUtil.generateDataTransit(mobile, email, 20210304, DataTransitProto.Currency.INR,
                         StringUtils.join(testData, "\n")));

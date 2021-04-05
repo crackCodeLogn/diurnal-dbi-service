@@ -46,7 +46,7 @@ public class DataController {
         StopWatch stopWatch = genericConfig.procureStopWatch();
         try {
             UserMappingProto.UserMapping userMapping = DiurnalUtil.generateUserMapping(dataTransit.getMobile(), dataTransit.getEmail(), dataTransit.getUser(),
-                    dataTransit.getPowerUser(), dataTransit.getHashCred());
+                    dataTransit.getPremiumUser(), dataTransit.getHashCred());
             boolean signUpResult = userMappingController.createUserMapping(userMapping) == ONE;
             LOGGER.info("Sign up result for [{}] => {}", dataTransit.getEmail(), signUpResult);
             return signUpResult ? RESPOND_TRUE_BOOL : RESPOND_FALSE_BOOL;
@@ -86,8 +86,8 @@ public class DataController {
                 LOGGER.warn("User doesn't exist for email: {}", dataTransit.getEmail());
                 return RESPOND_FALSE_BOOL;
             }
-            if (!userMappingController.retrievePowerUserStatus(emailHash)) {
-                LOGGER.warn("User for email [{}] doesn't have power-user privileges, cannot proceed with cloud backup!", dataTransit.getEmail());
+            if (!userMappingController.retrievePremiumUserStatus(emailHash)) {
+                LOGGER.warn("User for email [{}] doesn't have premium-user privileges, cannot proceed with cloud backup!", dataTransit.getEmail());
                 return RESPOND_FALSE_BOOL;
             }
             TransformFullBackupToProtos transformFullBackupToProtos = new TransformFullBackupToProtos(

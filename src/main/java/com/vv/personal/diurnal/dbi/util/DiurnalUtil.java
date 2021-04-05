@@ -42,6 +42,11 @@ public class DiurnalUtil {
         return generateUserMapping(DEFAULT_MOBILE, refineEmail(email), user, DEFAULT_PREMIUM_USER_STATUS, DEFAULT_USER_CRED_HASH);
     }
 
+    public static UserMappingProto.UserMapping generateUserMapping(String email, UserMappingProto.Currency currency) {
+        return generateCompleteUserMapping(DEFAULT_MOBILE, refineEmail(email), DEFAULT_USER_NAME, DEFAULT_PREMIUM_USER_STATUS, DEFAULT_USER_CRED_HASH, DEFAULT_EMAIL_HASH,
+                DEFAULT_LAST_CLOUD_SAVE_TS, DEFAULT_LAST_SAVE_TS, DEFAULT_PAYMENT_EXPIRY_TS, DEFAULT_ACCOUNT_CREATION_TS, currency);
+    }
+
     public static UserMappingProto.UserMapping generateUserMapping(Long mobile, String email, String user, Boolean premiumUser, String credHash) {
         return generateCompleteUserMapping(mobile, refineEmail(email), user, premiumUser, credHash, DEFAULT_EMAIL_HASH,
                 DEFAULT_LAST_CLOUD_SAVE_TS, DEFAULT_LAST_SAVE_TS, DEFAULT_PAYMENT_EXPIRY_TS, DEFAULT_ACCOUNT_CREATION_TS, DEFAULT_CURRENCY);

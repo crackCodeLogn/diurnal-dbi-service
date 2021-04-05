@@ -147,6 +147,28 @@ public class UserMappingController {
         return updateUserMappingCred(generateUserMapping(mobile, email, DEFAULT_USER_NAME, DEFAULT_PREMIUM_USER_STATUS, DEFAULT_USER_CRED_HASH));
     }
 
+    @ApiOperation(value = "update user-currency", hidden = true)
+    @PostMapping("/update/user/currency")
+    public Integer updateUserMappingCurrency(@RequestBody UserMappingProto.UserMapping userMapping) {
+        Integer emailHash = retrieveHashEmail(userMapping.getEmail());
+        if (isEmailHashAbsent(emailHash)) {
+            LOGGER.warn("User not found for updation of currency for email [{}]", userMapping.getEmail());
+            return INT_RESPONSE_WONT_PROCESS;
+        }
+        LOGGER.info("Updating user mapping: {} -> currency: {}", userMapping.getEmail(), userMapping.getCurrency());
+        Integer sqlResult = diurnalTableUserMapping.updateCurrency(generateCompleteUserMapping(userMapping, emailHash));
+        LOGGER.info("Result of user updation: {}", sqlResult);
+        return sqlResult;
+    }
+
+    @PatchMapping("/manual/update/user/currency")
+    public Integer updateUserMappingCurrencyManually(@RequestParam String email,
+                                                     @RequestParam(defaultValue = "INR") UserMappingProto.Currency currency) {
+        email = refineEmail(email);
+        LOGGER.info("Obtained manual req for user updation: {} -> currency: {}", email, currency);
+        return updateUserMappingCred(generateUserMapping(email, currency));
+    }
+
     @PatchMapping("/manual/update/user/premium")
     public Integer updatePremiumUserMappingManually(@RequestParam String email,
                                                     @RequestParam(defaultValue = "false") Boolean premiumUserStatus) {

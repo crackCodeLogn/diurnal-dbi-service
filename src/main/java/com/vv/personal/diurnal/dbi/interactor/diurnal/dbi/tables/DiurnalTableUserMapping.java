@@ -32,8 +32,11 @@ public class DiurnalTableUserMapping extends DiurnalDbi<UserMappingProto.UserMap
             "VALUES(%d, '%s', '%s', '%s', '%s', %d, %d, %d, %d, %d, '%s')";
     private final String DELETE_STMT_USER = "DELETE FROM %s " +
             "WHERE \"%s\"=%d";
-    private final String UPDATE_STMT_USER = "UPDATE %s " +
+    private final String UPDATE_STMT_USER_STR = "UPDATE %s " +
             "SET \"%s\"='%s' " +
+            "WHERE \"%s\"=%d";
+    private final String UPDATE_STMT_USER_LONG = "UPDATE %s " +
+            "SET \"%s\"=%d " +
             "WHERE \"%s\"=%d";
     private final String CHECK_STMT_ENTRY_SINGLE_COL = "SELECT %s from %s " +
             "WHERE \"%s\"=%d";
@@ -86,7 +89,7 @@ public class DiurnalTableUserMapping extends DiurnalDbi<UserMappingProto.UserMap
 
     @Override
     public int updateEntity(UserMappingProto.UserMapping userMapping) {
-        String sql = String.format(UPDATE_STMT_USER, TABLE,
+        String sql = String.format(UPDATE_STMT_USER_STR, TABLE,
                 COL_USER, userMapping.getUsername(),
                 COL_HASH_EMAIL, userMapping.getHashEmail());
         int sqlExecResult = executeUpdateSql(sql);
@@ -94,7 +97,7 @@ public class DiurnalTableUserMapping extends DiurnalDbi<UserMappingProto.UserMap
     }
 
     public int updatePremiumUserStatus(UserMappingProto.UserMapping userMapping) {
-        String sql = String.format(UPDATE_STMT_USER, TABLE,
+        String sql = String.format(UPDATE_STMT_USER_STR, TABLE,
                 COL_PREMIUM_USER, userMapping.getPremiumUser(),
                 COL_HASH_EMAIL, userMapping.getHashEmail());
         int sqlExecResult = executeUpdateSql(sql);
@@ -102,8 +105,57 @@ public class DiurnalTableUserMapping extends DiurnalDbi<UserMappingProto.UserMap
     }
 
     public int updateHashCred(UserMappingProto.UserMapping userMapping) {
-        String sql = String.format(UPDATE_STMT_USER, TABLE,
+        String sql = String.format(UPDATE_STMT_USER_STR, TABLE,
                 COL_HASH_CRED, userMapping.getHashCred(),
+                COL_HASH_EMAIL, userMapping.getHashEmail());
+        int sqlExecResult = executeUpdateSql(sql);
+        return sqlExecResult;
+    }
+
+    public int updateMobile(UserMappingProto.UserMapping userMapping) {
+        String sql = String.format(UPDATE_STMT_USER_LONG, TABLE,
+                COL_MOBILE, userMapping.getMobile(),
+                COL_HASH_EMAIL, userMapping.getHashEmail());
+        int sqlExecResult = executeUpdateSql(sql);
+        return sqlExecResult;
+    }
+
+    public int updateCurrency(UserMappingProto.UserMapping userMapping) {
+        String sql = String.format(UPDATE_STMT_USER_STR, TABLE,
+                COL_CURRENCY, userMapping.getCurrency(),
+                COL_HASH_EMAIL, userMapping.getHashEmail());
+        int sqlExecResult = executeUpdateSql(sql);
+        return sqlExecResult;
+    }
+
+    public int updateLastCloudSaveTimestamp(UserMappingProto.UserMapping userMapping) {
+        String sql = String.format(UPDATE_STMT_USER_LONG, TABLE,
+                COL_LAST_CLOUD_SAVE_TIMESTAMP, userMapping.getLastCloudSaveTimestamp(),
+                COL_HASH_EMAIL, userMapping.getHashEmail());
+        int sqlExecResult = executeUpdateSql(sql);
+        return sqlExecResult;
+    }
+
+    public int updateLastSavedTimestamp(UserMappingProto.UserMapping userMapping) {
+        String sql = String.format(UPDATE_STMT_USER_LONG, TABLE,
+                COL_LAST_SAVE_TIMESTAMP, userMapping.getLastSavedTimestamp(),
+                COL_HASH_EMAIL, userMapping.getHashEmail());
+        int sqlExecResult = executeUpdateSql(sql);
+        return sqlExecResult;
+    }
+
+    public int updatePaymentExpiryTimestamp(UserMappingProto.UserMapping userMapping) {
+        String sql = String.format(UPDATE_STMT_USER_LONG, TABLE,
+                COL_PAYMENT_EXPIRY_TIMESTAMP, userMapping.getPaymentExpiryTimestamp(),
+                COL_HASH_EMAIL, userMapping.getHashEmail());
+        int sqlExecResult = executeUpdateSql(sql);
+        return sqlExecResult;
+    }
+
+    //Shouldn't be invoked as doesn't make sense
+    public int updateAccountCreationTimestamp(UserMappingProto.UserMapping userMapping) {
+        String sql = String.format(UPDATE_STMT_USER_LONG, TABLE,
+                COL_ACCOUNT_CREATION_TIMESTAMP, userMapping.getAccountCreationTimestamp(),
                 COL_HASH_EMAIL, userMapping.getHashEmail());
         int sqlExecResult = executeUpdateSql(sql);
         return sqlExecResult;

@@ -125,6 +125,28 @@ public class UserMappingController {
         return updateUserMappingCred(generateUserMapping(DEFAULT_MOBILE, email, DEFAULT_USER_NAME, DEFAULT_PREMIUM_USER_STATUS, hashCred));
     }
 
+    @ApiOperation(value = "update user-mobile", hidden = true)
+    @PostMapping("/update/user/mobile")
+    public Integer updateUserMappingMobile(@RequestBody UserMappingProto.UserMapping userMapping) {
+        Integer emailHash = retrieveHashEmail(userMapping.getEmail());
+        if (isEmailHashAbsent(emailHash)) {
+            LOGGER.warn("User not found for updation of mobile for email [{}]", userMapping.getEmail());
+            return INT_RESPONSE_WONT_PROCESS;
+        }
+        LOGGER.info("Updating user mapping: {} -> mobile: {}", userMapping.getEmail(), userMapping.getMobile());
+        Integer sqlResult = diurnalTableUserMapping.updateMobile(generateCompleteUserMapping(userMapping, emailHash));
+        LOGGER.info("Result of user updation: {}", sqlResult);
+        return sqlResult;
+    }
+
+    @PatchMapping("/manual/update/user/mobile")
+    public Integer updateUserMappingMobileManually(@RequestParam String email,
+                                                   @RequestParam Long mobile) {
+        email = refineEmail(email);
+        LOGGER.info("Obtained manual req for user updation: {} -> mobile: {}", email, mobile);
+        return updateUserMappingCred(generateUserMapping(mobile, email, DEFAULT_USER_NAME, DEFAULT_PREMIUM_USER_STATUS, DEFAULT_USER_CRED_HASH));
+    }
+
     @PatchMapping("/manual/update/user/premium")
     public Integer updatePremiumUserMappingManually(@RequestParam String email,
                                                     @RequestParam(defaultValue = "false") Boolean premiumUserStatus) {

@@ -144,7 +144,7 @@ public class UserMappingController {
                                                    @RequestParam Long mobile) {
         email = refineEmail(email);
         LOGGER.info("Obtained manual req for user updation: {} -> mobile: {}", email, mobile);
-        return updateUserMappingCred(generateUserMapping(mobile, email, DEFAULT_USER_NAME, DEFAULT_PREMIUM_USER_STATUS, DEFAULT_USER_CRED_HASH));
+        return updateUserMappingMobile(generateUserMapping(mobile, email, DEFAULT_USER_NAME, DEFAULT_PREMIUM_USER_STATUS, DEFAULT_USER_CRED_HASH));
     }
 
     @ApiOperation(value = "update user-currency", hidden = true)
@@ -166,7 +166,7 @@ public class UserMappingController {
                                                      @RequestParam(defaultValue = "INR") UserMappingProto.Currency currency) {
         email = refineEmail(email);
         LOGGER.info("Obtained manual req for user updation: {} -> currency: {}", email, currency);
-        return updateUserMappingCred(generateUserMapping(email, currency));
+        return updateUserMappingCurrency(generateUserMapping(email, currency));
     }
 
     @ApiOperation(value = "update user-cloud save ts", hidden = true)
@@ -290,14 +290,24 @@ public class UserMappingController {
         return retrievedHashEmail;
     }
 
-    @ApiOperation(value = "retrieve premium user status from db")
-    @GetMapping("/retrieve/status/user-premium")
     public Boolean retrievePremiumUserStatus(@RequestParam Integer emailHash) {
         LOGGER.info("Retrieve premium user status for: {}", emailHash);
         UserMappingProto.UserMapping userMapping = generateUserMappingOnPk(emailHash);
         Boolean premiumUserStatus = diurnalTableUserMapping.retrievePremiumUserStatus(userMapping);
         LOGGER.info("Result: [{}]", premiumUserStatus);
         return premiumUserStatus;
+    }
+
+    @ApiOperation(value = "retrieve premium user status from db")
+    @GetMapping("/retrieve/status/user-premium")
+    public Boolean retrievePremiumUserStatusManually(@RequestParam String email) {
+        email = refineEmail(email);
+        Integer emailHash = retrieveHashEmail(email);
+        if (isEmailHashAbsent(emailHash)) {
+            LOGGER.warn("User not found for checking of premium status for email [{}]", email);
+            return null;
+        }
+        return retrievePremiumUserStatus(emailHash);
     }
 
     @ApiOperation(value = "check if user exists", hidden = true)

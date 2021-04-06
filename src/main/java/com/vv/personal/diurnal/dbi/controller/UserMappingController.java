@@ -169,6 +169,66 @@ public class UserMappingController {
         return updateUserMappingCred(generateUserMapping(email, currency));
     }
 
+    @ApiOperation(value = "update user-cloud save ts", hidden = true)
+    @PostMapping("/update/user/timestamp/save/cloud")
+    public Integer updateUserMappingLastCloudSaveTimestamp(@RequestBody UserMappingProto.UserMapping userMapping) {
+        Integer emailHash = retrieveHashEmail(userMapping.getEmail());
+        if (isEmailHashAbsent(emailHash)) {
+            LOGGER.warn("User not found for updation of last cloud save ts for email [{}]", userMapping.getEmail());
+            return INT_RESPONSE_WONT_PROCESS;
+        }
+        LOGGER.info("Updating user mapping: {} -> last cloud save ts: {}", userMapping.getEmail(), userMapping.getLastCloudSaveTimestamp());
+        Integer sqlResult = diurnalTableUserMapping.updateLastCloudSaveTimestamp(generateCompleteUserMapping(userMapping, emailHash));
+        LOGGER.info("Result of user updation: {}", sqlResult);
+        return sqlResult;
+    }
+
+    @ApiOperation(value = "update user-save ts", hidden = true)
+    @PostMapping("/update/user/timestamp/save/local")
+    public Integer updateUserMappingLastSaveTimestamp(@RequestBody UserMappingProto.UserMapping userMapping) {
+        Integer emailHash = retrieveHashEmail(userMapping.getEmail());
+        if (isEmailHashAbsent(emailHash)) {
+            LOGGER.warn("User not found for updation of last local save ts for email [{}]", userMapping.getEmail());
+            return INT_RESPONSE_WONT_PROCESS;
+        }
+        LOGGER.info("Updating user mapping: {} -> last local save ts: {}", userMapping.getEmail(), userMapping.getLastSavedTimestamp());
+        Integer sqlResult = diurnalTableUserMapping.updateLastSavedTimestamp(generateCompleteUserMapping(userMapping, emailHash));
+        LOGGER.info("Result of user updation: {}", sqlResult);
+        return sqlResult;
+    }
+
+    @ApiOperation(value = "update user-payment expiry ts", hidden = true)
+    @PostMapping("/update/user/timestamp/payment/expiry")
+    public Integer updateUserMappingPaymentExpiryTimestamp(@RequestBody UserMappingProto.UserMapping userMapping) {
+        Integer emailHash = retrieveHashEmail(userMapping.getEmail());
+        if (isEmailHashAbsent(emailHash)) {
+            LOGGER.warn("User not found for updation of payment expiry ts for email [{}]", userMapping.getEmail());
+            return INT_RESPONSE_WONT_PROCESS;
+        }
+        LOGGER.info("Updating user mapping: {} -> payment expiry ts: {}", userMapping.getEmail(), userMapping.getPaymentExpiryTimestamp());
+        Integer sqlResult = diurnalTableUserMapping.updatePaymentExpiryTimestamp(generateCompleteUserMapping(userMapping, emailHash));
+        LOGGER.info("Result of user updation: {}", sqlResult);
+        return sqlResult;
+    }
+
+    @ApiOperation(value = "update user-acc creation ts, NOT TO BE USED GENERALLY")
+    @PostMapping("/manual/update/user/timestamp/account/creation")
+    public Integer updateUserMappingAccountCreationTimestamp(@RequestParam String email,
+                                                             @RequestParam Long newAccountCreationTimestamp) {
+        Integer emailHash = retrieveHashEmail(refineEmail(email));
+        if (isEmailHashAbsent(emailHash)) {
+            LOGGER.warn("User not found for updation of acc creation ts for email [{}]", email);
+            return INT_RESPONSE_WONT_PROCESS;
+        }
+        LOGGER.info("Updating user mapping: {} -> acc creation ts: {}", email, newAccountCreationTimestamp);
+        Integer sqlResult = diurnalTableUserMapping.updateAccountCreationTimestamp(generateCompleteUserMapping(
+                DEFAULT_MOBILE, refineEmail(email), DEFAULT_USER_NAME, DEFAULT_PREMIUM_USER_STATUS, DEFAULT_USER_CRED_HASH, emailHash,
+                DEFAULT_LAST_CLOUD_SAVE_TS, DEFAULT_LAST_SAVE_TS, DEFAULT_PAYMENT_EXPIRY_TS, newAccountCreationTimestamp, DEFAULT_CURRENCY
+        ));
+        LOGGER.info("Result of user updation: {}", sqlResult);
+        return sqlResult;
+    }
+
     @PatchMapping("/manual/update/user/premium")
     public Integer updatePremiumUserMappingManually(@RequestParam String email,
                                                     @RequestParam(defaultValue = "false") Boolean premiumUserStatus) {

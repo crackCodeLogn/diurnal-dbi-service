@@ -103,6 +103,27 @@ public class DataController {
         return RESPOND_FALSE_BOOL;
     }
 
+    @ApiOperation(value = "push last cloud saved timestamp", hidden = true)
+    @PostMapping("/push/timestamp/save/cloud")
+    public ResponsePrimitiveProto.ResponsePrimitive pushLastCloudSaveTimestamp(@RequestBody UserMappingProto.UserMapping userMapping) {
+        LOGGER.info("Received push for last cloud save ts for [{}]", userMapping.getEmail());
+        return generateResponsePrimitiveInt(userMappingController.updateUserMappingLastCloudSaveTimestamp(userMapping));
+    }
+
+    @ApiOperation(value = "push last saved timestamp", hidden = true)
+    @PostMapping("/push/timestamp/save")
+    public ResponsePrimitiveProto.ResponsePrimitive pushLastSavedTimestamp(@RequestBody UserMappingProto.UserMapping userMapping) {
+        LOGGER.info("Received push for last save ts for [{}]", userMapping.getEmail());
+        return generateResponsePrimitiveInt(userMappingController.updateUserMappingLastSaveTimestamp(userMapping));
+    }
+
+    @ApiOperation(value = "push user info update for name, mobile and currency", hidden = true)
+    @PostMapping("/push/user/info")
+    public ResponsePrimitiveProto.ResponsePrimitive pushUserInfo(@RequestBody UserMappingProto.UserMapping userMapping) {
+        LOGGER.info("Received new user info for [{}] -> {}, {}, {}", userMapping.getEmail(), userMapping.getUsername(), userMapping.getMobile(), userMapping.getCurrency());
+        return generateResponsePrimitiveBool(userMappingController.updateUserInfo(userMapping));
+    }
+
     @ApiOperation(value = "retrieve user detail", hidden = true)
     @PostMapping("/retrieve/user")
     public UserMappingProto.UserMapping retrieveUserDetailsFromDb(@RequestBody DataTransitProto.DataTransit dataTransit) {

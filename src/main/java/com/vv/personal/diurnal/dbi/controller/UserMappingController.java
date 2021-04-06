@@ -211,6 +211,26 @@ public class UserMappingController {
         return sqlResult;
     }
 
+    @ApiOperation(value = "update user-info for name, mobile and currency", hidden = true)
+    @PostMapping("/update/user/info")
+    public Boolean updateUserInfo(@RequestBody UserMappingProto.UserMapping userMapping) {
+        Integer emailHash = retrieveHashEmail(userMapping.getEmail());
+        if (isEmailHashAbsent(emailHash)) {
+            LOGGER.warn("User not found for updation of user info for email [{}]", userMapping.getEmail());
+            return false;
+        }
+        LOGGER.info("Updating user mapping: {}", userMapping.getEmail());
+        UserMappingProto.UserMapping inflatedUserMapping = generateCompleteUserMapping(userMapping, emailHash);
+        if (diurnalTableUserMapping.updateEntity(inflatedUserMapping) == ONE
+                && diurnalTableUserMapping.updateMobile(inflatedUserMapping) == ONE
+                && diurnalTableUserMapping.updateCurrency(inflatedUserMapping) == ONE) {
+            LOGGER.info("Successfully updated user info!");
+            return true;
+        }
+        LOGGER.warn("Failed to update complete user info!!");
+        return false;
+    }
+
     @ApiOperation(value = "update user-acc creation ts, NOT TO BE USED GENERALLY")
     @PostMapping("/manual/update/user/timestamp/account/creation")
     public Integer updateUserMappingAccountCreationTimestamp(@RequestParam String email,

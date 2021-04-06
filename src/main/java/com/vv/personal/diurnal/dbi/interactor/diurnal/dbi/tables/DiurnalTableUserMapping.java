@@ -88,7 +88,7 @@ public class DiurnalTableUserMapping extends DiurnalDbi<UserMappingProto.UserMap
     }
 
     @Override
-    public int updateEntity(UserMappingProto.UserMapping userMapping) {
+    public int updateEntity(UserMappingProto.UserMapping userMapping) { //updates the user name
         String sql = String.format(UPDATE_STMT_USER_STR, TABLE,
                 COL_USER, userMapping.getUsername(),
                 COL_HASH_EMAIL, userMapping.getHashEmail());

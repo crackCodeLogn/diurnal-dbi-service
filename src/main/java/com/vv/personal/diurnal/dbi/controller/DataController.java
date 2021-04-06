@@ -41,14 +41,12 @@ public class DataController {
 
     @ApiOperation(value = "Sign up new user", hidden = true)
     @PostMapping("/signup")
-    public ResponsePrimitiveProto.ResponsePrimitive signUpUser(@RequestBody DataTransitProto.DataTransit dataTransit) {
-        LOGGER.info("Rx-ed user to sign up -> [{}]", dataTransit.getEmail());
+    public ResponsePrimitiveProto.ResponsePrimitive signUpUser(@RequestBody UserMappingProto.UserMapping userMapping) {
+        LOGGER.info("Rx-ed user to sign up -> [{}]", userMapping.getEmail());
         StopWatch stopWatch = genericConfig.procureStopWatch();
         try {
-            UserMappingProto.UserMapping userMapping = DiurnalUtil.generateUserMapping(dataTransit.getMobile(), dataTransit.getEmail(), dataTransit.getUser(),
-                    dataTransit.getPremiumUser(), dataTransit.getHashCred());
             boolean signUpResult = userMappingController.createUserMapping(userMapping) == ONE;
-            LOGGER.info("Sign up result for [{}] => {}", dataTransit.getEmail(), signUpResult);
+            LOGGER.info("Sign up result for [{}] => {}", userMapping.getEmail(), signUpResult);
             return signUpResult ? RESPOND_TRUE_BOOL : RESPOND_FALSE_BOOL;
         } finally {
             stopWatch.stop();

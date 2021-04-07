@@ -172,13 +172,12 @@ public class UserMappingController {
     @ApiOperation(value = "update user-cloud save ts", hidden = true)
     @PostMapping("/update/user/timestamp/save/cloud")
     public Integer updateUserMappingLastCloudSaveTimestamp(@RequestBody UserMappingProto.UserMapping userMapping) {
-        Integer emailHash = retrieveHashEmail(userMapping.getEmail());
-        if (isEmailHashAbsent(emailHash)) {
-            LOGGER.warn("User not found for updation of last cloud save ts for email [{}]", userMapping.getEmail());
-            return INT_RESPONSE_WONT_PROCESS;
+        if (userMapping.getHashEmail() == 0) {
+            LOGGER.warn("Emailhash not supplied in the user mapping: {}", userMapping);
+            return 0;
         }
         LOGGER.info("Updating user mapping: {} -> last cloud save ts: {}", userMapping.getEmail(), userMapping.getLastCloudSaveTimestamp());
-        Integer sqlResult = diurnalTableUserMapping.updateLastCloudSaveTimestamp(generateCompleteUserMapping(userMapping, emailHash));
+        Integer sqlResult = diurnalTableUserMapping.updateLastCloudSaveTimestamp(userMapping);
         LOGGER.info("Result of user updation: {}", sqlResult);
         return sqlResult;
     }

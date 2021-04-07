@@ -6,6 +6,7 @@ import com.vv.personal.diurnal.artifactory.generated.UserMappingProto;
 import com.vv.personal.diurnal.dbi.config.GenericConfig;
 import com.vv.personal.diurnal.dbi.engine.transformer.TransformFullBackupToProtos;
 import com.vv.personal.diurnal.dbi.util.DiurnalUtil;
+import com.vv.personal.diurnal.dbi.util.TimingUtil;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
@@ -93,21 +94,22 @@ public class DataController {
                     emailHash);
             if (transformFullBackupToProtos.transformWithoutSuppliedDate()) {
                 List<Integer> bulkEntryDayOpResult = entryDayController.deleteAndCreateEntryDays(transformFullBackupToProtos.getEntryDayList());
-                if (bulkEntryDayOpResult.stream().allMatch(integer -> integer == 1))
-                    return generateResponsePrimitiveBool(true);
+                if (bulkEntryDayOpResult.stream().allMatch(integer -> integer == 1)) {
+                    UserMappingProto.UserMapping userMapping = UserMappingProto.UserMapping.newBuilder()
+                            .setEmail(dataTransit.getEmail())
+                            .setHashEmail(emailHash)
+                            .setLastCloudSaveTimestamp(TimingUtil.extractCurrentUtcTimestamp())
+                            .build();
+                    return generateResponsePrimitiveBool(userMappingController.updateUserMappingLastCloudSaveTimestamp(userMapping) == ONE);
+                }
+            } else {
+                LOGGER.warn("Incomplete / incorrect save to cloud done!!");
             }
         } finally {
             stopWatch.stop();
             LOGGER.info("Pushing backup to cloud operation took: {} ms", stopWatch.getTime(TimeUnit.MILLISECONDS));
         }
         return RESPOND_FALSE_BOOL;
-    }
-
-    @ApiOperation(value = "push last cloud saved timestamp", hidden = true)
-    @PostMapping("/push/timestamp/save/cloud")
-    public ResponsePrimitiveProto.ResponsePrimitive pushLastCloudSaveTimestamp(@RequestBody UserMappingProto.UserMapping userMapping) {
-        LOGGER.info("Received push for last cloud save ts for [{}]", userMapping.getEmail());
-        return generateResponsePrimitiveInt(userMappingController.updateUserMappingLastCloudSaveTimestamp(userMapping));
     }
 
     @ApiOperation(value = "push last saved timestamp", hidden = true)

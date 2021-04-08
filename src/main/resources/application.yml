@@ -37,5 +37,8 @@ dbi:
   tables:
     create:
       onStartup: ${DBI_TABLES_CREATE_ONSTARTUP:true}
+  inactive:
+    timeout:
+      seconds: ${DBI_INACTIVE_TIMEOUT_SECONDS:30}
 
 logging.level.org.springframework.web: ${LOGGING:INFO}

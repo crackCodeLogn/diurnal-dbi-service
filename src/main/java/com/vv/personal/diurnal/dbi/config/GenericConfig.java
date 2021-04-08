@@ -1,7 +1,6 @@
 package com.vv.personal.diurnal.dbi.config;
 
 import org.apache.commons.lang3.time.StopWatch;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
@@ -13,16 +12,10 @@ import org.springframework.context.annotation.Scope;
 @Configuration
 public class GenericConfig {
 
-    @Value("${dbi.inactive.timeout.seconds:30}")
-    private Integer dbiInactiveTimeoutSeconds;
-
     @Scope("prototype")
     @Bean(initMethod = "start", destroyMethod = "stop")
     public StopWatch procureStopWatch() {
         return new StopWatch();
     }
 
-    public Integer getDbiInactiveTimeoutSeconds() {
-        return dbiInactiveTimeoutSeconds;
-    }
 }

@@ -1,7 +1,7 @@
 package com.vv.personal.diurnal.dbi.component.activity;
 
 import com.vv.personal.diurnal.dbi.component.ShutdownManager;
-import com.vv.personal.diurnal.dbi.config.GenericConfig;
+import com.vv.personal.diurnal.dbi.config.TimerConfig;
 import com.vv.personal.diurnal.dbi.util.TimerUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,12 +28,11 @@ public class InactiveTimerComponent implements WebMvcConfigurer, HandlerIntercep
     @Autowired
     private ShutdownManager shutdownManager;
     @Autowired
-    private GenericConfig genericConfig;
+    private TimerConfig timerConfig;
 
     //need to keep this synchronized in order to avoid all web req creating their own timer
     @Override
     public synchronized boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        LOGGER.info("Cancelling inactive timer [{}] and restarting it thereafter", inactiveTimer);
         restartInactiveTimer();
         return true;
     }
@@ -49,10 +48,13 @@ public class InactiveTimerComponent implements WebMvcConfigurer, HandlerIntercep
     }
 
     private void restartInactiveTimer() {
-        inactiveTimer.cancel();
-        //inactiveTimer.purge();
-        inactiveTimer = TimerUtil.generateNewTimer();
-        TimerUtil.scheduleTimer(inactiveTimer, procureInactiveTimerTask(), genericConfig.getDbiInactiveTimeoutSeconds());
+        if (timerConfig.isDbiInactiveTimeoutEnabled()) {
+            LOGGER.info("Cancelling inactive timer [{}] and restarting it thereafter", inactiveTimer);
+            inactiveTimer.cancel();
+            //inactiveTimer.purge();
+            inactiveTimer = TimerUtil.generateNewTimer();
+            TimerUtil.scheduleTimer(inactiveTimer, procureInactiveTimerTask(), timerConfig.getDbiInactiveTimeoutSeconds());
+        }
     }
 
     private TimerTask procureInactiveTimerTask() {
@@ -60,7 +62,7 @@ public class InactiveTimerComponent implements WebMvcConfigurer, HandlerIntercep
             @Override
             public void run() {
                 LOGGER.warn("*** Attention, shutting down now ***");
-                shutdownManager.initiateShutdown(0);
+                shutdownManager.initiateShutdown(143);
             }
         };
     }

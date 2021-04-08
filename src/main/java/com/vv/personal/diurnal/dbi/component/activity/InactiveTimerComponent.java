@@ -44,6 +44,7 @@ public class InactiveTimerComponent implements WebMvcConfigurer, HandlerIntercep
 
     @PostConstruct
     public void postHaste() {
+        LOGGER.info("Is DBI InactiveTimeout enabled: {}", timerConfig.isDbiInactiveTimeoutEnabled());
         restartInactiveTimer();
     }
 

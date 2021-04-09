@@ -16,11 +16,18 @@ public class TimerConfig {
     @Value("${dbi.inactive.timeout.seconds:30}")
     private Integer dbiInactiveTimeoutSeconds;
 
+    @Value("${dbi.shutdown.exit.code:0}")
+    private Integer dbiShutdownExitCode;
+
     public boolean isDbiInactiveTimeoutEnabled() {
         return dbiInactiveTimeoutEnabled;
     }
 
     public Integer getDbiInactiveTimeoutSeconds() {
         return dbiInactiveTimeoutSeconds;
+    }
+
+    public Integer getDbiShutdownExitCode() {
+        return dbiShutdownExitCode;
     }
 }

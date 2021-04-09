@@ -63,7 +63,7 @@ public class InactiveTimerComponent implements WebMvcConfigurer, HandlerIntercep
             @Override
             public void run() {
                 LOGGER.warn("*** Attention, shutting down now ***");
-                shutdownManager.initiateShutdown(0);
+                shutdownManager.initiateShutdown(timerConfig.getDbiShutdownExitCode());
 
                 LOGGER.info("Shutting down inactive-timer task");
                 inactiveTimer.cancel();

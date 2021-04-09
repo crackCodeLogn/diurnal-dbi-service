@@ -196,6 +196,15 @@ public abstract class DiurnalDbi<T, K> implements IDiurnalDbi<T, K> {
         return csvDump.getAbsolutePath();
     }
 
+    public void destroyExecutors() {
+        LOGGER.info("Shutting down singleWriterThread executor");
+        if (!singleWriterThread.isShutdown())
+            singleWriterThread.shutdown();
+        LOGGER.info("Shutting down multiReadThreads executor");
+        if (!multiReadThreads.isShutdown())
+            multiReadThreads.shutdown();
+    }
+
     public DiurnalDbi<T, K> setCsvDumpLocationFolder(String csvDumpLocationFolder) {
         this.csvDumpLocationFolder = csvDumpLocationFolder;
         return this;

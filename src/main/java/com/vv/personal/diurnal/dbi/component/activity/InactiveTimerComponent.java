@@ -54,16 +54,20 @@ public class InactiveTimerComponent implements WebMvcConfigurer, HandlerIntercep
             inactiveTimer.cancel();
             //inactiveTimer.purge();
             inactiveTimer = TimerUtil.generateNewTimer();
-            TimerUtil.scheduleTimer(inactiveTimer, procureInactiveTimerTask(), timerConfig.getDbiInactiveTimeoutSeconds());
+            TimerUtil.scheduleTimer(inactiveTimer, procureInactiveTimerTask(inactiveTimer), timerConfig.getDbiInactiveTimeoutSeconds());
         }
     }
 
-    private TimerTask procureInactiveTimerTask() {
+    private TimerTask procureInactiveTimerTask(Timer inactiveTimer) {
         return new TimerTask() {
             @Override
             public void run() {
                 LOGGER.warn("*** Attention, shutting down now ***");
                 shutdownManager.initiateShutdown(0);
+
+                LOGGER.info("Shutting down inactive-timer task");
+                inactiveTimer.cancel();
+                inactiveTimer.purge();
             }
         };
     }

@@ -49,14 +49,14 @@ public class DbiConfig {
         return new Authorizer(new Pbkdf2PasswordEncoder());
     }
 
-    @Bean
+    @Bean(destroyMethod = "destroyExecutors")
     @Qualifier("DiurnalTableUserMapping")
     public DiurnalTableUserMapping diurnalTableUserMapping() {
         return new DiurnalTableUserMapping(DbConstants.TABLE_DIURNAL_USER_MAPPING, DbConstants.PRIMARY_COL_USER_MAPPING, DiurnalDbConnector(), cachedDiurnal(),
                 DbiUtil::generateCreateTableSql, DIURNAL_USER_MAPPING_SQL);
     }
 
-    @Bean
+    @Bean(destroyMethod = "destroyExecutors")
     @Qualifier("DiurnalTableEntryDay")
     public DiurnalTableEntryDay diurnalTableEntryDays() {
         return new DiurnalTableEntryDay(TABLE_DIURNAL_ENTRY_DAY, PRIMARY_COL_ENTRY_DAY, DiurnalDbConnector(), cachedDiurnal(),

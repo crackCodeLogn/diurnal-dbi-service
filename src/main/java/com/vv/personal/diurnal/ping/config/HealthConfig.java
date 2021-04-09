@@ -4,7 +4,6 @@ import com.vv.personal.diurnal.ping.processor.Pinger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Scope;
 
 /**
  * @author Vivek
@@ -22,8 +21,7 @@ public class HealthConfig {
     @Value("${ping.retry.timeout:3}")
     private int pingRetryTimeout;
 
-    @Scope("prototype")
-    @Bean(value = "Pinger", destroyMethod = "destroyExecutor")
+    @Bean(destroyMethod = "destroyExecutor")
     public Pinger pinger() {
         return new Pinger(pingTimeout, pingRetryCount, pingRetryTimeout);
     }

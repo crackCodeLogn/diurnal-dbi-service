@@ -24,6 +24,7 @@ public class Pinger {
         this.pingRetryTimeoutSeconds = pingRetryTimeoutSeconds;
 
         this.pingChecker = Executors.newSingleThreadExecutor();
+        LOGGER.info("Initialized Pinger with {} thread and {} s ping timeout", 1, pingTimeoutSeconds);
     }
 
     public boolean allEndPointsActive(HealthFeign... healthFeigns) {
@@ -65,6 +66,7 @@ public class Pinger {
     }
 
     public void destroyExecutor() {
+        LOGGER.info("Shutting down pinging executor");
         if (!pingChecker.isShutdown())
             pingChecker.shutdown();
     }

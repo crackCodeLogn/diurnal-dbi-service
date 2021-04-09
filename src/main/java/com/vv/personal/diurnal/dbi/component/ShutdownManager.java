@@ -25,7 +25,6 @@ public class ShutdownManager {
             Thread.sleep(1200);
         } catch (InterruptedException ignored) {
         }
-        System.exit(returnCode);
     }
 
 }

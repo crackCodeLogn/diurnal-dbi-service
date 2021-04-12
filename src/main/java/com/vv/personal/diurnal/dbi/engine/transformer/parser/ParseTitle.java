@@ -1,6 +1,7 @@
 package com.vv.personal.diurnal.dbi.engine.transformer.parser;
 
 import com.vv.personal.diurnal.artifactory.generated.EntryProto;
+import com.vv.personal.diurnal.artifactory.generated.UserMappingProto;
 import com.vv.personal.diurnal.dbi.util.DiurnalUtil;
 import org.apache.commons.lang3.StringUtils;
 
@@ -15,7 +16,7 @@ public class ParseTitle extends AbstractLineParser {
     private int date;
     private String title;
     private EntryProto.Sign sign;
-    private EntryProto.Currency currency;
+    private UserMappingProto.Currency currency;
     private Double dayTotal;
 
     public ParseTitle(String line) {

@@ -1,6 +1,7 @@
 package com.vv.personal.diurnal.dbi.engine.transformer.parser;
 
 import com.vv.personal.diurnal.artifactory.generated.EntryProto;
+import com.vv.personal.diurnal.artifactory.generated.UserMappingProto;
 
 /**
  * @author Vivek
@@ -23,15 +24,26 @@ public abstract class AbstractLineParser implements LineParser {
         }
     }
 
-    protected EntryProto.Currency parseCurrency(String data) {
+    protected UserMappingProto.Currency parseCurrency(String data) {
         switch (data.trim()) {
-            case "$":
-                return EntryProto.Currency.USD;
-            case "$C":
-                return EntryProto.Currency.CND;
             case "₹":
+                return UserMappingProto.Currency.INR;
+            case "$":
+                return UserMappingProto.Currency.USD;
+            case "$C":
+                return UserMappingProto.Currency.CND;
+            case "¥":
+                return UserMappingProto.Currency.YEN;
+            case "€":
+                return UserMappingProto.Currency.EUR;
+            case "£":
+                return UserMappingProto.Currency.GBP;
+            case "₽":
+                return UserMappingProto.Currency.RUB;
+            case "₣":
+                return UserMappingProto.Currency.FR;
             default:
-                return EntryProto.Currency.INR;
+                return UserMappingProto.Currency.INR;
         }
     }
 }

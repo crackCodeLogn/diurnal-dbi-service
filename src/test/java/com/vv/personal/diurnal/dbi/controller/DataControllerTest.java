@@ -1,8 +1,8 @@
 package com.vv.personal.diurnal.dbi.controller;
 
-import com.vv.personal.diurnal.artifactory.generated.DataTransitProto;
 import com.vv.personal.diurnal.artifactory.generated.EntryDayProto;
 import com.vv.personal.diurnal.artifactory.generated.ResponsePrimitiveProto;
+import com.vv.personal.diurnal.artifactory.generated.UserMappingProto;
 import com.vv.personal.diurnal.dbi.config.GenericConfig;
 import com.vv.personal.diurnal.dbi.interactor.diurnal.dbi.tables.DiurnalTableEntryDay;
 import com.vv.personal.diurnal.dbi.util.DiurnalUtil;
@@ -78,13 +78,14 @@ public class DataControllerTest {
 
         when(userMappingController.retrieveHashEmail(email)).thenReturn(emailHash);
         when(userMappingController.retrievePremiumUserStatus(emailHash)).thenReturn(true);
+        when(userMappingController.updateUserMappingLastCloudSaveTimestamp(any(UserMappingProto.UserMapping.class))).thenReturn(1);
         when(diurnalTableEntryDay.deleteEntity(any(EntryDayProto.EntryDay.class))).thenReturn(0);
         when(diurnalTableEntryDay.pushNewEntity(any(EntryDayProto.EntryDay.class))).thenReturn(1);
         StopWatch stopWatch = procureStopWatch();
         when(genericConfig.procureStopWatch()).thenReturn(stopWatch);
         stopWatch.start();
         ResponsePrimitiveProto.ResponsePrimitive backupPushResult = dataController.pushWholeBackup(
-                DiurnalUtil.generateDataTransit(mobile, email, 20210304, DataTransitProto.Currency.INR,
+                DiurnalUtil.generateDataTransit(mobile, email, 20210304, UserMappingProto.Currency.INR,
                         StringUtils.join(testData, "\n")));
         assertTrue(backupPushResult.getBoolResponse());
 
@@ -92,7 +93,7 @@ public class DataControllerTest {
         stopWatch.start();
         when(userMappingController.retrievePremiumUserStatus(emailHash)).thenReturn(false);
         backupPushResult = dataController.pushWholeBackup(
-                DiurnalUtil.generateDataTransit(mobile, email, 20210304, DataTransitProto.Currency.INR,
+                DiurnalUtil.generateDataTransit(mobile, email, 20210304, UserMappingProto.Currency.INR,
                         StringUtils.join(testData, "\n")));
         assertFalse(backupPushResult.getBoolResponse());
     }

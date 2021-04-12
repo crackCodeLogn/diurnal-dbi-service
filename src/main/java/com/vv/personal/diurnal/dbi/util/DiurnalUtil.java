@@ -111,26 +111,26 @@ public class DiurnalUtil {
     @Deprecated
     public static EntryProto.Entry generateEntryOnPk(Long mobile, Integer date, Integer serial) {
         return generateEntry(mobile, date, serial,
-                EntryProto.Sign.NEGATIVE, EntryProto.Currency.INR, DEFAULT_AMOUNT, EMPTY_STR);
+                EntryProto.Sign.NEGATIVE, UserMappingProto.Currency.INR, DEFAULT_AMOUNT, EMPTY_STR);
     }
 
     @Deprecated
     public static EntryProto.Entry generateEntry(Long mobile, Integer date, Integer serial,
-                                                 EntryProto.Sign sign, EntryProto.Currency currency, Double amount, String description) {
+                                                 EntryProto.Sign sign, UserMappingProto.Currency currency, Double amount, String description) {
         return EntryProto.Entry.newBuilder()
                 .setMobile(mobile)
                 .setDate(date)
                 .setSerial(serial)
-                .setSign(sign).setCurrency(currency).setAmount(amount).setDescription(description)
+                .setSign(sign).setCurrency(currency.name()).setAmount(amount).setDescription(description)
                 .build();
     }
 
     // generates an instance of entry which is not distinct on it's own - for insertion in entryday
-    public static EntryProto.Entry generateLiteEntry(Integer serial, EntryProto.Sign sign, EntryProto.Currency currency, Double amount, String description) {
+    public static EntryProto.Entry generateLiteEntry(Integer serial, EntryProto.Sign sign, UserMappingProto.Currency currency, Double amount, String description) {
         return EntryProto.Entry.newBuilder()
                 .setSerial(serial)
                 .setSign(sign)
-                .setCurrency(currency)
+                .setCurrency(currency.name())
                 .setAmount(amount)
                 .setDescription(description)
                 .build();
@@ -153,12 +153,12 @@ public class DiurnalUtil {
                 .build();
     }
 
-    public static DataTransitProto.DataTransit generateDataTransit(Long mobile, String email, Integer date, DataTransitProto.Currency currency, String backupData) {
+    public static DataTransitProto.DataTransit generateDataTransit(Long mobile, String email, Integer date, UserMappingProto.Currency currency, String backupData) {
         return DataTransitProto.DataTransit.newBuilder()
                 .setMobile(mobile)
                 .setEmail(email)
                 .setDate(date)
-                .setCurrency(currency)
+                .setCurrency(currency.name())
                 .setBackupData(backupData)
                 .build();
     }

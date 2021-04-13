@@ -114,8 +114,7 @@ public class DiurnalTableEntryDay extends DiurnalDbi<EntryDayProto.EntryDay, Ent
         try {
             builder.setHashEmail(resultSet.getInt(COL_HASH_EMAIL));
             builder.setDate(resultSet.getInt(COL_DATE));
-            builder.setTitle(
-                    DiurnalUtil.refineDbStringForOriginal(resultSet.getString(COL_TITLE)));
+            builder.setTitle(DiurnalUtil.refineDbStringForOriginal(resultSet.getString(COL_TITLE)));
             builder.setEntriesAsString(
                     DiurnalUtil.refineDbStringForOriginal(resultSet.getString(COL_ENTRIES_AS_STRING))); //refinement - for getting quotes back
         } catch (SQLException throwables) {

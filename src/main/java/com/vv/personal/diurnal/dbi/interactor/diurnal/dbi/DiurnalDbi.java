@@ -69,7 +69,7 @@ public abstract class DiurnalDbi<T, K> implements IDiurnalDbi<T, K> {
                 LOGGER.error("Failed to execute SQL => [{}]. ", sql, throwables);
             } finally {
                 stopWatch.stop();
-                LOGGER.info("Non-update SQL execution complete in {}ms", stopWatch.getTime(TimeUnit.MILLISECONDS));
+                LOGGER.info("Non-update SQL execution completed in {}ms", stopWatch.getTime(TimeUnit.MILLISECONDS));
             }
             return null;
         };
@@ -83,7 +83,6 @@ public abstract class DiurnalDbi<T, K> implements IDiurnalDbi<T, K> {
 
     @Override
     public int executeUpdateSql(String sql) {
-        //LOGGER.info("Executing SQL => {}", sql);
         Callable<Integer> updateSqlTask = () -> {
             StopWatch stopWatch = new StopWatch();
             stopWatch.start();
@@ -95,7 +94,7 @@ public abstract class DiurnalDbi<T, K> implements IDiurnalDbi<T, K> {
                 LOGGER.error("Failed to execute SQL => [{}]. ", sql, throwables);
             } finally {
                 stopWatch.stop();
-                LOGGER.info("Update SQL execution complete in {}ms", stopWatch.getTime(TimeUnit.MILLISECONDS));
+                LOGGER.info("Update SQL execution completed in {}ms", stopWatch.getTime(TimeUnit.MILLISECONDS));
             }
             return -1;
         };

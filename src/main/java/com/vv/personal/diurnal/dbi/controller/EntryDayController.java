@@ -34,7 +34,6 @@ public class EntryDayController {
     @ApiOperation(value = "create entry day", hidden = true)
     @PostMapping("/create/entry-day")
     public Integer createEntryDay(@RequestBody EntryDayProto.EntryDay entryDay) {
-        LOGGER.info("Creating new entry-day: {} x {}", entryDay.getHashEmail(), entryDay.getDate());
         Integer sqlResult = diurnalTableEntryDay.pushNewEntity(entryDay);
         LOGGER.info("Result of new entry-day creation: {}", sqlResult);
         return sqlResult;

@@ -1,6 +1,7 @@
 package com.vv.personal.diurnal.dbi.interactor.diurnal.dbi.tables;
 
 import com.vv.personal.diurnal.artifactory.generated.EntryDayProto;
+import com.vv.personal.diurnal.artifactory.generated.UserMappingProto;
 import com.vv.personal.diurnal.dbi.config.DbiConfigForDiurnal;
 import com.vv.personal.diurnal.dbi.interactor.diurnal.cache.CachedDiurnal;
 import com.vv.personal.diurnal.dbi.interactor.diurnal.dbi.DiurnalDbi;
@@ -32,6 +33,8 @@ public class DiurnalTableEntryDay extends DiurnalDbi<EntryDayProto.EntryDay, Ent
             "WHERE \"%s\"=%d and \"%s\"=%d";
     private final String CHECK_STMT_ENTRY_EXISTS = "SELECT %s from %s " +
             "WHERE \"%s\"=%d and \"%s\"=%d";
+    private final String DELETE_STMT_ALL_ENTRY_DAY_OF_USER = "DELETE FROM %s " +
+            "WHERE \"%s\"=%d";
 
     private final String COL_DATE = "date";
     private final String COL_HASH_EMAIL = "hash_email";
@@ -133,4 +136,9 @@ public class DiurnalTableEntryDay extends DiurnalDbi<EntryDayProto.EntryDay, Ent
         return dataLines;
     }
 
+    public Integer bulkDeleteEntryDaysOfUser(UserMappingProto.UserMapping userMapping) {
+        String sql = String.format(DELETE_STMT_ALL_ENTRY_DAY_OF_USER, TABLE,
+                COL_HASH_EMAIL, userMapping.getHashEmail());
+        return executeUpdateSql(sql);
+    }
 }

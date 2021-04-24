@@ -126,6 +126,10 @@ public class TransformFullBackupToProtos {
         return entryDayListBuilder.build();
     }
 
+    public Integer getEmailHash() {
+        return emailHash;
+    }
+
     private enum LINE_TYPE {
         TITLE, ENTRY
     }

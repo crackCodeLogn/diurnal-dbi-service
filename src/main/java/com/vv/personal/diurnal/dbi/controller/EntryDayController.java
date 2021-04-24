@@ -2,7 +2,10 @@ package com.vv.personal.diurnal.dbi.controller;
 
 import com.google.protobuf.AbstractMessage;
 import com.vv.personal.diurnal.artifactory.generated.EntryDayProto;
+import com.vv.personal.diurnal.artifactory.generated.UserMappingProto;
+import com.vv.personal.diurnal.dbi.engine.transformer.TransformFullBackupToProtos;
 import com.vv.personal.diurnal.dbi.interactor.diurnal.dbi.tables.DiurnalTableEntryDay;
+import com.vv.personal.diurnal.dbi.util.DiurnalUtil;
 import io.swagger.annotations.ApiOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -92,14 +95,33 @@ public class EntryDayController {
         return deleteEntryDay(generateEntryDayOnPk(emailHash, date));
     }
 
-    @ApiOperation(value = "delete then create entry-days", hidden = true)
-    @PostMapping("/delete-create/entry-days")
-    public List<Integer> deleteAndCreateEntryDays(@RequestBody EntryDayProto.EntryDayList entryDayList) {
-        if (entryDayList.getEntryDayList().isEmpty()) return EMPTY_LIST_INT;
-        LOGGER.info("Received request to perform delete-create op on {} entry-days", entryDayList.getEntryDayCount());
-        bulkDeleteEntryDays(entryDayList);
+    @ApiOperation(value = "delete all entry-days of an user", hidden = true)
+    @PostMapping("/delete/entry-days/user")
+    public Integer bulkDeleteEntryDaysOfUser(@RequestBody UserMappingProto.UserMapping userMapping) {
+        LOGGER.info("Bulk deleting entry-days of user with hash: {}", userMapping.getHashEmail());
+        Integer bulkEntriesDeletionResult = diurnalTableEntryDay.bulkDeleteEntryDaysOfUser(userMapping);
+        LOGGER.info("Result of bulk entry-days deletion: {} for user with hash: {}", bulkEntriesDeletionResult, userMapping.getHashEmail());
+        return bulkEntriesDeletionResult;
+    }
 
-        List<Integer> bulkOpResult = bulkCreateEntryDays(entryDayList);
+    @ApiOperation(value = "manually delete all entry-days of an user")
+    @PostMapping("/manual/delete/entry-days/user")
+    public Integer bulkDeleteEntryDaysOfUserManually(@RequestParam String email) {
+        email = refineEmail(email);
+        Integer emailHash = userMappingController.retrieveHashEmail(email);
+        if (isEmailHashAbsent(emailHash)) {
+            LOGGER.warn("User doesn't exist for email: {}", email);
+            return INT_RESPONSE_WONT_PROCESS;
+        }
+        return bulkDeleteEntryDaysOfUser(generateUserMappingOnPk(emailHash));
+    }
+
+    public List<Integer> deleteAndCreateEntryDays(TransformFullBackupToProtos transformFullBackupToProtos) {
+        if (transformFullBackupToProtos.getEntryDayList().getEntryDayCount() == 0) return EMPTY_LIST_INT;
+        LOGGER.info("Received request to perform delete-create op on {} entry-days", transformFullBackupToProtos.getEntryDayList().getEntryDayCount());
+        bulkDeleteEntryDaysOfUser(DiurnalUtil.generateUserMappingOnPk(transformFullBackupToProtos.getEmailHash()));
+
+        List<Integer> bulkOpResult = bulkCreateEntryDays(transformFullBackupToProtos.getEntryDayList());
         if (bulkOpResult.stream().anyMatch(integer -> integer == 0)) {
             LOGGER.warn("Bulk create had some issues while creating certain entry-days. Check log for further details");
         }

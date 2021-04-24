@@ -93,7 +93,7 @@ public class DataController {
                     Arrays.asList(StringUtils.split(dataTransit.getBackupData(), NEW_LINE)),
                     emailHash);
             if (transformFullBackupToProtos.transformWithoutSuppliedDate()) {
-                List<Integer> bulkEntryDayOpResult = entryDayController.deleteAndCreateEntryDays(transformFullBackupToProtos.getEntryDayList());
+                List<Integer> bulkEntryDayOpResult = entryDayController.deleteAndCreateEntryDays(transformFullBackupToProtos);
                 if (bulkEntryDayOpResult.stream().allMatch(integer -> integer == 1)) {
                     UserMappingProto.UserMapping userMapping = UserMappingProto.UserMapping.newBuilder()
                             .setEmail(dataTransit.getEmail())

@@ -22,6 +22,7 @@ public class Constants {
     public static final String REPLACE_JSON_DI = "`@%"; //DI - double inverts
     public static final String DEFAULT_TITLE = "-TITLE-";
     public static final String PIPE = "|";
+    public static final String ENTRIES_SQL_DATA_SEPARATOR = "%~@";
 
     public static final int NA_INT = -1;
     public static final int ONE = 1;
@@ -46,6 +47,7 @@ public class Constants {
 
     public static final ResponsePrimitiveProto.ResponsePrimitive RESPOND_FALSE_BOOL = ResponsePrimitiveProto.ResponsePrimitive.newBuilder().setBoolResponse(false).build();
     public static final ResponsePrimitiveProto.ResponsePrimitive RESPOND_TRUE_BOOL = ResponsePrimitiveProto.ResponsePrimitive.newBuilder().setBoolResponse(true).build();
+    public static final ResponsePrimitiveProto.ResponsePrimitive RESPOND_EMPTY_BODY = ResponsePrimitiveProto.ResponsePrimitive.newBuilder().setResponse(EMPTY_STR).build();
     public static final UserMappingProto.UserMapping EMPTY_USER_MAPPING = UserMappingProto.UserMapping.newBuilder().build();
 
     public static final Set<String> TITLES_TO_EXEMPT = new HashSet<>();

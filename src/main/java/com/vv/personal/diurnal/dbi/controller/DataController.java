@@ -1,9 +1,11 @@
 package com.vv.personal.diurnal.dbi.controller;
 
 import com.vv.personal.diurnal.artifactory.generated.DataTransitProto;
+import com.vv.personal.diurnal.artifactory.generated.EntryDayProto;
 import com.vv.personal.diurnal.artifactory.generated.ResponsePrimitiveProto;
 import com.vv.personal.diurnal.artifactory.generated.UserMappingProto;
 import com.vv.personal.diurnal.dbi.config.GenericConfig;
+import com.vv.personal.diurnal.dbi.engine.transformer.TransformBackupToString;
 import com.vv.personal.diurnal.dbi.engine.transformer.TransformFullBackupToProtos;
 import com.vv.personal.diurnal.dbi.util.DiurnalUtil;
 import com.vv.personal.diurnal.dbi.util.TimingUtil;
@@ -110,6 +112,31 @@ public class DataController {
             LOGGER.info("Pushing backup to cloud operation took: {} ms", stopWatch.getTime(TimeUnit.MILLISECONDS));
         }
         return RESPOND_FALSE_BOOL;
+    }
+
+    @ApiOperation(value = "Read DB and convert to string to respond to app", hidden = true)
+    @PostMapping("/retrieve/backup/whole")
+    public ResponsePrimitiveProto.ResponsePrimitive retrieveWholeBackup(@RequestBody DataTransitProto.DataTransit dataTransit) {
+        LOGGER.info("Rx-ed request in dataTransit to retrieve backup from DB: {} bytes, for email [{}]", dataTransit.getBackupData().getBytes().length, dataTransit.getEmail());
+        StopWatch stopWatch = genericConfig.procureStopWatch();
+        try {
+            Integer emailHash = userMappingController.retrieveHashEmail(dataTransit.getEmail());
+            if (isEmailHashAbsent(emailHash)) {
+                LOGGER.warn("User doesn't exist for email: {}", dataTransit.getEmail());
+                return RESPOND_EMPTY_BODY;
+            }
+            if (!userMappingController.retrievePremiumUserStatus(emailHash)) {
+                LOGGER.warn("User for email [{}] doesn't have premium-user privileges, cannot proceed with cloud retrieval!", dataTransit.getEmail());
+                return RESPOND_EMPTY_BODY;
+            }
+            EntryDayProto.EntryDayList enquiredEntryDayList = entryDayController.retrieveAllEntryDaysOfEmailHash(generateUserMappingOnPk(emailHash));
+            TransformBackupToString transformBackupToString = new TransformBackupToString(enquiredEntryDayList);
+            String backUpData = transformBackupToString.transform();
+            return generateResponsePrimitiveString(backUpData);
+        } finally {
+            stopWatch.stop();
+            LOGGER.info("Retrieval of cloud backup operation took: {} ms", stopWatch.getTime(TimeUnit.MILLISECONDS));
+        }
     }
 
     @ApiOperation(value = "push last saved timestamp", hidden = true)

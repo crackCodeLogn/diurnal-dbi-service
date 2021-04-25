@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.vv.personal.diurnal.dbi.constants.Constants.*;
@@ -107,7 +108,6 @@ public class EntryDayController {
     @ApiOperation(value = "manually delete all entry-days of an user")
     @PostMapping("/manual/delete/entry-days/user")
     public Integer bulkDeleteEntryDaysOfUserManually(@RequestParam String email) {
-        email = refineEmail(email);
         Integer emailHash = userMappingController.retrieveHashEmail(email);
         if (isEmailHashAbsent(emailHash)) {
             LOGGER.warn("User doesn't exist for email: {}", email);
@@ -161,6 +161,25 @@ public class EntryDayController {
     public List<String> retrieveAllEntryDaysManually() {
         LOGGER.info("Obtained manual req for retrieving all entry-days");
         return performBulkOpStr(retrieveAllEntryDays().getEntryDayList(), AbstractMessage::toString);
+    }
+
+    @ApiOperation(value = "retrieve all entry-days of an email-hash", hidden = true)
+    @GetMapping("/retrieve/all/entry-days/email-hash")
+    public EntryDayProto.EntryDayList retrieveAllEntryDaysOfEmailHash(@RequestParam UserMappingProto.UserMapping userMapping) {
+        LOGGER.info("Retrieving all entry-days of email-hash => {}", userMapping.getHashEmail());
+        EntryDayProto.EntryDayList entryDayList = diurnalTableEntryDay.retrieveSome(generateEntryDayOnHash(userMapping.getHashEmail()));
+        LOGGER.info("Result of retrieving all: {} entry-days of email hash {}", entryDayList.getEntryDayCount(), userMapping.getHashEmail());
+        return entryDayList;
+    }
+
+    @GetMapping("/manual/retrieve/all/entry-days/email-hash")
+    public List<String> retrieveAllEntryDaysOfEmailHashManually(@RequestParam String email) {
+        Integer emailHash = userMappingController.retrieveHashEmail(email);
+        if (isEmailHashAbsent(emailHash)) {
+            LOGGER.warn("User not found for entry-days retrieval for email [{}]", email);
+            return new ArrayList<>();
+        }
+        return performBulkOpStr(retrieveAllEntryDaysOfEmailHash(generateUserMappingOnPk(emailHash)).getEntryDayList(), AbstractMessage::toString);
     }
 
     @ApiOperation(value = "check if entry-day exists", hidden = true)

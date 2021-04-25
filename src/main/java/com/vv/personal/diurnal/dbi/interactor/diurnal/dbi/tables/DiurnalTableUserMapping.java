@@ -227,7 +227,7 @@ public class DiurnalTableUserMapping extends DiurnalDbi<UserMappingProto.UserMap
     }
 
     @Override
-    public UserMappingProto.UserMapping retrieveSelective(UserMappingProto.UserMapping userMapping) {
+    public UserMappingProto.UserMapping retrieveSingle(UserMappingProto.UserMapping userMapping) {
         String sql = String.format(SELECT_STMT_ENTRY_SINGLE_ROW, TABLE,
                 COL_HASH_EMAIL, userMapping.getHashEmail());
         ResultSet resultSet = executeNonUpdateSql(sql);
@@ -237,6 +237,11 @@ public class DiurnalTableUserMapping extends DiurnalDbi<UserMappingProto.UserMap
             LOGGER.error("Failed to retrieve email hash from db. ", throwables);
         }
         return EMPTY_USER_MAPPING;
+    }
+
+    @Override
+    public UserMappingProto.UserMappingList retrieveSome(UserMappingProto.UserMapping userMapping) {
+        return null;
     }
 
     @Override

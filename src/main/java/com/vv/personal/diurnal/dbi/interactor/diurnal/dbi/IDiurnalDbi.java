@@ -21,7 +21,9 @@ public interface IDiurnalDbi<T, K> extends IDbi {
 
     K retrieveAll();
 
-    T retrieveSelective(T t);
+    T retrieveSingle(T t);
+
+    K retrieveSome(T t);
 
     T generateDetail(ResultSet resultSet);
 

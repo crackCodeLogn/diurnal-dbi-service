@@ -268,7 +268,7 @@ public class UserMappingController {
     @GetMapping("/retrieve/user")
     public UserMappingProto.UserMapping retrieveUserMapping(@RequestParam Integer emailHash) {
         LOGGER.info("Retrieving user details for [{}]", emailHash);
-        UserMappingProto.UserMapping retrievedUserMapping = diurnalTableUserMapping.retrieveSelective(
+        UserMappingProto.UserMapping retrievedUserMapping = diurnalTableUserMapping.retrieveSingle(
                 generateUserMappingOnPk(emailHash));
         LOGGER.info("Retrieved user detail");
         return retrievedUserMapping;

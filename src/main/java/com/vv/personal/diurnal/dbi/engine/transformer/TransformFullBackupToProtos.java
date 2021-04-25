@@ -17,6 +17,7 @@ import java.util.Queue;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import static com.vv.personal.diurnal.dbi.constants.Constants.ENTRIES_SQL_DATA_SEPARATOR;
 import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.generateLiteEntry;
 import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.procureStopWatch;
 
@@ -111,7 +112,7 @@ public class TransformFullBackupToProtos {
                                 .map(JsonConverterUtil::convertEntryToCompactedJson)
                                 .map(DiurnalUtil::processStringForSqlPush)
                                 .collect(Collectors.toList()),
-                        "<%~@^>"));
+                        ENTRIES_SQL_DATA_SEPARATOR));
         entries.clear();
         return entryDayBuilder.build();
     }

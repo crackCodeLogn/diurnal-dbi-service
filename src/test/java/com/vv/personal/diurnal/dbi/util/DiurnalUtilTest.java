@@ -26,4 +26,11 @@ public class DiurnalUtilTest {
         System.out.println(result);
         assertEquals(input, result);
     }
+
+    @Test
+    public void testConvertEntryDayDateToDisplayFormat() {
+        String convertedDisplayDate = DiurnalUtil.convertEntryDayDateToDisplayFormat(20201211);
+        System.out.println(convertedDisplayDate);
+        assertEquals("11-12-2020", convertedDisplayDate);
+    }
 }

@@ -7,7 +7,11 @@ import com.vv.personal.diurnal.artifactory.generated.EntryProto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 import static com.vv.personal.diurnal.dbi.constants.Constants.EMPTY_STR;
+import static com.vv.personal.diurnal.dbi.constants.Constants.ENTRIES_SQL_DATA_SEPARATOR;
 
 /**
  * @author Vivek
@@ -37,7 +41,8 @@ public class JsonConverterUtil {
                 .trim();
     }
 
-    public static EntryProto.Entry convertToEntryProto(String json) {
+    public static EntryProto.Entry convertSqlEntryToProtoEntry(String sqlEntry) {
+        String json = DiurnalUtil.refineDbStringForOriginal(sqlEntry);
         EntryProto.Entry.Builder builder = EntryProto.Entry.newBuilder();
         try {
             JsonFormat.parser().ignoringUnknownFields().merge(json, builder);
@@ -45,6 +50,15 @@ public class JsonConverterUtil {
             LOGGER.error("Failed to convert {} to entry proto. ", json, e);
         }
         return builder.build();
+    }
+
+    public static EntryProto.EntryList convertSqlEntriesToEntryProtoList(String sqlEntriesData) {
+        EntryProto.EntryList.Builder entryListBuilder = EntryProto.EntryList.newBuilder();
+        entryListBuilder.addAllEntry(
+                Arrays.stream(sqlEntriesData.split(ENTRIES_SQL_DATA_SEPARATOR)) //not sure why StringUtils.split is messing up on this.
+                        .map(JsonConverterUtil::convertSqlEntryToProtoEntry)
+                        .collect(Collectors.toList()));
+        return entryListBuilder.build();
     }
 
     public static <T> String convertToJson(T object) {

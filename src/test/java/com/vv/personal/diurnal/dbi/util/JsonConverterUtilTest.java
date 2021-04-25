@@ -72,4 +72,20 @@ public class JsonConverterUtilTest {
         }
     }
 
+    @Test
+    public void testConvertSqlEntryToProtoEntry() {
+        String sqlEntry = "{`@%currency`@%: `@%INR`@%,`@%amount`@%: 100.0,`@%description`@%: `@%lunch`@%}";
+        EntryProto.Entry convertedEntry = JsonConverterUtil.convertSqlEntryToProtoEntry(sqlEntry);
+        System.out.println(convertedEntry);
+    }
+
+    @Test
+    public void testConvertSqlEntriesToEntryProtoList() {
+        String sqlEntries = "{`@%currency`@%: `@%INR`@%,`@%amount`@%: 100.0,`@%description`@%: `@%lunch`@%}%~@{`@%currency`@%: `@%INR`@%,`@%amount`@%: 110.0,`@%description`@%: `@%surf excel matic 500gm`@%,`@%serial`@%: 1}%~@{`@%currency`@%: `@%INR`@%,`@%amount`@%: 30.0,`@%description`@%: `@%2 x bhel`@%,`@%serial`@%: 2}%~@{`@%currency`@%: `@%INR`@%,`@%amount`@%: 159.0,`@%description`@%: `@%pillow`@%,`@%serial`@%: 3}%~@{`@%currency`@%: `@%INR`@%,`@%amount`@%: 155.0,`@%description`@%: `@%cornflakes original`@%,`@%serial`@%: 4}%~@{`@%currency`@%: `@%INR`@%,`@%amount`@%: 19.0,`@%description`@%: `@%channi`@%,`@%serial`@%: 5}%~@{`@%currency`@%: `@%INR`@%,`@%amount`@%: 20.0,`@%description`@%: `@%2 x perk (Rs 5) + 1 munch (Rs 10)`@%,`@%serial`@%: 6}";
+        EntryProto.EntryList convertedEntryList = JsonConverterUtil.convertSqlEntriesToEntryProtoList(sqlEntries);
+        System.out.println(convertedEntryList);
+        assertEquals(7, convertedEntryList.getEntryCount());
+        assertEquals("channi", convertedEntryList.getEntry(5).getDescription());
+    }
+
 }

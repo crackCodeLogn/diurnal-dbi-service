@@ -17,8 +17,7 @@ import java.util.Queue;
 import java.util.function.Function;
 
 import static com.vv.personal.diurnal.dbi.constants.Constants.ONE;
-import static com.vv.personal.diurnal.dbi.constants.DbConstants.PRIMARY_COL_ENTRY_DAY;
-import static com.vv.personal.diurnal.dbi.constants.DbConstants.SELECT_ALL;
+import static com.vv.personal.diurnal.dbi.constants.DbConstants.*;
 
 /**
  * @author Vivek
@@ -86,6 +85,24 @@ public class DiurnalTableEntryDay extends DiurnalDbi<EntryDayProto.EntryDay, Ent
     public EntryDayProto.EntryDayList retrieveAll() {
         String sql = String.format(SELECT_ALL, TABLE);
         ResultSet resultSet = executeNonUpdateSql(sql);
+        return parseResultSet(resultSet, sql);
+    }
+
+    @Override
+    public EntryDayProto.EntryDay retrieveSingle(EntryDayProto.EntryDay entryDay) {
+        return null;
+    }
+
+    @Override
+    public EntryDayProto.EntryDayList retrieveSome(EntryDayProto.EntryDay queryEntryDay) {
+        //for now only retrieving some on basis of the hash_email for the backup data retrieval step
+        String sql = String.format(SELECT_ALL_ON_EMAIL_HASH, TABLE,
+                COL_HASH_EMAIL, queryEntryDay.getHashEmail());
+        ResultSet resultSet = executeNonUpdateSql(sql);
+        return parseResultSet(resultSet, sql);
+    }
+
+    private EntryDayProto.EntryDayList parseResultSet(ResultSet resultSet, String sql) {
         int rowsReturned = 0;
         EntryDayProto.EntryDayList.Builder entriesBuilder = EntryDayProto.EntryDayList.newBuilder();
         try {
@@ -104,11 +121,6 @@ public class DiurnalTableEntryDay extends DiurnalDbi<EntryDayProto.EntryDay, Ent
         }
         LOGGER.info("Received {} entries for sql => '{}'", rowsReturned, sql);
         return entriesBuilder.build();
-    }
-
-    @Override
-    public EntryDayProto.EntryDay retrieveSelective(EntryDayProto.EntryDay entryDay) {
-        return null;
     }
 
     @Override
@@ -141,4 +153,5 @@ public class DiurnalTableEntryDay extends DiurnalDbi<EntryDayProto.EntryDay, Ent
                 COL_HASH_EMAIL, userMapping.getHashEmail());
         return executeUpdateSql(sql);
     }
+
 }

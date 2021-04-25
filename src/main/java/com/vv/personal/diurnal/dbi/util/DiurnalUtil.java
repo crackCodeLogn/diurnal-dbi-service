@@ -6,6 +6,8 @@ import org.apache.commons.lang3.time.StopWatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
@@ -140,6 +142,10 @@ public class DiurnalUtil {
         return generateEntryDay(emailHash, date, EMPTY_STR);
     }
 
+    public static EntryDayProto.EntryDay generateEntryDayOnHash(Integer emailHash) {
+        return generateEntryDay(emailHash, NA_INT, EMPTY_STR);
+    }
+
     public static EntryDayProto.EntryDay generateEntryDay(Integer emailHash, Integer date, String entriesAsString) {
         return generateCompleteEntryDay(emailHash, date, EMPTY_STR, entriesAsString);
     }
@@ -238,5 +244,10 @@ public class DiurnalUtil {
 
     public static String getDefaultCsvDumpLocation() {
         return System.getProperty("java.io.tmpdir");
+    }
+
+    public static String convertEntryDayDateToDisplayFormat(Integer date) {
+        LocalDate localDate = LocalDate.parse(String.valueOf(date), DateTimeFormatter.ofPattern("yyyyMMdd"));
+        return localDate.format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
     }
 }

@@ -49,12 +49,11 @@ public class DiurnalTableEntryDay extends DiurnalDbi<EntryDayProto.EntryDay, Ent
                 emailHash, date, title, description); //description should already be in the json-ized format + processed
         int sqlExecResult = executeUpdateSql(sql);
         return sqlExecResult;
-        //return addToCacheOnSqlResult(sqlExecResult, emailHash);
     }
 
     @Override
     public int pushNewEntity(EntryDayProto.EntryDay entryDay) {
-        LOGGER.info("Pushing new EntryDay entity: {} x {} x {}", entryDay.getHashEmail(), entryDay.getDate(), entryDay.getTitle());
+        LOGGER.debug("Pushing new EntryDay entity: {} x {} x {}", entryDay.getHashEmail(), entryDay.getDate(), entryDay.getTitle());
         return insertNewEntryDay(entryDay.getHashEmail(), entryDay.getDate(), entryDay.getTitle(), entryDay.getEntriesAsString());
     }
 
@@ -65,7 +64,6 @@ public class DiurnalTableEntryDay extends DiurnalDbi<EntryDayProto.EntryDay, Ent
                 COL_DATE, entryDay.getDate());
         int sqlExecResult = executeUpdateSql(sql);
         return sqlExecResult;
-        //return removeFromCacheOnSqlResult(sqlExecResult, userMapping.getMobile());
     }
 
     @Override

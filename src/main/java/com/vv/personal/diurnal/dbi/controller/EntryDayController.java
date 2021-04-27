@@ -39,7 +39,7 @@ public class EntryDayController {
     @PostMapping("/create/entry-day")
     public Integer createEntryDay(@RequestBody EntryDayProto.EntryDay entryDay) {
         Integer sqlResult = diurnalTableEntryDay.pushNewEntity(entryDay);
-        LOGGER.info("Result of new entry-day creation: {}", sqlResult);
+        LOGGER.debug("Result of new entry-day creation: {}", sqlResult);
         return sqlResult;
     }
 

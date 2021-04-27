@@ -130,8 +130,11 @@ public class DataController {
                 return RESPOND_EMPTY_BODY;
             }
             EntryDayProto.EntryDayList enquiredEntryDayList = entryDayController.retrieveAllEntryDaysOfEmailHash(generateUserMappingOnPk(emailHash));
-            TransformBackupToString transformBackupToString = new TransformBackupToString(enquiredEntryDayList);
-            String backUpData = transformBackupToString.transform();
+            String backUpData = EMPTY_STR;
+            if (enquiredEntryDayList.getEntryDayCount() > 0) {
+                TransformBackupToString transformBackupToString = new TransformBackupToString(enquiredEntryDayList);
+                backUpData = transformBackupToString.transform();
+            }
             return generateResponsePrimitiveString(backUpData);
         } finally {
             stopWatch.stop();

@@ -48,7 +48,7 @@ public class EntryDayController {
     public List<Integer> bulkCreateEntryDays(@RequestBody EntryDayProto.EntryDayList entryDayList) {
         LOGGER.info("Bulk creating {} entry-days", entryDayList.getEntryDayCount());
         List<Integer> bulkEntriesCreationResult = performBulkOpInt(entryDayList.getEntryDayList(), this::createEntryDay);
-        LOGGER.info("Result of bulk entry-days creation: {}", bulkEntriesCreationResult);
+        LOGGER.info("Result of '{}' bulk entry-days creation: {}", bulkEntriesCreationResult.size(), bulkEntriesCreationResult);
         return bulkEntriesCreationResult;
     }
 
@@ -101,7 +101,7 @@ public class EntryDayController {
     public Integer bulkDeleteEntryDaysOfUser(@RequestBody UserMappingProto.UserMapping userMapping) {
         LOGGER.info("Bulk deleting entry-days of user with hash: {}", userMapping.getHashEmail());
         Integer bulkEntriesDeletionResult = diurnalTableEntryDay.bulkDeleteEntryDaysOfUser(userMapping);
-        LOGGER.info("Result of bulk entry-days deletion: {} for user with hash: {}", bulkEntriesDeletionResult, userMapping.getHashEmail());
+        LOGGER.info("Bulk deletion of '{}' entry-days done for user with hash: {}", bulkEntriesDeletionResult, userMapping.getHashEmail());
         return bulkEntriesDeletionResult;
     }
 

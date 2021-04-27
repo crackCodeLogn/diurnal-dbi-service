@@ -91,7 +91,7 @@ public class UserMappingController {
         }
         LOGGER.info("Updating user mapping: {} -> name: {}", userMapping.getEmail(), userMapping.getUsername());
         Integer sqlResult = diurnalTableUserMapping.updateEntity(generateCompleteUserMapping(userMapping, emailHash));
-        LOGGER.info("Result of user updation: {}", sqlResult);
+        LOGGER.debug("Result of user updation: {}", sqlResult);
         return sqlResult;
     }
 
@@ -113,7 +113,7 @@ public class UserMappingController {
         }
         LOGGER.info("Updating user mapping: {} -> cred: {}", userMapping.getEmail(), userMapping.getHashCred());
         Integer sqlResult = diurnalTableUserMapping.updateHashCred(generateCompleteUserMapping(userMapping, emailHash));
-        LOGGER.info("Result of user updation: {}", sqlResult);
+        LOGGER.debug("Result of user updation: {}", sqlResult);
         return sqlResult;
     }
 
@@ -135,7 +135,7 @@ public class UserMappingController {
         }
         LOGGER.info("Updating user mapping: {} -> mobile: {}", userMapping.getEmail(), userMapping.getMobile());
         Integer sqlResult = diurnalTableUserMapping.updateMobile(generateCompleteUserMapping(userMapping, emailHash));
-        LOGGER.info("Result of user updation: {}", sqlResult);
+        LOGGER.debug("Result of user updation: {}", sqlResult);
         return sqlResult;
     }
 
@@ -157,7 +157,7 @@ public class UserMappingController {
         }
         LOGGER.info("Updating user mapping: {} -> currency: {}", userMapping.getEmail(), userMapping.getCurrency());
         Integer sqlResult = diurnalTableUserMapping.updateCurrency(generateCompleteUserMapping(userMapping, emailHash));
-        LOGGER.info("Result of user updation: {}", sqlResult);
+        LOGGER.debug("Result of user updation: {}", sqlResult);
         return sqlResult;
     }
 
@@ -178,7 +178,7 @@ public class UserMappingController {
         }
         LOGGER.info("Updating user mapping: {} -> last cloud save ts: {}", userMapping.getEmail(), userMapping.getLastCloudSaveTimestamp());
         Integer sqlResult = diurnalTableUserMapping.updateLastCloudSaveTimestamp(userMapping);
-        LOGGER.info("Result of user updation: {}", sqlResult);
+        LOGGER.debug("Result of user updation: {}", sqlResult);
         return sqlResult;
     }
 
@@ -192,7 +192,7 @@ public class UserMappingController {
         }
         LOGGER.info("Updating user mapping: {} -> last local save ts: {}", userMapping.getEmail(), userMapping.getLastSavedTimestamp());
         Integer sqlResult = diurnalTableUserMapping.updateLastSavedTimestamp(generateCompleteUserMapping(userMapping, emailHash));
-        LOGGER.info("Result of user updation: {}", sqlResult);
+        LOGGER.debug("Result of user updation: {}", sqlResult);
         return sqlResult;
     }
 
@@ -206,7 +206,7 @@ public class UserMappingController {
         }
         LOGGER.info("Updating user mapping: {} -> payment expiry ts: {}", userMapping.getEmail(), userMapping.getPaymentExpiryTimestamp());
         Integer sqlResult = diurnalTableUserMapping.updatePaymentExpiryTimestamp(generateCompleteUserMapping(userMapping, emailHash));
-        LOGGER.info("Result of user updation: {}", sqlResult);
+        LOGGER.debug("Result of user updation: {}", sqlResult);
         return sqlResult;
     }
 
@@ -244,7 +244,7 @@ public class UserMappingController {
                 DEFAULT_MOBILE, refineEmail(email), DEFAULT_USER_NAME, DEFAULT_PREMIUM_USER_STATUS, DEFAULT_USER_CRED_HASH, emailHash,
                 DEFAULT_LAST_CLOUD_SAVE_TS, DEFAULT_LAST_SAVE_TS, DEFAULT_PAYMENT_EXPIRY_TS, newAccountCreationTimestamp, DEFAULT_CURRENCY
         ));
-        LOGGER.info("Result of user updation: {}", sqlResult);
+        LOGGER.debug("Result of user updation: {}", sqlResult);
         return sqlResult;
     }
 

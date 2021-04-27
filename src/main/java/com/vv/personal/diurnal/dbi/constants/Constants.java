@@ -3,6 +3,7 @@ package com.vv.personal.diurnal.dbi.constants;
 import com.vv.personal.diurnal.artifactory.generated.ResponsePrimitiveProto;
 import com.vv.personal.diurnal.artifactory.generated.UserMappingProto;
 
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -57,6 +58,9 @@ public class Constants {
         TITLES_TO_EXEMPT.add("###");
         TITLES_TO_EXEMPT.add("");
     }
+
+    public static final DateTimeFormatter DTF_ENTRY_DAY_DATE_PATTERN = DateTimeFormatter.ofPattern("yyyyMMdd");
+    public static final DateTimeFormatter DTF_APP_DISPLAY_DATE_PATTERN = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
     //FORMATTERS
     public static final String HEROKU_SWAGGER_UI_URL = "https://%s/swagger-ui/index.html";

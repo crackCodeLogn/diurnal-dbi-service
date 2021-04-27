@@ -7,7 +7,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
@@ -247,7 +246,12 @@ public class DiurnalUtil {
     }
 
     public static String convertEntryDayDateToDisplayFormat(Integer date) {
-        LocalDate localDate = LocalDate.parse(String.valueOf(date), DateTimeFormatter.ofPattern("yyyyMMdd"));
-        return localDate.format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+        LocalDate localDate = LocalDate.parse(String.valueOf(date), DTF_ENTRY_DAY_DATE_PATTERN);
+        return localDate.format(DTF_APP_DISPLAY_DATE_PATTERN);
+    }
+
+    public static Integer convertDisplayDateFormatToEntryDayDate(String date) {
+        LocalDate localDate = LocalDate.parse(date, DTF_APP_DISPLAY_DATE_PATTERN);
+        return Integer.valueOf(localDate.format(DTF_ENTRY_DAY_DATE_PATTERN));
     }
 }

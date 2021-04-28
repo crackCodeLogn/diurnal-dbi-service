@@ -130,16 +130,15 @@ public class DataController {
                 return RESPOND_EMPTY_BODY;
             }
             EntryDayProto.EntryDayList enquiredEntryDayList = entryDayController.retrieveAllEntryDaysOfEmailHash(generateUserMappingOnPk(emailHash));
-            String backUpData = EMPTY_STR;
             if (enquiredEntryDayList.getEntryDayCount() > 0) {
                 TransformBackupToString transformBackupToString = new TransformBackupToString(enquiredEntryDayList);
-                backUpData = transformBackupToString.transform();
+                return transformBackupToString.transform();
             }
-            return generateResponsePrimitiveString(backUpData);
         } finally {
             stopWatch.stop();
             LOGGER.info("Retrieval of cloud backup operation took: {} ms", stopWatch.getTime(TimeUnit.MILLISECONDS));
         }
+        return RESPOND_EMPTY_BODY;
     }
 
     @ApiOperation(value = "push last saved timestamp", hidden = true)

@@ -2,6 +2,7 @@ package com.vv.personal.diurnal.dbi.engine.transformer;
 
 import com.vv.personal.diurnal.artifactory.generated.EntryDayProto;
 import com.vv.personal.diurnal.artifactory.generated.EntryProto;
+import com.vv.personal.diurnal.artifactory.generated.ResponsePrimitiveProto;
 import com.vv.personal.diurnal.dbi.engine.transformer.packet.EntryDayRepr;
 import com.vv.personal.diurnal.dbi.util.DiurnalUtil;
 import com.vv.personal.diurnal.dbi.util.JsonConverterUtil;
@@ -24,7 +25,7 @@ public class TransformBackupToString {
         this.entryDayList = entryDayList;
     }
 
-    public String transform() {
+    public ResponsePrimitiveProto.ResponsePrimitive transform() {
         Queue<EntryDayRepr> entryDayReprQueue = firstStageTransform();
         return secondStageTransform(entryDayReprQueue);
     }
@@ -45,17 +46,17 @@ public class TransformBackupToString {
         return entryDayReprList;
     }
 
-    public String secondStageTransform(Queue<EntryDayRepr> entryDayReprQueue) {
-        StringBuilder response = new StringBuilder();
+    public ResponsePrimitiveProto.ResponsePrimitive secondStageTransform(Queue<EntryDayRepr> entryDayReprQueue) {
+        ResponsePrimitiveProto.ResponsePrimitive.Builder response = ResponsePrimitiveProto.ResponsePrimitive.newBuilder();
+
         while (!entryDayReprQueue.isEmpty()) {
             EntryDayRepr entryDayRepr = entryDayReprQueue.poll();
             Queue<EntryProto.Entry> entries = entryDayRepr.getEntries();
             if (entries.isEmpty()) continue;
 
-            response.append(String.format("%s %s ::",
+            response.addResponses(String.format("%s %s ::\n",
                     DiurnalUtil.convertEntryDayDateToDisplayFormat(entryDayRepr.getEntryDay().getDate()),
-                    entryDayRepr.getEntryDay().getTitle()))
-                    .append(NEW_LINE);
+                    entryDayRepr.getEntryDay().getTitle()));
 
             while (!entries.isEmpty()) {
                 EntryProto.Entry entry = entries.poll();
@@ -63,7 +64,7 @@ public class TransformBackupToString {
                 boolean nonComment = true;
                 switch (entry.getSign()) {
                     case COMMENT:
-                        response.append(String.format("//%s", entry.getDescription().trim()));
+                        response.addResponses(String.format("//%s\n", entry.getDescription().trim()));
                         nonComment = false;
                         break;
                     case POSITIVE:
@@ -74,14 +75,13 @@ public class TransformBackupToString {
                         break;
                 }
                 if (nonComment) {
-                    response.append(String.format("%s %s %.2f : %s", acquiredSign, entry.getCurrency(), entry.getAmount(), entry.getDescription().trim()));
+                    response.addResponses(String.format("%s %s %.2f : %s\n", acquiredSign, entry.getCurrency(), entry.getAmount(), entry.getDescription().trim()));
                     //forcefully neglecting conversion from entry.getCurrency's STR format to the sign symbol for now, as on app side, currency would be overridden from settings itself
                 }
-                response.append(NEW_LINE);
             }
-            response.append(NEW_LINE);
+            response.addResponses(NEW_LINE);
         }
-        return response.toString();
+        return response.build();
     }
 
     private EntryDayRepr generateEntryDayRepr(EntryDayProto.EntryDay entryDay, EntryProto.EntryList entries) {

@@ -210,6 +210,17 @@ public class UserMappingController {
         return sqlResult;
     }
 
+    @ApiOperation(value = "update user-payment expiry ts")
+    @PostMapping("/manual/update/user/timestamp/payment/expiry")
+    public Integer updateUserMappingPaymentExpiryTimestampManually(@RequestParam String email,
+                                                                   @RequestParam Long paymentExpiryTimestamp) {
+        UserMappingProto.UserMapping userMapping = UserMappingProto.UserMapping.newBuilder()
+                .setEmail(email)
+                .setPaymentExpiryTimestamp(paymentExpiryTimestamp)
+                .build();
+        return updateUserMappingPaymentExpiryTimestamp(userMapping);
+    }
+
     @ApiOperation(value = "update user-info for name, mobile and currency", hidden = true)
     @PostMapping("/update/user/info")
     public Boolean updateUserInfo(@RequestBody UserMappingProto.UserMapping userMapping) {
@@ -248,6 +259,7 @@ public class UserMappingController {
         return sqlResult;
     }
 
+    @ApiOperation(value = "user premium updation", hidden = true)
     @PatchMapping("/update/user/premium")
     public Integer updatePremiumUserMapping(@RequestBody UserMappingProto.UserMapping userMapping) {
         String email = refineEmail(userMapping.getEmail());

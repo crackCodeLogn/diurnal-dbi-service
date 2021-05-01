@@ -170,9 +170,17 @@ public class DataController {
             UserMappingProto.UserMapping updatedUserMapping = UserMappingProto.UserMapping.newBuilder()
                     .mergeFrom(retrievedUserMapping)
                     .setPaymentExpiryTimestamp(DEFAULT_PAYMENT_EXPIRY_TS)
-                    .setPremiumUser(DEFAULT_PREMIUM_USER_STATUS)
+                    .setPremiumUser(false)
                     .build();
             userMappingController.updateUserMappingPaymentExpiryTimestamp(updatedUserMapping);
+            userMappingController.updatePremiumUserMapping(updatedUserMapping);
+            retrievedUserMapping = userMappingController.retrieveUserMapping(emailHash);
+        } else if (!retrievedUserMapping.getPremiumUser() && !TimingUtil.hasTimestampExpired(retrievedUserMapping.getPaymentExpiryTimestamp())) {
+            // If user is not marked as premium but the payment is yet to be expired
+            UserMappingProto.UserMapping updatedUserMapping = UserMappingProto.UserMapping.newBuilder()
+                    .mergeFrom(retrievedUserMapping)
+                    .setPremiumUser(true)
+                    .build();
             userMappingController.updatePremiumUserMapping(updatedUserMapping);
             retrievedUserMapping = userMappingController.retrieveUserMapping(emailHash);
         }

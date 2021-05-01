@@ -11,4 +11,9 @@ public class TimingUtil {
     public static long extractCurrentUtcTimestamp() {
         return Instant.now().toEpochMilli();
     }
+
+    public static boolean hasTimestampExpired(Long inputTimestamp) {
+        return System.currentTimeMillis() > inputTimestamp;
+    }
+
 }

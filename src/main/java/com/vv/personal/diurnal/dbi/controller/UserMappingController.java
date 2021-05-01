@@ -248,20 +248,27 @@ public class UserMappingController {
         return sqlResult;
     }
 
-    @PatchMapping("/manual/update/user/premium")
-    public Integer updatePremiumUserMappingManually(@RequestParam String email,
-                                                    @RequestParam(defaultValue = "false") Boolean premiumUserStatus) {
-        email = refineEmail(email);
+    @PatchMapping("/update/user/premium")
+    public Integer updatePremiumUserMapping(@RequestBody UserMappingProto.UserMapping userMapping) {
+        String email = refineEmail(userMapping.getEmail());
         Integer emailHash = retrieveHashEmail(email);
         if (isEmailHashAbsent(emailHash)) {
             LOGGER.warn("User not found for updation of hash cred for email [{}]", email);
             return INT_RESPONSE_WONT_PROCESS;
         }
-        LOGGER.info("Obtained manual req for user updation: {} -> {}", email, premiumUserStatus);
-        UserMappingProto.UserMapping userMapping = generateUserMapping(premiumUserStatus, emailHash);
+        LOGGER.info("Obtained manual req for user updation: {} -> {}", email, userMapping.getPremiumUser());
+        userMapping = generateCompleteUserMapping(userMapping, emailHash);
         Integer sqlResult = diurnalTableUserMapping.updatePremiumUserStatus(userMapping);
         LOGGER.info("Result of premium-user updation: {}", sqlResult);
         return sqlResult;
+    }
+
+    @PatchMapping("/manual/update/user/premium")
+    public void updatePremiumUserMappingManually(@RequestParam String email,
+                                                 @RequestParam(defaultValue = "false") Boolean premiumUserStatus) {
+        UserMappingProto.UserMapping userMapping = generateUserMapping(DEFAULT_MOBILE, email, DEFAULT_USER_NAME, premiumUserStatus, DEFAULT_USER_CRED_HASH);
+        int result = updatePremiumUserMapping(userMapping);
+        LOGGER.info("Manual premium user update done => {}", result);
     }
 
     @ApiOperation(value = "retrieve user detail", hidden = true)

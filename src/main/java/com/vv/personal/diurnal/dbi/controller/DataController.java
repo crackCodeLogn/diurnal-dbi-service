@@ -165,6 +165,17 @@ public class DataController {
             return EMPTY_USER_MAPPING;
         }
         UserMappingProto.UserMapping retrievedUserMapping = userMappingController.retrieveUserMapping(emailHash);
+        if (retrievedUserMapping.getPaymentExpiryTimestamp() != DEFAULT_PAYMENT_EXPIRY_TS && TimingUtil.hasTimestampExpired(retrievedUserMapping.getPaymentExpiryTimestamp())) {
+            // If payment has expired, if any, shift user to non-premium state and update DB with that state, and pass the updated state back from DB
+            UserMappingProto.UserMapping updatedUserMapping = UserMappingProto.UserMapping.newBuilder()
+                    .mergeFrom(retrievedUserMapping)
+                    .setPaymentExpiryTimestamp(DEFAULT_PAYMENT_EXPIRY_TS)
+                    .setPremiumUser(DEFAULT_PREMIUM_USER_STATUS)
+                    .build();
+            userMappingController.updateUserMappingPaymentExpiryTimestamp(updatedUserMapping);
+            userMappingController.updatePremiumUserMapping(updatedUserMapping);
+            retrievedUserMapping = userMappingController.retrieveUserMapping(emailHash);
+        }
         LOGGER.info("Replying with user mapping: {} x {}", retrievedUserMapping.getEmail(), retrievedUserMapping.getUsername());
         return retrievedUserMapping;
     }

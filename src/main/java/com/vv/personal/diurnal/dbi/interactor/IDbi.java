@@ -14,4 +14,10 @@ public interface IDbi {
 
     int executeUpdateSql(String sql);
 
+    int dropTable();
+
+    int truncateTable();
+
+    String getTableName();
+
 }

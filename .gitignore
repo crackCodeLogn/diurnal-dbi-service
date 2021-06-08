@@ -2,6 +2,9 @@ HELP.md
 target/
 .mvn
 mvn*
+properties/*
+logs.local/*
+
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/

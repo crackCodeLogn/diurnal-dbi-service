@@ -1,7 +1,12 @@
 package com.vv.personal.diurnal.dbi.config;
 
 
-import com.vv.personal.diurnal.dbi.interactor.diurnal.*;
+import com.vv.personal.diurnal.dbi.auth.Authorizer;
+import com.vv.personal.diurnal.dbi.constants.DbConstants;
+import com.vv.personal.diurnal.dbi.interactor.diurnal.cache.CachedDiurnal;
+import com.vv.personal.diurnal.dbi.interactor.diurnal.dbi.DiurnalDbi;
+import com.vv.personal.diurnal.dbi.interactor.diurnal.dbi.tables.DiurnalTableEntryDay;
+import com.vv.personal.diurnal.dbi.interactor.diurnal.dbi.tables.DiurnalTableUserMapping;
 import com.vv.personal.diurnal.dbi.util.DbiUtil;
 import org.apache.commons.lang3.time.StopWatch;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -9,12 +14,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
+import org.springframework.security.crypto.password.Pbkdf2PasswordEncoder;
 
 import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.vv.personal.diurnal.dbi.constants.Constants.*;
+import static com.vv.personal.diurnal.dbi.constants.DbConstants.*;
 
 /**
  * @author Vivek
@@ -25,7 +31,7 @@ public class DbiConfig {
 
     private final List<DiurnalDbi> diurnalDbis = new ArrayList<>();
 
-    @Value("${dbi.tables.create.onStartup:true}")
+    @Value("${dbi.tables.create.onStartup:false}")
     private boolean createTablesOnStartup;
 
     @Bean(initMethod = "getDbConnection", destroyMethod = "closeDbConnection")
@@ -39,24 +45,22 @@ public class DbiConfig {
     }
 
     @Bean
+    public Authorizer authorizer() {
+        return new Authorizer(new Pbkdf2PasswordEncoder());
+    }
+
+    @Bean(destroyMethod = "destroyExecutors")
     @Qualifier("DiurnalTableUserMapping")
     public DiurnalTableUserMapping diurnalTableUserMapping() {
-        return new DiurnalTableUserMapping(TABLE_DIURNAL_USER_MAPPING, PRIMARY_COL_USER_MAPPING, DiurnalDbConnector(), cachedDiurnal(),
-                DbiUtil::generateCreateTableSql, "diurnal.user_mapping");
+        return new DiurnalTableUserMapping(DbConstants.TABLE_DIURNAL_USER_MAPPING, DbConstants.PRIMARY_COL_USER_MAPPING, DiurnalDbConnector(), cachedDiurnal(),
+                DbiUtil::generateCreateTableSql, DIURNAL_USER_MAPPING_SQL);
     }
 
-    @Bean
-    @Qualifier("DiurnalTableEntry")
-    public DiurnalTableEntry diurnalTableEntries() {
-        return new DiurnalTableEntry(TABLE_DIURNAL_ENTRY, PRIMARY_COL_ENTRY, DiurnalDbConnector(), cachedDiurnal(),
-                DbiUtil::generateCreateTableSql, "diurnal.entry");
-    }
-
-    @Bean
-    @Qualifier("DiurnalTableTitleMapping")
-    public DiurnalTableTitleMapping diurnalTableTitleMapping() {
-        return new DiurnalTableTitleMapping(TABLE_DIURNAL_TITLE_MAPPING, PRIMARY_COL_TITLE_MAPPING, DiurnalDbConnector(), cachedDiurnal(),
-                DbiUtil::generateCreateTableSql, "diurnal.title_mapping");
+    @Bean(destroyMethod = "destroyExecutors")
+    @Qualifier("DiurnalTableEntryDay")
+    public DiurnalTableEntryDay diurnalTableEntryDays() {
+        return new DiurnalTableEntryDay(TABLE_DIURNAL_ENTRY_DAY, PRIMARY_COL_ENTRY_DAY, DiurnalDbConnector(), cachedDiurnal(),
+                DbiUtil::generateCreateTableSql, DIURNAL_ENTRY_DAY_SQL, DiurnalDbConnector().getDbLogEveryInsertInBackup());
     }
 
     @Bean(initMethod = "start")
@@ -68,8 +72,7 @@ public class DbiConfig {
     @PostConstruct
     public void postHaste() {
         diurnalDbis.add(diurnalTableUserMapping());
-        diurnalDbis.add(diurnalTableEntries());
-        diurnalDbis.add(diurnalTableTitleMapping());
+        diurnalDbis.add(diurnalTableEntryDays());
     }
 
     public boolean isCreateTablesOnStartup() {

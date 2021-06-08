@@ -1,5 +1,6 @@
 package com.vv.personal.diurnal.dbi.util;
 
+import com.vv.personal.diurnal.dbi.constants.DbConstants;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
@@ -7,7 +8,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.stream.Collectors;
 
-import static com.vv.personal.diurnal.dbi.constants.Constants.*;
+import static com.vv.personal.diurnal.dbi.constants.Constants.COMMA_STR;
+import static com.vv.personal.diurnal.dbi.constants.Constants.EMPTY_STR;
 
 /**
  * @author Vivek
@@ -32,7 +34,7 @@ public class DbiUtil {
     }
 
     public static String generateCreateTableSql(String tableName) {
-        String sqlPath = String.format("%s/%s.sql", FILE_SQL_LOCATION_BASE_CREATETABLES, tableName);
+        String sqlPath = String.format("%s/%s.sql", DbConstants.FILE_SQL_LOCATION_BASE_CREATETABLES, tableName);
         return FileUtil.readFileFromLocation(Thread.currentThread().getContextClassLoader().getResourceAsStream(sqlPath));
     }
 }

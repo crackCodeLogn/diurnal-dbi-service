@@ -1,7 +1,7 @@
 package com.vv.personal.diurnal.dbi;
 
 import com.vv.personal.diurnal.dbi.config.DbiConfig;
-import com.vv.personal.diurnal.dbi.interactor.diurnal.DiurnalDbi;
+import com.vv.personal.diurnal.dbi.interactor.diurnal.dbi.DiurnalDbi;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +9,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.env.Environment;
 import org.springframework.http.converter.protobuf.ProtobufHttpMessageConverter;
@@ -21,6 +22,7 @@ import java.net.UnknownHostException;
 
 import static com.vv.personal.diurnal.dbi.constants.Constants.*;
 
+@ComponentScan({"com.vv.personal.diurnal.dbi", "com.vv.personal.diurnal.ping"})
 @SpringBootApplication
 public class DiurnalDbiServer {
     private static final Logger LOGGER = LoggerFactory.getLogger(DiurnalDbiServer.class);
@@ -44,7 +46,7 @@ public class DiurnalDbiServer {
     public Docket api() {
         return new Docket(DocumentationType.SWAGGER_2)
                 .select()
-                .apis(RequestHandlerSelectors.basePackage("com.vv.personal.diurnal.dbi"))
+                .apis(RequestHandlerSelectors.basePackage("com.vv.personal.diurnal"))
                 .build();
     }
 

@@ -5,3 +5,8 @@ db:
       port: ${PROM_POSTGRES_PORT}
     user: ${PROM_POSTGRES_REF_USER}
     cred: ${PROM_POSTGRES_REF_CRED}
+
+dbi:
+  tables:
+    create:
+      onStartup: true

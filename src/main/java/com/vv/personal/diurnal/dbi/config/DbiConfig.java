@@ -31,7 +31,7 @@ public class DbiConfig {
 
     private final List<DiurnalDbi> diurnalDbis = new ArrayList<>();
 
-    @Value("${dbi.tables.create.onStartup:true}")
+    @Value("${dbi.tables.create.onStartup:false}")
     private boolean createTablesOnStartup;
 
     @Bean(initMethod = "getDbConnection", destroyMethod = "closeDbConnection")
@@ -60,7 +60,7 @@ public class DbiConfig {
     @Qualifier("DiurnalTableEntryDay")
     public DiurnalTableEntryDay diurnalTableEntryDays() {
         return new DiurnalTableEntryDay(TABLE_DIURNAL_ENTRY_DAY, PRIMARY_COL_ENTRY_DAY, DiurnalDbConnector(), cachedDiurnal(),
-                DbiUtil::generateCreateTableSql, DIURNAL_ENTRY_DAY_SQL);
+                DbiUtil::generateCreateTableSql, DIURNAL_ENTRY_DAY_SQL, DiurnalDbConnector().getDbLogEveryInsertInBackup());
     }
 
     @Bean(initMethod = "start")

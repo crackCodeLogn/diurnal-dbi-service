@@ -40,8 +40,10 @@ public class DiurnalTableEntryDay extends DiurnalDbi<EntryDayProto.EntryDay, Ent
     private final String COL_TITLE = "title";
     private final String COL_ENTRIES_AS_STRING = "entries_as_string";
 
-    public DiurnalTableEntryDay(String table, String primaryColumns, DbiConfigForDiurnal dbiConfigForDiurnal, CachedDiurnal cachedDiurnal, Function<String, String> createTableIfNotExistSqlFunction, String createTableIfNotExistSqlLocation) {
+    public DiurnalTableEntryDay(String table, String primaryColumns, DbiConfigForDiurnal dbiConfigForDiurnal, CachedDiurnal cachedDiurnal, Function<String, String> createTableIfNotExistSqlFunction, String createTableIfNotExistSqlLocation,
+                                boolean dbLogEveryInsertInBackup) {
         super(table, primaryColumns, dbiConfigForDiurnal, cachedDiurnal, createTableIfNotExistSqlFunction, createTableIfNotExistSqlLocation, LOGGER);
+        this.dbLogEveryInsertInBackup = dbLogEveryInsertInBackup;
     }
 
     private int insertNewEntryDay(Integer emailHash, Integer date, String title, String description) {

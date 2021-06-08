@@ -41,6 +41,7 @@ public abstract class DiurnalDbi<T, K> implements IDiurnalDbi<T, K> {
     private final ExecutorService multiReadThreads = Executors.newFixedThreadPool(4);
     protected String csvDumpLocationFolder = DiurnalUtil.getDefaultCsvDumpLocation();
     protected String csvLineSeparator = PIPE;
+    protected boolean dbLogEveryInsertInBackup = true;
 
     public DiurnalDbi(String table, String primaryColumns, DbiConfigForDiurnal dbiConfigForDiurnal, CachedDiurnal CACHED_DIURNAL,
                       Function<String, String> createTableIfNotExistSqlFunction, String createTableIfNotExistSqlLocation, Logger logger) {
@@ -88,7 +89,10 @@ public abstract class DiurnalDbi<T, K> implements IDiurnalDbi<T, K> {
             stopWatch.start();
             try {
                 int sqlResult = dbiConfigForDiurnal.getStatement().executeUpdate(sql);
-                LOGGER.info("Result of SQL [{}] => {}", sql, sqlResult);
+                if (dbLogEveryInsertInBackup)
+                    LOGGER.info("Result of SQL [{}] => {}", sql, sqlResult);
+                else
+                    LOGGER.debug("Result of SQL [{}] => {}", sql, sqlResult);
                 return sqlResult;
             } catch (SQLException throwables) {
                 LOGGER.error("Failed to execute SQL => [{}]. ", sql, throwables);

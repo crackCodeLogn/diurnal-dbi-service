@@ -28,6 +28,9 @@ public class DbiConfigForDiurnal extends AbstractDbiConfigurator {
     @Value("${db.diurnal.url:}")
     private String dbUrl;
 
+    @Value("${db.diurnal.log.every.insert.backup:true}")
+    private Boolean dbLogEveryInsertInBackup;
+
     @Override
     public String getDbServerHost() {
         return dbServerHost;
@@ -58,4 +61,7 @@ public class DbiConfigForDiurnal extends AbstractDbiConfigurator {
         return dbUrl;
     }
 
+    public Boolean getDbLogEveryInsertInBackup() {
+        return dbLogEveryInsertInBackup;
+    }
 }

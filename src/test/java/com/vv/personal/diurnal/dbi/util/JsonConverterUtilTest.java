@@ -8,6 +8,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+import java.util.UUID;
+
 import static com.vv.personal.diurnal.dbi.util.JsonConverterUtil.convertEntryToCompactedJson;
 import static com.vv.personal.diurnal.dbi.util.JsonConverterUtil.convertEntryToJson;
 import static org.junit.Assert.assertEquals;
@@ -86,6 +88,15 @@ public class JsonConverterUtilTest {
         System.out.println(convertedEntryList);
         assertEquals(7, convertedEntryList.getEntryCount());
         assertEquals("channi", convertedEntryList.getEntry(5).getDescription());
+    }
+
+    @Test
+    public void test() {
+        System.out.println("amazon@apl".matches("[a-z0-9\\-]+@[a-z0-9]+"));
+        System.out.println("money-warden@apl".matches("[a-z0-9-]+@[a-z0-9]+"));
+        System.out.println("a@apl".matches("[a-z0-9]{3}+@[a-z0-9]+"));
+
+        System.out.println(UUID.randomUUID());
     }
 
 }

@@ -1,8 +1,7 @@
 package com.vv.personal.diurnal.ping.processor;
 
 import com.vv.personal.diurnal.ping.feign.HealthFeign;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -11,8 +10,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author Vivek
  * @since 05/02/21
  */
+@Slf4j
 public class Pinger {
-    private static final Logger LOGGER = LoggerFactory.getLogger(Pinger.class);
     private final ExecutorService pingChecker;
     private final int pingTimeoutSeconds;
     private final int pingRetryCount;
@@ -24,14 +23,14 @@ public class Pinger {
         this.pingRetryTimeoutSeconds = pingRetryTimeoutSeconds;
 
         this.pingChecker = Executors.newSingleThreadExecutor();
-        LOGGER.info("Initialized Pinger with {} thread and {} s ping timeout", 1, pingTimeoutSeconds);
+        log.info("Initialized Pinger with {} thread and {} s ping timeout", 1, pingTimeoutSeconds);
     }
 
     public boolean allEndPointsActive(HealthFeign... healthFeigns) {
         //check for end-points of rendering service and mongo-service
         int retry = 0;
         while (++retry <= pingRetryCount) {
-            LOGGER.info("Attempting allEndPointsActive test sequence: {}", retry);
+            log.info("Attempting allEndPointsActive test sequence: {}", retry);
             AtomicBoolean allPingsPass = new AtomicBoolean(true);
             for (HealthFeign healthFeign : healthFeigns)
                 if (!pingResult(createPingTask(healthFeign))) {
@@ -42,14 +41,14 @@ public class Pinger {
             try {
                 Thread.sleep(pingRetryTimeoutSeconds * 1000L);
             } catch (InterruptedException e) {
-                LOGGER.error("Pinger interrupted whilst sleeping. ", e);
+                log.error("Pinger interrupted whilst sleeping. ", e);
             }
         }
         return false;
     }
 
     private Callable<String> createPingTask(HealthFeign healthFeign) {
-        LOGGER.info("Creating ping task for {}", healthFeign);
+        log.info("Creating ping task for {}", healthFeign);
         return healthFeign::ping;
     }
 
@@ -57,16 +56,16 @@ public class Pinger {
         Future<String> pingResultFuture = pingChecker.submit(pingTask);
         try {
             String pingResult = pingResultFuture.get(pingTimeoutSeconds, TimeUnit.SECONDS);
-            LOGGER.info("Obtained '{}' as ping result for {}", pingResult, pingResult);
+            log.info("Obtained '{}' as ping result for {}", pingResult, pingResult);
             return true;
         } catch (InterruptedException | ExecutionException | TimeoutException e) {
-            LOGGER.warn("Timed out waiting on ping, task: {}", pingTask);
+            log.warn("Timed out waiting on ping, task: {}", pingTask);
         }
         return false;
     }
 
     public void destroyExecutor() {
-        LOGGER.info("Shutting down pinging executor");
+        log.info("Shutting down pinging executor");
         if (!pingChecker.isShutdown())
             pingChecker.shutdown();
     }

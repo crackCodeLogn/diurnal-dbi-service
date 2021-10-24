@@ -2,8 +2,7 @@ package com.vv.personal.diurnal.dbi;
 
 import com.vv.personal.diurnal.dbi.config.DbiConfig;
 import com.vv.personal.diurnal.dbi.interactor.diurnal.dbi.DiurnalDbi;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -22,11 +21,10 @@ import java.net.UnknownHostException;
 
 import static com.vv.personal.diurnal.dbi.constants.Constants.*;
 
+@Slf4j
 @ComponentScan({"com.vv.personal.diurnal.dbi", "com.vv.personal.diurnal.ping"})
 @SpringBootApplication
 public class DiurnalDbiServer {
-    private static final Logger LOGGER = LoggerFactory.getLogger(DiurnalDbiServer.class);
-
     @Autowired
     private Environment environment;
 
@@ -56,20 +54,20 @@ public class DiurnalDbiServer {
         try {
             host = InetAddress.getLocalHost().getHostAddress();
         } catch (UnknownHostException e) {
-            LOGGER.error("Failed to obtain ip address. ", e);
+            log.error("Failed to obtain ip address. ", e);
         }
         String port = environment.getProperty(LOCAL_SPRING_PORT);
         String herokuHost = environment.getProperty(SPRING_APPLICATION_HEROKU);
-        LOGGER.info("'{}' activation is complete! Expected Heroku Swagger running on: {}, exact url: {}",
+        log.info("'{}' activation is complete! Expected Heroku Swagger running on: {}, exact url: {}",
                 environment.getProperty("spring.application.name"),
                 String.format(HEROKU_SWAGGER_UI_URL, herokuHost),
                 String.format(SWAGGER_UI_URL, host, port));
 
         //dbiCacheController.populateAllRefCache();
-        //LOGGER.info("Prepped overall cache => {}", dbiCacheController.displayAllRefTableCache());
+        //log.info("Prepped overall cache => {}", dbiCacheController.displayAllRefTableCache());
 
         if (dbiConfig.isCreateTablesOnStartup()) {
-            LOGGER.info("Creating tables on startup if non-existent!");
+            log.info("Creating tables on startup if non-existent!");
             dbiConfig.getDiurnalDbis().forEach(DiurnalDbi::createTableIfNotExists);
         }
     }

@@ -3,19 +3,20 @@ package com.vv.personal.diurnal.dbi.controller;
 import com.vv.personal.diurnal.artifactory.generated.EntryDayProto;
 import com.vv.personal.diurnal.artifactory.generated.ResponsePrimitiveProto;
 import com.vv.personal.diurnal.artifactory.generated.UserMappingProto;
+import com.vv.personal.diurnal.dbi.config.DbiConfig;
 import com.vv.personal.diurnal.dbi.config.GenericConfig;
 import com.vv.personal.diurnal.dbi.interactor.diurnal.dbi.tables.DiurnalTableEntryDay;
 import com.vv.personal.diurnal.dbi.util.DiurnalUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -25,8 +26,7 @@ import java.util.List;
 
 import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.generateHash;
 import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.procureStopWatch;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -34,20 +34,21 @@ import static org.mockito.Mockito.when;
  * @author Vivek
  * @since 03/03/21
  */
-@RunWith(MockitoJUnitRunner.class)
-public class DataControllerTest {
-    private static final Logger LOGGER = LoggerFactory.getLogger(DataControllerTest.class);
-
+@Slf4j
+@ExtendWith(MockitoExtension.class)
+class DataControllerTest {
     @InjectMocks
-    private final DataController dataController = new DataController();
+    final DataController dataController = new DataController();
     @InjectMocks
-    private final EntryDayController entryDayController = new EntryDayController();
+    final EntryDayController entryDayController = new EntryDayController();
     @Mock
-    private UserMappingController userMappingController;
+    UserMappingController userMappingController;
     @Mock
-    private DiurnalTableEntryDay diurnalTableEntryDay;
+    DiurnalTableEntryDay diurnalTableEntryDay;
     @Mock
-    private GenericConfig genericConfig;
+    GenericConfig genericConfig;
+    @Mock
+    DbiConfig dbiConfig;
 
     public static List<String> readFileFromLocation(String src) {
         List<String> data = new ArrayList<>();
@@ -57,19 +58,19 @@ public class DataControllerTest {
                 if (!line.trim().isEmpty()) data.add(line.trim());
             }
         } catch (IOException e) {
-            LOGGER.error("Failed to read file contents from '{}'. ", src, e);
+            log.error("Failed to read file contents from '{}'. ", src, e);
         }
         //LOGGER.info("Data read in => \n{}", data);
         return data;
     }
 
-    @Before
+    @BeforeEach
     public void preHaste() {
         dataController.setEntryDayController(entryDayController);
     }
 
     @Test
-    public void testPushWholeBackup() {
+    void testPushWholeBackup() {
         List<String> testData = readFileFromLocation("src/test/resources/sample.backup.txt");
         System.out.println(testData);
         long mobile = 1234567890L;
@@ -79,7 +80,6 @@ public class DataControllerTest {
         when(userMappingController.retrieveHashEmail(email)).thenReturn(emailHash);
         when(userMappingController.retrievePremiumUserStatus(emailHash)).thenReturn(true);
         when(userMappingController.updateUserMappingLastCloudSaveTimestamp(any(UserMappingProto.UserMapping.class))).thenReturn(1);
-        when(diurnalTableEntryDay.deleteEntity(any(EntryDayProto.EntryDay.class))).thenReturn(0);
         when(diurnalTableEntryDay.pushNewEntity(any(EntryDayProto.EntryDay.class))).thenReturn(1);
         StopWatch stopWatch = procureStopWatch();
         when(genericConfig.procureStopWatch()).thenReturn(stopWatch);
@@ -87,7 +87,7 @@ public class DataControllerTest {
         ResponsePrimitiveProto.ResponsePrimitive backupPushResult = dataController.pushWholeBackup(
                 DiurnalUtil.generateDataTransit(mobile, email, 20210304, UserMappingProto.Currency.INR,
                         StringUtils.join(testData, "\n")));
-        assertTrue(backupPushResult.getBoolResponse());
+        assertThat(backupPushResult.getBoolResponse()).isTrue();
 
         stopWatch.reset();
         stopWatch.start();
@@ -95,7 +95,19 @@ public class DataControllerTest {
         backupPushResult = dataController.pushWholeBackup(
                 DiurnalUtil.generateDataTransit(mobile, email, 20210304, UserMappingProto.Currency.INR,
                         StringUtils.join(testData, "\n")));
-        assertFalse(backupPushResult.getBoolResponse());
+        assertThat(backupPushResult.getBoolResponse()).isFalse();
     }
 
+    @Test
+    void testGetTrialEndPeriod() {
+        int daysToExtend = 30;
+        Mockito.when(dbiConfig.getTrialPeriodDays()).thenReturn(daysToExtend);
+        long currentTimeMillis = System.currentTimeMillis();
+
+        long trialEndPeriodTimeMillis = dataController.getTrialEndPeriod();
+        assertThat((trialEndPeriodTimeMillis - currentTimeMillis) / 1000)
+                .isGreaterThanOrEqualTo(24 * 60 * 60 * daysToExtend)
+                .isLessThan(24 * 60 * 60 * daysToExtend + 1); //allowing 1 second delta for upper bound check
+        System.out.printf("Current timestamp: %d\nTrial   timestamp: %d", currentTimeMillis, trialEndPeriodTimeMillis);
+    }
 }

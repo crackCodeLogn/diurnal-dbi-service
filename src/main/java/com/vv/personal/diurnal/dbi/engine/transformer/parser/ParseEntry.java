@@ -2,6 +2,7 @@ package com.vv.personal.diurnal.dbi.engine.transformer.parser;
 
 import com.vv.personal.diurnal.artifactory.generated.EntryProto;
 import com.vv.personal.diurnal.artifactory.generated.UserMappingProto;
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
 import static com.vv.personal.diurnal.dbi.constants.Constants.DEFAULT_AMOUNT;
@@ -10,6 +11,7 @@ import static com.vv.personal.diurnal.dbi.constants.Constants.DEFAULT_AMOUNT;
  * @author Vivek
  * @since 04/03/21
  */
+@Getter
 public class ParseEntry extends AbstractLineParser {
     private EntryProto.Sign sign;
     private UserMappingProto.Currency currency;
@@ -35,21 +37,5 @@ public class ParseEntry extends AbstractLineParser {
             this.currency = parseCurrency(parts[1]);
             this.amount = Double.parseDouble(parts[2].trim());
         }
-    }
-
-    public EntryProto.Sign getSign() {
-        return sign;
-    }
-
-    public UserMappingProto.Currency getCurrency() {
-        return currency;
-    }
-
-    public Double getAmount() {
-        return amount;
-    }
-
-    public String getDescription() {
-        return description;
     }
 }

@@ -34,6 +34,9 @@ public class DbiConfig {
     @Value("${dbi.tables.create.onStartup:false}")
     private boolean createTablesOnStartup;
 
+    @Value("${dbi.trialPeriodDays}")
+    private int trialPeriodDays;
+
     @Bean(initMethod = "getDbConnection", destroyMethod = "closeDbConnection")
     public DbiConfigForDiurnal DiurnalDbConnector() {
         return new DbiConfigForDiurnal();
@@ -81,5 +84,9 @@ public class DbiConfig {
 
     public List<DiurnalDbi> getDiurnalDbis() {
         return diurnalDbis;
+    }
+
+    public int getTrialPeriodDays() {
+        return trialPeriodDays;
     }
 }

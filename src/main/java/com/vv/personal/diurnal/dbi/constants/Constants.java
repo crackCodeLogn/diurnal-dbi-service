@@ -72,5 +72,4 @@ public class Constants {
     public static final String LOCAL_SPRING_HOST = "local.server.host";
     public static final String LOCAL_SPRING_PORT = "local.server.port";
     public static final String SPRING_APPLICATION_HEROKU = "spring.application.heroku";
-
 }

@@ -19,5 +19,4 @@ public interface IDbi {
     int truncateTable();
 
     String getTableName();
-
 }

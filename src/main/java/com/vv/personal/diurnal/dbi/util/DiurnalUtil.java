@@ -2,9 +2,8 @@ package com.vv.personal.diurnal.dbi.util;
 
 import com.vv.personal.diurnal.artifactory.generated.*;
 import com.vv.personal.diurnal.dbi.interactor.IDbi;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.StopWatch;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -18,12 +17,11 @@ import static com.vv.personal.diurnal.dbi.constants.Constants.*;
  * @author Vivek
  * @since 27/02/21
  */
+@Slf4j
 public class DiurnalUtil {
-    public static final Logger LOGGER = LoggerFactory.getLogger(DiurnalUtil.class);
-
     public static Integer generateHash(String data) {
         final Integer hash = Objects.hashCode(data);
-        LOGGER.info("Generated hash [{}] for [{}]", hash, data);
+        log.info("Generated hash [{}] for [{}]", hash, data);
         return hash;
     }
 
@@ -205,23 +203,23 @@ public class DiurnalUtil {
     }
 
     public static int genericCreateTableIfNotExists(IDbi dbi) {
-        LOGGER.warn("Proceeding to create table if not exists: '{}'", dbi.getTableName());
+        log.warn("Proceeding to create table if not exists: '{}'", dbi.getTableName());
         int createTableIfNotExistsResult = dbi.createTableIfNotExists();
-        LOGGER.warn("Table '{}' create if not exists result: {}", dbi.getTableName(), createTableIfNotExistsResult);
+        log.warn("Table '{}' create if not exists result: {}", dbi.getTableName(), createTableIfNotExistsResult);
         return createTableIfNotExistsResult;
     }
 
     public static Boolean genericDropTable(IDbi dbi) {
-        LOGGER.warn("Proceeding to drop table: '{}'", dbi.getTableName());
+        log.warn("Proceeding to drop table: '{}'", dbi.getTableName());
         Boolean dropResult = dbi.dropTable() == 0;
-        LOGGER.warn("Table '{}' drop result: {}", dbi.getTableName(), dropResult);
+        log.warn("Table '{}' drop result: {}", dbi.getTableName(), dropResult);
         return dropResult;
     }
 
     public static Boolean genericTruncateTable(IDbi dbi) {
-        LOGGER.warn("Proceeding to truncate table: '{}'", dbi.getTableName());
+        log.warn("Proceeding to truncate table: '{}'", dbi.getTableName());
         Boolean truncateResult = dbi.truncateTable() == 0;
-        LOGGER.warn("Table '{}' truncate result: {}", dbi.getTableName(), truncateResult);
+        log.warn("Table '{}' truncate result: {}", dbi.getTableName(), truncateResult);
         return truncateResult;
     }
 

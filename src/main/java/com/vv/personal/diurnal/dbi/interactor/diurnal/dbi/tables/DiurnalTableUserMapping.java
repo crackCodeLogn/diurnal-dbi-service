@@ -5,9 +5,8 @@ import com.vv.personal.diurnal.dbi.config.DbiConfigForDiurnal;
 import com.vv.personal.diurnal.dbi.interactor.diurnal.cache.CachedDiurnal;
 import com.vv.personal.diurnal.dbi.interactor.diurnal.dbi.DiurnalDbi;
 import com.vv.personal.diurnal.dbi.util.TimingUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -24,47 +23,46 @@ import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.refineEmail;
  * @author Vivek
  * @since 23/02/21
  */
+@Slf4j
 public class DiurnalTableUserMapping extends DiurnalDbi<UserMappingProto.UserMapping, UserMappingProto.UserMappingList> {
-    private static final Logger LOGGER = LoggerFactory.getLogger(DiurnalTableUserMapping.class);
-
-    private final String INSERT_STMT_NEW_USER = "INSERT INTO %s(\"mobile\", \"email\", \"user\", \"premium_user\", \"hash_cred\", \"hash_email\"," +
+    private static final String INSERT_STMT_NEW_USER = "INSERT INTO %s(\"mobile\", \"email\", \"user\", \"premium_user\", \"hash_cred\", \"hash_email\"," +
             " \"timestamp_save_cloud_last\", \"timestamp_save_last\", \"timestamp_expiry_payment\", \"timestamp_creation_account\", \"currency\") " +
             "VALUES(%d, '%s', '%s', '%s', '%s', %d, %d, %d, %d, %d, '%s')";
-    private final String DELETE_STMT_USER = "DELETE FROM %s " +
+    private static final String DELETE_STMT_USER = "DELETE FROM %s " +
             "WHERE \"%s\"=%d";
-    private final String UPDATE_STMT_USER_STR = "UPDATE %s " +
+    private static final String UPDATE_STMT_USER_STR = "UPDATE %s " +
             "SET \"%s\"='%s' " +
             "WHERE \"%s\"=%d";
-    private final String UPDATE_STMT_USER_LONG = "UPDATE %s " +
+    private static final String UPDATE_STMT_USER_LONG = "UPDATE %s " +
             "SET \"%s\"=%d " +
             "WHERE \"%s\"=%d";
-    private final String CHECK_STMT_ENTRY_SINGLE_COL = "SELECT %s from %s " +
+    private static final String CHECK_STMT_ENTRY_SINGLE_COL = "SELECT %s from %s " +
             "WHERE \"%s\"=%d";
-    private final String SELECT_STMT_ENTRY_SINGLE_COL_STR = "SELECT %s from %s " +
+    private static final String SELECT_STMT_ENTRY_SINGLE_COL_STR = "SELECT %s from %s " +
             "WHERE \"%s\"='%s'";
-    private final String SELECT_STMT_ENTRY_SINGLE_ROW = "SELECT * FROM %s " +
+    private static final String SELECT_STMT_ENTRY_SINGLE_ROW = "SELECT * FROM %s " +
             "WHERE \"%s\"='%s'";
 
-    private final String COL_MOBILE = "mobile";
-    private final String COL_EMAIL = "email";
-    private final String COL_USER = "user";
-    private final String COL_PREMIUM_USER = "premium_user";
-    private final String COL_HASH_CRED = "hash_cred";
-    private final String COL_HASH_EMAIL = "hash_email";
-    private final String COL_LAST_CLOUD_SAVE_TIMESTAMP = "timestamp_save_cloud_last";
-    private final String COL_LAST_SAVE_TIMESTAMP = "timestamp_save_last";
-    private final String COL_PAYMENT_EXPIRY_TIMESTAMP = "timestamp_expiry_payment";
-    private final String COL_ACCOUNT_CREATION_TIMESTAMP = "timestamp_creation_account";
-    private final String COL_CURRENCY = "currency";
+    private static final String COL_MOBILE = "mobile";
+    private static final String COL_EMAIL = "email";
+    private static final String COL_USER = "user";
+    private static final String COL_PREMIUM_USER = "premium_user";
+    private static final String COL_HASH_CRED = "hash_cred";
+    private static final String COL_HASH_EMAIL = "hash_email";
+    private static final String COL_LAST_CLOUD_SAVE_TIMESTAMP = "timestamp_save_cloud_last";
+    private static final String COL_LAST_SAVE_TIMESTAMP = "timestamp_save_last";
+    private static final String COL_PAYMENT_EXPIRY_TIMESTAMP = "timestamp_expiry_payment";
+    private static final String COL_ACCOUNT_CREATION_TIMESTAMP = "timestamp_creation_account";
+    private static final String COL_CURRENCY = "currency";
 
     public DiurnalTableUserMapping(String table, String primaryColumns, DbiConfigForDiurnal dbiConfigForDiurnal, CachedDiurnal cachedDiurnal, Function<String, String> createTableIfNotExistSqlFunction, String createTableIfNotExistSqlLocation) {
-        super(table, primaryColumns, dbiConfigForDiurnal, cachedDiurnal, createTableIfNotExistSqlFunction, createTableIfNotExistSqlLocation, LOGGER);
+        super(table, primaryColumns, dbiConfigForDiurnal, cachedDiurnal, createTableIfNotExistSqlFunction, createTableIfNotExistSqlLocation, log);
     }
 
     @Override
     public int pushNewEntity(UserMappingProto.UserMapping userMapping) {
         String email = refineEmail(userMapping.getEmail());
-        LOGGER.info("Pushing new User entity: {} x {} x {}", email, userMapping.getUsername(), false);
+        log.info("Pushing new User entity: {} x {} x {}", email, userMapping.getUsername(), false);
         return insertNewUser(userMapping.getMobile(), email, userMapping.getUsername(), false, userMapping.getHashCred(), generateHash(email),
                 NA_LONG, NA_LONG, NA_LONG, TimingUtil.extractCurrentUtcTimestamp(), userMapping.getCurrency()); //new user is always non-premium
     }
@@ -168,7 +166,7 @@ public class DiurnalTableUserMapping extends DiurnalDbi<UserMappingProto.UserMap
         try {
             if (resultSet.next()) return generateHashCredDetail(resultSet).getHashCred();
         } catch (SQLException throwables) {
-            LOGGER.error("Failed to retrieve cred hash from db. ", throwables);
+            log.error("Failed to retrieve cred hash from db. ", throwables);
         }
         return EMPTY_STR;
     }
@@ -180,7 +178,7 @@ public class DiurnalTableUserMapping extends DiurnalDbi<UserMappingProto.UserMap
         try {
             if (resultSet.next()) return generateHashEmailDetail(resultSet).getHashEmail();
         } catch (SQLException throwables) {
-            LOGGER.error("Failed to retrieve email hash from db. ", throwables);
+            log.error("Failed to retrieve email hash from db. ", throwables);
         }
         return NA_INT;
     }
@@ -192,7 +190,7 @@ public class DiurnalTableUserMapping extends DiurnalDbi<UserMappingProto.UserMap
         try {
             if (resultSet.next()) return generatePremiumUserDetail(resultSet).getPremiumUser();
         } catch (SQLException throwables) {
-            LOGGER.error("Failed to retrieve cred hash from db. ", throwables);
+            log.error("Failed to retrieve cred hash from db. ", throwables);
         }
         return false;
     }
@@ -216,13 +214,13 @@ public class DiurnalTableUserMapping extends DiurnalDbi<UserMappingProto.UserMap
                     userMappingsBuilder.addUserMapping(userMapping);
                     rowsReturned++;
                 } catch (SQLException throwables) {
-                    LOGGER.error("Failed to completely extract result from the above select all query. ", throwables);
+                    log.error("Failed to completely extract result from the above select all query. ", throwables);
                 }
             }
         } catch (Exception e) {
-            LOGGER.error("Failed to execute / process sql '{}'. ", sql, e);
+            log.error("Failed to execute / process sql '{}'. ", sql, e);
         }
-        LOGGER.info("Received {} entries for sql => '{}'", rowsReturned, sql);
+        log.info("Received {} entries for sql => '{}'", rowsReturned, sql);
         return userMappingsBuilder.build();
     }
 
@@ -234,7 +232,7 @@ public class DiurnalTableUserMapping extends DiurnalDbi<UserMappingProto.UserMap
         try {
             if (resultSet.next()) return generateDetail(resultSet);
         } catch (SQLException throwables) {
-            LOGGER.error("Failed to retrieve email hash from db. ", throwables);
+            log.error("Failed to retrieve email hash from db. ", throwables);
         }
         return EMPTY_USER_MAPPING;
     }
@@ -260,7 +258,7 @@ public class DiurnalTableUserMapping extends DiurnalDbi<UserMappingProto.UserMap
             builder.setAccountCreationTimestamp(resultSet.getLong(COL_ACCOUNT_CREATION_TIMESTAMP));
             builder.setCurrency(UserMappingProto.Currency.valueOf(resultSet.getString(COL_CURRENCY)));
         } catch (SQLException throwables) {
-            LOGGER.error("Failed to retrieve user-mapping detail from DB. ", throwables);
+            log.error("Failed to retrieve user-mapping detail from DB. ", throwables);
         }
         return builder.build();
     }
@@ -269,9 +267,9 @@ public class DiurnalTableUserMapping extends DiurnalDbi<UserMappingProto.UserMap
     protected Queue<String> processDataToCsv(UserMappingProto.UserMappingList dataList) {
         Queue<String> dataLines = new LinkedList<>();
         dataList.getUserMappingList().forEach(userMapping -> dataLines.add(
-                StringUtils.joinWith(csvLineSeparator,
-                        String.valueOf(userMapping.getMobile()), userMapping.getEmail(), userMapping.getUsername(), userMapping.getPremiumUser(), userMapping.getHashCred(), userMapping.getHashEmail(),
-                        userMapping.getLastCloudSaveTimestamp(), userMapping.getLastSavedTimestamp(), userMapping.getPaymentExpiryTimestamp(), userMapping.getAccountCreationTimestamp(), userMapping.getCurrency())
+                        StringUtils.joinWith(csvLineSeparator,
+                                String.valueOf(userMapping.getMobile()), userMapping.getEmail(), userMapping.getUsername(), userMapping.getPremiumUser(), userMapping.getHashCred(), userMapping.getHashEmail(),
+                                userMapping.getLastCloudSaveTimestamp(), userMapping.getLastSavedTimestamp(), userMapping.getPaymentExpiryTimestamp(), userMapping.getAccountCreationTimestamp(), userMapping.getCurrency())
                 )
         );
         return dataLines;
@@ -282,7 +280,7 @@ public class DiurnalTableUserMapping extends DiurnalDbi<UserMappingProto.UserMap
         try {
             builder.setHashCred(resultSet.getString(COL_HASH_CRED));
         } catch (SQLException throwables) {
-            LOGGER.error("Failed to retrieve user-mapping cred detail from DB. ", throwables);
+            log.error("Failed to retrieve user-mapping cred detail from DB. ", throwables);
         }
         return builder.build();
     }
@@ -292,7 +290,7 @@ public class DiurnalTableUserMapping extends DiurnalDbi<UserMappingProto.UserMap
         try {
             builder.setHashEmail(resultSet.getInt(COL_HASH_EMAIL));
         } catch (SQLException throwables) {
-            LOGGER.error("Failed to retrieve user-mapping hash email detail from DB. ", throwables);
+            log.error("Failed to retrieve user-mapping hash email detail from DB. ", throwables);
         }
         return builder.build();
     }
@@ -302,9 +300,8 @@ public class DiurnalTableUserMapping extends DiurnalDbi<UserMappingProto.UserMap
         try {
             builder.setPremiumUser(resultSet.getBoolean(COL_PREMIUM_USER));
         } catch (SQLException throwables) {
-            LOGGER.error("Failed to retrieve user-mapping premium-user detail from DB. ", throwables);
+            log.error("Failed to retrieve user-mapping premium-user detail from DB. ", throwables);
         }
         return builder.build();
     }
-
 }

@@ -43,8 +43,8 @@ public abstract class DiurnalDbi<T, K> implements IDiurnalDbi<T, K> {
     protected String csvLineSeparator = PIPE;
     protected boolean dbLogEveryInsertInBackup = true;
 
-    public DiurnalDbi(String table, String primaryColumns, DbiConfigForDiurnal dbiConfigForDiurnal, CachedDiurnal CACHED_DIURNAL,
-                      Function<String, String> createTableIfNotExistSqlFunction, String createTableIfNotExistSqlLocation, Logger logger) {
+    protected DiurnalDbi(String table, String primaryColumns, DbiConfigForDiurnal dbiConfigForDiurnal, CachedDiurnal CACHED_DIURNAL,
+                         Function<String, String> createTableIfNotExistSqlFunction, String createTableIfNotExistSqlLocation, Logger logger) {
         this.TABLE = table;
         this.PRIMARY_COLUMNS = primaryColumns;
         this.dbiConfigForDiurnal = dbiConfigForDiurnal;

@@ -4,8 +4,7 @@ import com.google.gson.Gson;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
 import com.vv.personal.diurnal.artifactory.generated.EntryProto;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Arrays;
 import java.util.stream.Collectors;
@@ -17,16 +16,15 @@ import static com.vv.personal.diurnal.dbi.constants.Constants.ENTRIES_SQL_DATA_S
  * @author Vivek
  * @since 06/03/21
  */
+@Slf4j
 public class JsonConverterUtil {
-    private static final Logger LOGGER = LoggerFactory.getLogger(JsonConverterUtil.class);
-
     private static final Gson GSON = new Gson();
 
     public static String convertEntryToJson(EntryProto.Entry entry) {
         try {
             return JsonFormat.printer().print(entry);
         } catch (InvalidProtocolBufferException e) {
-            LOGGER.error("Error during to json conv: ", e);
+            log.error("Error during to json conv: ", e);
         }
         return EMPTY_STR;
     }
@@ -47,7 +45,7 @@ public class JsonConverterUtil {
         try {
             JsonFormat.parser().ignoringUnknownFields().merge(json, builder);
         } catch (InvalidProtocolBufferException e) {
-            LOGGER.error("Failed to convert {} to entry proto. ", json, e);
+            log.error("Failed to convert {} to entry proto. ", json, e);
         }
         return builder.build();
     }
@@ -64,5 +62,4 @@ public class JsonConverterUtil {
     public static <T> String convertToJson(T object) {
         return GSON.toJson(object);
     }
-
 }

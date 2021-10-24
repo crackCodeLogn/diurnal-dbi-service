@@ -8,6 +8,9 @@ import java.time.Instant;
  */
 public class TimingUtil {
 
+    private TimingUtil() {
+    }
+
     public static long extractCurrentUtcTimestamp() {
         return Instant.now().toEpochMilli();
     }
@@ -15,5 +18,4 @@ public class TimingUtil {
     public static boolean hasTimestampExpired(Long inputTimestamp) {
         return System.currentTimeMillis() > inputTimestamp;
     }
-
 }

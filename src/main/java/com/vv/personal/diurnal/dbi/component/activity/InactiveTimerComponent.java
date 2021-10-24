@@ -3,8 +3,7 @@ package com.vv.personal.diurnal.dbi.component.activity;
 import com.vv.personal.diurnal.dbi.component.ShutdownManager;
 import com.vv.personal.diurnal.dbi.config.TimerConfig;
 import com.vv.personal.diurnal.dbi.util.TimerUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -21,10 +20,10 @@ import java.util.TimerTask;
  * @author Vivek
  * @since 08/04/21
  */
+@Slf4j
 @Component
 public class InactiveTimerComponent implements WebMvcConfigurer, HandlerInterceptor {
-    private final Logger LOGGER = LoggerFactory.getLogger(InactiveTimerComponent.class);
-    public Timer inactiveTimer = TimerUtil.generateNewTimer();
+    private Timer inactiveTimer = TimerUtil.generateNewTimer();
     @Autowired
     private ShutdownManager shutdownManager;
     @Autowired
@@ -44,13 +43,13 @@ public class InactiveTimerComponent implements WebMvcConfigurer, HandlerIntercep
 
     @PostConstruct
     public void postHaste() {
-        LOGGER.info("Is DBI InactiveTimeout enabled: {}", timerConfig.isDbiInactiveTimeoutEnabled());
+        log.info("Is DBI InactiveTimeout enabled: {}", timerConfig.isDbiInactiveTimeoutEnabled());
         restartInactiveTimer();
     }
 
     private void restartInactiveTimer() {
         if (timerConfig.isDbiInactiveTimeoutEnabled()) {
-            LOGGER.info("Cancelling inactive timer [{}] and restarting it thereafter", inactiveTimer);
+            log.info("Cancelling inactive timer [{}] and restarting it thereafter", inactiveTimer);
             inactiveTimer.cancel();
             //inactiveTimer.purge();
             inactiveTimer = TimerUtil.generateNewTimer();
@@ -62,14 +61,13 @@ public class InactiveTimerComponent implements WebMvcConfigurer, HandlerIntercep
         return new TimerTask() {
             @Override
             public void run() {
-                LOGGER.warn("*** Attention, shutting down now ***");
+                log.warn("*** Attention, shutting down now ***");
                 shutdownManager.initiateShutdown(timerConfig.getDbiShutdownExitCode());
 
-                LOGGER.info("Shutting down inactive-timer task");
+                log.info("Shutting down inactive-timer task");
                 inactiveTimer.cancel();
                 inactiveTimer.purge();
             }
         };
     }
-
 }

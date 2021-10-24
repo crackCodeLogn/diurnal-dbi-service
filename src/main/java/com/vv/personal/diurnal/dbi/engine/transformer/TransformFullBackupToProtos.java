@@ -6,10 +6,9 @@ import com.vv.personal.diurnal.dbi.engine.transformer.parser.ParseEntry;
 import com.vv.personal.diurnal.dbi.engine.transformer.parser.ParseTitle;
 import com.vv.personal.diurnal.dbi.util.DiurnalUtil;
 import com.vv.personal.diurnal.dbi.util.JsonConverterUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -25,9 +24,8 @@ import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.procureStopWatch;
  * @author Vivek
  * @since 03/03/21
  */
+@Slf4j
 public class TransformFullBackupToProtos {
-    private static final Logger LOGGER = LoggerFactory.getLogger(TransformFullBackupToProtos.class);
-
     private final List<String> fullBackupText;
     private final Integer emailHash;
     private final EntryDayProto.EntryDayList.Builder entryDayListBuilder = EntryDayProto.EntryDayList.newBuilder();
@@ -47,12 +45,12 @@ public class TransformFullBackupToProtos {
             int i = 0, serial = 0;
             for (i = 0; fullBackupText.get(i).trim().isEmpty(); i++) ; //cycling fwd on empty lines if any
             if (i >= fullBackupText.size()) {
-                LOGGER.warn("Strange backup file acquired - no good lines present.");
+                log.warn("Strange backup file acquired - no good lines present.");
                 return false;
             }
             LINE_TYPE line_type = deriveLineType(fullBackupText.get(i));
             if (line_type == LINE_TYPE.ENTRY) {
-                LOGGER.warn("Not a good backup file. First good line cannot be an entry!");
+                log.warn("Not a good backup file. First good line cannot be an entry!");
                 return false;
             }
             ParseTitle title = new ParseTitle(fullBackupText.get(i)); //first sentient line to be a title
@@ -90,14 +88,14 @@ public class TransformFullBackupToProtos {
                 EntryDayProto.EntryDay entryDay = computeEntryDay(entries, currentTitle, currentDate);
                 entryDayListBuilder.addEntryDay(entryDay);
             }
-            LOGGER.info("Completed transformation of backup data to DB compatible data. Generated {} titles and {} entry-days",
+            log.info("Completed transformation of backup data to DB compatible data. Generated {} titles and {} entry-days",
                     entryDayListBuilder.getEntryDayCount() - exemptTitles, entryDayListBuilder.getEntryDayCount());
             return true;
         } catch (Exception e) {
-            LOGGER.error("Failed to completely transform data from backup file. Will not be saving to database. ", e);
+            log.error("Failed to completely transform data from backup file. Will not be saving to database. ", e);
         } finally {
             stopWatch.stop();
-            LOGGER.info("Took {} ms in backup transformation op", stopWatch.getTime(TimeUnit.MILLISECONDS));
+            log.info("Took {} ms in backup transformation op", stopWatch.getTime(TimeUnit.MILLISECONDS));
         }
         return false;
     }
@@ -134,5 +132,4 @@ public class TransformFullBackupToProtos {
     private enum LINE_TYPE {
         TITLE, ENTRY
     }
-
 }

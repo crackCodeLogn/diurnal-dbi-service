@@ -1,6 +1,7 @@
 package com.vv.personal.diurnal.dbi.engine.transformer.parser;
 
 import com.vv.personal.diurnal.dbi.util.DiurnalUtil;
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
 import static com.vv.personal.diurnal.dbi.constants.Constants.DEFAULT_TITLE;
@@ -10,6 +11,7 @@ import static com.vv.personal.diurnal.dbi.constants.Constants.TITLES_TO_EXEMPT;
  * @author Vivek
  * @since 04/03/21
  */
+@Getter
 public class ParseTitle extends AbstractLineParser {
     private int date;
     private String title;
@@ -31,14 +33,6 @@ public class ParseTitle extends AbstractLineParser {
 //        this.sign = parseSign(split[0]);
 //        this.currency = parseCurrency(split[1]);
 //        this.dayTotal = Double.parseDouble(split[2]);
-    }
-
-    public int getDate() {
-        return date;
-    }
-
-    public String getTitle() {
-        return title;
     }
 
     public String getRefinedTitle() {

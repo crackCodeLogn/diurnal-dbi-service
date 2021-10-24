@@ -44,5 +44,6 @@ dbi:
   shutdown:
     exit:
       code: ${DBI_SHUTDOWN_EXIT_CODE:0}
+  trialPeriodDays: ${DBI_TRIAL_PERIOD_DAYS:30}
 
 logging.level.org.springframework.web: ${LOGGING:INFO}

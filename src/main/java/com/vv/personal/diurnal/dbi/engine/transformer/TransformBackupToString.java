@@ -89,5 +89,4 @@ public class TransformBackupToString {
         entryDayRepr.addEntries(entries);
         return entryDayRepr;
     }
-
 }

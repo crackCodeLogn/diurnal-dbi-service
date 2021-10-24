@@ -31,10 +31,18 @@ db:
       port: ${PROM_POSTGRES_PORT}
     user: ${PROM_POSTGRES_REF_USER}
     cred: ${PROM_POSTGRES_REF_CRED}
+    url: ${LOCAL_DATABASE_URL:}
 
 dbi:
   tables:
     create:
       onStartup: ${DBI_TABLES_CREATE_ONSTARTUP:true}
+  inactive:
+    timeout:
+      enabled: ${DBI_INACTIVE_TIMEOUT_ENABLED:false}
+      seconds: ${DBI_INACTIVE_TIMEOUT_SECONDS:30}
+  shutdown:
+    exit:
+      code: ${DBI_SHUTDOWN_EXIT_CODE:0}
 
 logging.level.org.springframework.web: ${LOGGING:INFO}

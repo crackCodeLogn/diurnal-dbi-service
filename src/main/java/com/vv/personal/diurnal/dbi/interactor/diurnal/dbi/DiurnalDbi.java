@@ -1,18 +1,28 @@
-package com.vv.personal.diurnal.dbi.interactor.diurnal;
+package com.vv.personal.diurnal.dbi.interactor.diurnal.dbi;
 
 import com.vv.personal.diurnal.dbi.config.DbiConfigForDiurnal;
+import com.vv.personal.diurnal.dbi.interactor.diurnal.cache.CachedDiurnal;
+import com.vv.personal.diurnal.dbi.util.DiurnalUtil;
+import com.vv.personal.diurnal.dbi.util.TimingUtil;
 import org.apache.commons.lang3.time.StopWatch;
 import org.slf4j.Logger;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Queue;
 import java.util.concurrent.*;
 import java.util.function.Function;
 
-import static com.vv.personal.diurnal.dbi.constants.Constants.SELECT_ALL_IDS;
+import static com.vv.personal.diurnal.dbi.constants.Constants.EMPTY_STR;
+import static com.vv.personal.diurnal.dbi.constants.Constants.PIPE;
+import static com.vv.personal.diurnal.dbi.constants.DbConstants.*;
 
 
 /**
@@ -29,6 +39,9 @@ public abstract class DiurnalDbi<T, K> implements IDiurnalDbi<T, K> {
     private final String createTableIfNotExistSqlLocation;
     private final ExecutorService singleWriterThread = Executors.newSingleThreadExecutor();
     private final ExecutorService multiReadThreads = Executors.newFixedThreadPool(4);
+    protected String csvDumpLocationFolder = DiurnalUtil.getDefaultCsvDumpLocation();
+    protected String csvLineSeparator = PIPE;
+    protected boolean dbLogEveryInsertInBackup = true;
 
     public DiurnalDbi(String table, String primaryColumns, DbiConfigForDiurnal dbiConfigForDiurnal, CachedDiurnal CACHED_DIURNAL,
                       Function<String, String> createTableIfNotExistSqlFunction, String createTableIfNotExistSqlLocation, Logger logger) {
@@ -45,19 +58,19 @@ public abstract class DiurnalDbi<T, K> implements IDiurnalDbi<T, K> {
 
     @Override
     public ResultSet executeNonUpdateSql(String sql) {
-        LOGGER.info("Executing SQL => {}", sql);
+        //LOGGER.info("Executing SQL => {}", sql);
         Callable<ResultSet> nonUpdateSqlTask = () -> {
             StopWatch stopWatch = new StopWatch();
             stopWatch.start();
             try {
                 ResultSet sqlResult = dbiConfigForDiurnal.getStatement().executeQuery(sql);
-                LOGGER.info("SQL completed => {}", sql);
+                LOGGER.info("SQL completed => [{}]", sql);
                 return sqlResult;
             } catch (SQLException throwables) {
-                LOGGER.error("Failed to execute above SQL. ", throwables);
+                LOGGER.error("Failed to execute SQL => [{}]. ", sql, throwables);
             } finally {
                 stopWatch.stop();
-                LOGGER.info("Non-update SQL execution complete in {}ms", stopWatch.getTime(TimeUnit.MILLISECONDS));
+                LOGGER.debug("Non-update SQL execution completed in {}ms", stopWatch.getTime(TimeUnit.MILLISECONDS));
             }
             return null;
         };
@@ -71,19 +84,21 @@ public abstract class DiurnalDbi<T, K> implements IDiurnalDbi<T, K> {
 
     @Override
     public int executeUpdateSql(String sql) {
-        LOGGER.info("Executing SQL => {}", sql);
         Callable<Integer> updateSqlTask = () -> {
             StopWatch stopWatch = new StopWatch();
             stopWatch.start();
             try {
                 int sqlResult = dbiConfigForDiurnal.getStatement().executeUpdate(sql);
-                LOGGER.info("Result of above SQL {} => {}", sql, sqlResult);
+                if (dbLogEveryInsertInBackup)
+                    LOGGER.info("Result of SQL [{}] => {}", sql, sqlResult);
+                else
+                    LOGGER.debug("Result of SQL [{}] => {}", sql, sqlResult);
                 return sqlResult;
             } catch (SQLException throwables) {
-                LOGGER.error("Failed to execute above SQL. ", throwables);
+                LOGGER.error("Failed to execute SQL => [{}]. ", sql, throwables);
             } finally {
                 stopWatch.stop();
-                LOGGER.info("Update SQL execution complete in {}ms", stopWatch.getTime(TimeUnit.MILLISECONDS));
+                LOGGER.debug("Update SQL execution completed in {}ms", stopWatch.getTime(TimeUnit.MILLISECONDS));
             }
             return -1;
         };
@@ -125,6 +140,29 @@ public abstract class DiurnalDbi<T, K> implements IDiurnalDbi<T, K> {
     }
 
     @Override
+    public int dropTable() {
+        return executeUpdateSql(String.format(DROP_TABLE, TABLE));
+    }
+
+    @Override
+    public int truncateTable() {
+        return executeUpdateSql(String.format(TRUNCATE_TABLE, TABLE));
+    }
+
+    protected boolean checkIfEntityExists(String sql, int expectedCount) {
+        ResultSet resultSet = executeNonUpdateSql(sql);
+        int rowsReturned = 0;
+        try {
+            while (resultSet.next()) {
+                rowsReturned++;
+            }
+        } catch (SQLException throwables) {
+            LOGGER.error("Failed to completely extract result from the above select all query. ", throwables);
+        }
+        return rowsReturned == expectedCount;
+    }
+
+    @Override
     public void populatePrimaryIds() {
         getCachedRef().bulkAddNewIdsToEntityCache(TABLE, selectAllIdsForTable());
     }
@@ -137,27 +175,46 @@ public abstract class DiurnalDbi<T, K> implements IDiurnalDbi<T, K> {
         return CACHED_DIURNAL;
     }
 
-    public String getCreateTableIfNotExistSqlLocation() {
-        return createTableIfNotExistSqlLocation;
+    @Override
+    public String getTableName() {
+        return TABLE;
     }
 
-    /*@Override
-    public void addToCache(String table, Integer id) {
-        getCachedRef().addNewIdToEntityCache(table, id);
-    }*/
+    protected abstract Queue<String> processDataToCsv(K dataList);
 
-    /*protected int addToCacheOnSqlResult(Integer sqlExecResult, Object... id) {
-     *//* Ignoring for now - 20210223
-        if (addToCacheOnSqlResult(sqlExecResult, TABLE, id) == 1) {
-            LOGGER.debug("Cache for {} updated with id: {}", TABLE, id);
-        } else {
-            LOGGER.warn("Failed to update cache for {} with id: {}", TABLE, id);
-        }*//*
-        return sqlExecResult;
-    }*/
+    @Override
+    public String dumpTableToCsv() {
+        K dataList = retrieveAll();
+        String csv = String.format("%s/%s-%d.csv", csvDumpLocationFolder, TABLE, TimingUtil.extractCurrentUtcTimestamp());
+        File csvDump = new File(csv);
+        try (PrintWriter printWriter = new PrintWriter(new FileWriter(csvDump))) {
+            Queue<String> dataLines = processDataToCsv(dataList);
+            while (!dataLines.isEmpty())
+                printWriter.println(dataLines.poll());
+            printWriter.flush();
+        } catch (IOException e) {
+            LOGGER.error("Failed to write table dump to csv. ", e);
+            return EMPTY_STR;
+        }
+        return csvDump.getAbsolutePath();
+    }
 
-    /*@Override
-    public void flushCache() {
-        getCachedRef().flushEntityCache(TABLE);
-    }*/
+    public void destroyExecutors() {
+        LOGGER.info("Shutting down singleWriterThread executor");
+        if (!singleWriterThread.isShutdown())
+            singleWriterThread.shutdown();
+        LOGGER.info("Shutting down multiReadThreads executor");
+        if (!multiReadThreads.isShutdown())
+            multiReadThreads.shutdown();
+    }
+
+    public DiurnalDbi<T, K> setCsvDumpLocationFolder(String csvDumpLocationFolder) {
+        this.csvDumpLocationFolder = csvDumpLocationFolder;
+        return this;
+    }
+
+    public DiurnalDbi<T, K> setCsvLineSeparator(String csvLineSeparator) {
+        this.csvLineSeparator = csvLineSeparator;
+        return this;
+    }
 }

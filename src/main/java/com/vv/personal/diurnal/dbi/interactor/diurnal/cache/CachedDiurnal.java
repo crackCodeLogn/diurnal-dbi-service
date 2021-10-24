@@ -1,5 +1,6 @@
-package com.vv.personal.diurnal.dbi.interactor.diurnal;
+package com.vv.personal.diurnal.dbi.interactor.diurnal.cache;
 
+import com.vv.personal.diurnal.dbi.constants.DbConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -7,8 +8,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-
-import static com.vv.personal.diurnal.dbi.constants.Constants.*;
 
 /**
  * @author Vivek
@@ -19,11 +18,11 @@ public class CachedDiurnal {
     public final ConcurrentHashMap<String, Set<Integer>> activeRefEntityIds = new ConcurrentHashMap<>();
 
     public CachedDiurnal() {
-        activeRefEntityIds.put(TABLE_DIURNAL_USER_MAPPING, generateEmptySet());
-        activeRefEntityIds.put(TABLE_DIURNAL_TITLE_MAPPING, generateEmptySet());
+        activeRefEntityIds.put(DbConstants.TABLE_DIURNAL_USER_MAPPING, generateEmptySet());
+        activeRefEntityIds.put(DbConstants.TABLE_DIURNAL_TITLE_MAPPING, generateEmptySet());
         /*activeRefEntityIds.put(TABLE_REF_PROBLEM, generateEmptySet());
         activeRefEntityIds.put(TABLE_REF_MAKE, generateEmptySet());*/
-        activeRefEntityIds.put(TABLE_DIURNAL_ENTRY, generateEmptySet());
+        activeRefEntityIds.put(DbConstants.TABLE_DIURNAL_ENTRY, generateEmptySet());
     }
 
     public synchronized Boolean addNewIdToEntityCache(String entity, Integer idToAdd) {

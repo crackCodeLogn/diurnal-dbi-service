@@ -1,5 +1,6 @@
 package com.vv.personal.diurnal.dbi.config;
 
+import java.net.URISyntaxException;
 import java.sql.Connection;
 import java.sql.Statement;
 
@@ -19,9 +20,11 @@ public interface DbiConfigurator {
 
     String getDbCred();
 
-    Connection getDbConnection();
+    String getDbUrl();
+
+    Connection getDbConnection() throws URISyntaxException;
 
     boolean closeDbConnection();
 
-    Statement getStatement();
+    Statement getStatement() throws URISyntaxException;
 }

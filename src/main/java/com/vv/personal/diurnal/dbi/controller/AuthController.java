@@ -3,8 +3,7 @@ package com.vv.personal.diurnal.dbi.controller;
 import com.vv.personal.diurnal.artifactory.generated.ResponsePrimitiveProto;
 import com.vv.personal.diurnal.dbi.auth.Authorizer;
 import io.swagger.annotations.ApiOperation;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,10 +14,10 @@ import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.generateResponsePrimi
  * @author Vivek
  * @since 07/03/21
  */
+@Slf4j
 @RestController("auth-controller")
 @RequestMapping("/diurnal/auth")
 public class AuthController {
-    private static final Logger LOGGER = LoggerFactory.getLogger(AuthController.class);
 
     @Autowired
     private Authorizer authorizer;
@@ -26,9 +25,9 @@ public class AuthController {
     @ApiOperation(value = "generate hash", hidden = true)
     @GetMapping("/generate/hash")
     public ResponsePrimitiveProto.ResponsePrimitive generateHash(@RequestBody String rawCred) {
-        LOGGER.info("Rx-ed raw-cred '{}' to hash", rawCred);
+        log.info("Rx-ed raw-cred '{}' to hash", rawCred);
         String hash = authorizer.encode(rawCred);
-        LOGGER.info("Generated hash [{}]", hash);
+        log.info("Generated hash [{}]", hash);
         return generateResponsePrimitiveString(hash);
     }
 
@@ -49,5 +48,4 @@ public class AuthController {
                                                @RequestParam String hash) {
         return generateResponsePrimitiveBool(authorizer.hashMatches(rawCred, hash)).getBoolResponse();
     }
-
 }

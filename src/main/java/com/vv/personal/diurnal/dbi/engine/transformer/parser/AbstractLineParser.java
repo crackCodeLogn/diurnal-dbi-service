@@ -10,7 +10,7 @@ import com.vv.personal.diurnal.artifactory.generated.UserMappingProto;
 public abstract class AbstractLineParser implements LineParser {
     protected final String line;
 
-    public AbstractLineParser(String line) {
+    AbstractLineParser(String line) {
         this.line = line;
     }
 

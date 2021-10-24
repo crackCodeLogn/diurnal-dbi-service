@@ -1,21 +1,21 @@
 package com.vv.personal.diurnal.dbi.interactor.diurnal.cache;
 
 import com.vv.personal.diurnal.dbi.constants.DbConstants;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * @author Vivek
  * @since 02/01/21
  */
+@Slf4j
 public class CachedDiurnal {
-    private static final Logger LOGGER = LoggerFactory.getLogger(CachedDiurnal.class);
-    public final ConcurrentHashMap<String, Set<Integer>> activeRefEntityIds = new ConcurrentHashMap<>();
+    public final ConcurrentMap<String, Set<Integer>> activeRefEntityIds = new ConcurrentHashMap<>();
 
     public CachedDiurnal() {
         activeRefEntityIds.put(DbConstants.TABLE_DIURNAL_USER_MAPPING, generateEmptySet());
@@ -43,11 +43,7 @@ public class CachedDiurnal {
 
     public synchronized void flushEntityCache(String entity) {
         activeRefEntityIds.get(entity).clear();
-        LOGGER.warn("Flushed cache for {}", entity);
-    }
-
-    public ConcurrentHashMap<String, Set<Integer>> getActiveRefEntityIds() {
-        return activeRefEntityIds;
+        log.warn("Flushed cache for {}", entity);
     }
 
     private Set<Integer> generateEmptySet() {

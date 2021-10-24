@@ -6,9 +6,8 @@ import com.vv.personal.diurnal.dbi.config.DbiConfigForDiurnal;
 import com.vv.personal.diurnal.dbi.interactor.diurnal.cache.CachedDiurnal;
 import com.vv.personal.diurnal.dbi.interactor.diurnal.dbi.DiurnalDbi;
 import com.vv.personal.diurnal.dbi.util.DiurnalUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -23,26 +22,25 @@ import static com.vv.personal.diurnal.dbi.constants.DbConstants.*;
  * @author Vivek
  * @since 06/03/21
  */
+@Slf4j
 public class DiurnalTableEntryDay extends DiurnalDbi<EntryDayProto.EntryDay, EntryDayProto.EntryDayList> {
-    private static final Logger LOGGER = LoggerFactory.getLogger(DiurnalTableEntryDay.class);
-
-    private final String INSERT_STMT_NEW_ENTRY_DAY = "INSERT INTO %s(\"hash_email\", \"date\", \"title\", \"entries_as_string\") " +
+    private static final String INSERT_STMT_NEW_ENTRY_DAY = "INSERT INTO %s(\"hash_email\", \"date\", \"title\", \"entries_as_string\") " +
             "VALUES(%d, %d, '%s', '%s')";
-    private final String DELETE_STMT_ENTRY = "DELETE FROM %s " +
+    private static final String DELETE_STMT_ENTRY = "DELETE FROM %s " +
             "WHERE \"%s\"=%d and \"%s\"=%d";
-    private final String CHECK_STMT_ENTRY_EXISTS = "SELECT %s from %s " +
+    private static final String CHECK_STMT_ENTRY_EXISTS = "SELECT %s from %s " +
             "WHERE \"%s\"=%d and \"%s\"=%d";
-    private final String DELETE_STMT_ALL_ENTRY_DAY_OF_USER = "DELETE FROM %s " +
+    private static final String DELETE_STMT_ALL_ENTRY_DAY_OF_USER = "DELETE FROM %s " +
             "WHERE \"%s\"=%d";
 
-    private final String COL_DATE = "date";
-    private final String COL_HASH_EMAIL = "hash_email";
-    private final String COL_TITLE = "title";
-    private final String COL_ENTRIES_AS_STRING = "entries_as_string";
+    private static final String COL_DATE = "date";
+    private static final String COL_HASH_EMAIL = "hash_email";
+    private static final String COL_TITLE = "title";
+    private static final String COL_ENTRIES_AS_STRING = "entries_as_string";
 
     public DiurnalTableEntryDay(String table, String primaryColumns, DbiConfigForDiurnal dbiConfigForDiurnal, CachedDiurnal cachedDiurnal, Function<String, String> createTableIfNotExistSqlFunction, String createTableIfNotExistSqlLocation,
                                 boolean dbLogEveryInsertInBackup) {
-        super(table, primaryColumns, dbiConfigForDiurnal, cachedDiurnal, createTableIfNotExistSqlFunction, createTableIfNotExistSqlLocation, LOGGER);
+        super(table, primaryColumns, dbiConfigForDiurnal, cachedDiurnal, createTableIfNotExistSqlFunction, createTableIfNotExistSqlLocation, log);
         this.dbLogEveryInsertInBackup = dbLogEveryInsertInBackup;
     }
 
@@ -55,7 +53,7 @@ public class DiurnalTableEntryDay extends DiurnalDbi<EntryDayProto.EntryDay, Ent
 
     @Override
     public int pushNewEntity(EntryDayProto.EntryDay entryDay) {
-        LOGGER.debug("Pushing new EntryDay entity: {} x {} x {}", entryDay.getHashEmail(), entryDay.getDate(), entryDay.getTitle());
+        log.debug("Pushing new EntryDay entity: {} x {} x {}", entryDay.getHashEmail(), entryDay.getDate(), entryDay.getTitle());
         return insertNewEntryDay(entryDay.getHashEmail(), entryDay.getDate(), entryDay.getTitle(), entryDay.getEntriesAsString());
     }
 
@@ -113,13 +111,13 @@ public class DiurnalTableEntryDay extends DiurnalDbi<EntryDayProto.EntryDay, Ent
                     entriesBuilder.addEntryDay(entryDay);
                     rowsReturned++;
                 } catch (SQLException throwables) {
-                    LOGGER.error("Failed to completely extract result from the above select all query. ", throwables);
+                    log.error("Failed to completely extract result from the above select all query. ", throwables);
                 }
             }
         } catch (Exception e) {
-            LOGGER.error("Failed to execute / process sql '{}'. ", sql, e);
+            log.error("Failed to execute / process sql '{}'. ", sql, e);
         }
-        LOGGER.info("Received {} entries for sql => '{}'", rowsReturned, sql);
+        log.info("Received {} entries for sql => '{}'", rowsReturned, sql);
         return entriesBuilder.build();
     }
 
@@ -133,7 +131,7 @@ public class DiurnalTableEntryDay extends DiurnalDbi<EntryDayProto.EntryDay, Ent
             builder.setEntriesAsString(
                     DiurnalUtil.refineDbStringForOriginal(resultSet.getString(COL_ENTRIES_AS_STRING))); //refinement - for getting quotes back
         } catch (SQLException throwables) {
-            LOGGER.error("Failed to retrieve entry detail from DB. ", throwables);
+            log.error("Failed to retrieve entry detail from DB. ", throwables);
         }
         return builder.build();
     }
@@ -153,5 +151,4 @@ public class DiurnalTableEntryDay extends DiurnalDbi<EntryDayProto.EntryDay, Ent
                 COL_HASH_EMAIL, userMapping.getHashEmail());
         return executeUpdateSql(sql);
     }
-
 }

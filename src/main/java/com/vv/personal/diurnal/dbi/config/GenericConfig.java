@@ -17,5 +17,4 @@ public class GenericConfig {
     public StopWatch procureStopWatch() {
         return new StopWatch();
     }
-
 }

@@ -6,8 +6,7 @@ import com.vv.personal.diurnal.dbi.auth.Authorizer;
 import com.vv.personal.diurnal.dbi.interactor.diurnal.dbi.tables.DiurnalTableUserMapping;
 import com.vv.personal.diurnal.dbi.util.DiurnalUtil;
 import io.swagger.annotations.ApiOperation;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
@@ -21,10 +20,10 @@ import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.*;
  * @author Vivek
  * @since 23/02/21
  */
+@Slf4j
 @RestController("user-mapping-controller")
 @RequestMapping("/diurnal/mapping-user")
 public class UserMappingController {
-    private static final Logger LOGGER = LoggerFactory.getLogger(UserMappingController.class);
 
     @Autowired
     @Qualifier("DiurnalTableUserMapping")
@@ -36,9 +35,9 @@ public class UserMappingController {
     @ApiOperation(value = "create user", hidden = true)
     @PostMapping("/create/user")
     public Integer createUserMapping(@RequestBody UserMappingProto.UserMapping userMapping) {
-        LOGGER.info("Creating new user mapping: {} x {} x {} x {}", userMapping.getMobile(), userMapping.getEmail(), userMapping.getUsername(), userMapping.getPremiumUser());
+        log.info("Creating new user mapping: {} x {} x {} x {}", userMapping.getMobile(), userMapping.getEmail(), userMapping.getUsername(), userMapping.getPremiumUser());
         Integer sqlResult = diurnalTableUserMapping.pushNewEntity(userMapping);
-        LOGGER.info("Result of new user creation: {}", sqlResult);
+        log.info("Result of new user creation: {}", sqlResult);
         return sqlResult;
     }
 
@@ -50,7 +49,7 @@ public class UserMappingController {
                                              @RequestParam String hashCred,
                                              @RequestParam(defaultValue = "INR") UserMappingProto.Currency currency) {
         email = refineEmail(email);
-        LOGGER.info("Obtained manual req for new user creation: {} x {} x {} x {} x {} x {}", mobile, email, user, premiumUser, hashCred, currency);
+        log.info("Obtained manual req for new user creation: {} x {} x {} x {} x {} x {}", mobile, email, user, premiumUser, hashCred, currency);
         return createUserMapping(generateCompleteUserMapping(mobile, email, user, premiumUser, hashCred, DEFAULT_EMAIL_HASH,
                 DEFAULT_LAST_CLOUD_SAVE_TS, DEFAULT_LAST_SAVE_TS, DEFAULT_PAYMENT_EXPIRY_TS, DEFAULT_ACCOUNT_CREATION_TS, currency));
     }
@@ -65,19 +64,19 @@ public class UserMappingController {
     public Integer deleteUserMapping(@RequestBody UserMappingProto.UserMapping userMapping) {
         Integer emailHash = retrieveHashEmail(userMapping.getEmail());
         if (isEmailHashAbsent(emailHash)) {
-            LOGGER.warn("User not found for deletion for email [{}]", userMapping.getEmail());
+            log.warn("User not found for deletion for email [{}]", userMapping.getEmail());
             return INT_RESPONSE_WONT_PROCESS;
         }
-        LOGGER.info("Deleting user mapping: {} x {}", userMapping.getEmail(), userMapping.getUsername());
+        log.info("Deleting user mapping: {} x {}", userMapping.getEmail(), userMapping.getUsername());
         Integer sqlResult = diurnalTableUserMapping.deleteEntity(generateUserMappingOnPk(emailHash)); //uses hash email
-        LOGGER.info("Result of user deletion: {}", sqlResult);
+        log.info("Result of user deletion: {}", sqlResult);
         return sqlResult;
     }
 
     @DeleteMapping("/manual/delete/user")
     public Integer deleteUserMappingManually(@RequestParam String email) {
         email = refineEmail(email);
-        LOGGER.info("Obtained manual req for user deletion: {}", email);
+        log.info("Obtained manual req for user deletion: {}", email);
         return deleteUserMapping(DiurnalUtil.generateUserMapping(email));
     }
 
@@ -86,12 +85,12 @@ public class UserMappingController {
     public Integer updateUserMappingName(@RequestBody UserMappingProto.UserMapping userMapping) {
         Integer emailHash = retrieveHashEmail(userMapping.getEmail());
         if (isEmailHashAbsent(emailHash)) {
-            LOGGER.warn("User not found for updation for email [{}]", userMapping.getEmail());
+            log.warn("User not found for updation for email [{}]", userMapping.getEmail());
             return INT_RESPONSE_WONT_PROCESS;
         }
-        LOGGER.info("Updating user mapping: {} -> name: {}", userMapping.getEmail(), userMapping.getUsername());
+        log.info("Updating user mapping: {} -> name: {}", userMapping.getEmail(), userMapping.getUsername());
         Integer sqlResult = diurnalTableUserMapping.updateEntity(generateCompleteUserMapping(userMapping, emailHash));
-        LOGGER.debug("Result of user updation: {}", sqlResult);
+        log.debug("Result of user updation: {}", sqlResult);
         return sqlResult;
     }
 
@@ -99,7 +98,7 @@ public class UserMappingController {
     public Integer updateUserMappingManually(@RequestParam String email,
                                              @RequestParam String updatedUserName) {
         email = refineEmail(email);
-        LOGGER.info("Obtained manual req for user updation: {} -> name: {}", email, updatedUserName);
+        log.info("Obtained manual req for user updation: {} -> name: {}", email, updatedUserName);
         return updateUserMappingName(generateUserMapping(email, updatedUserName));
     }
 
@@ -108,12 +107,12 @@ public class UserMappingController {
     public Integer updateUserMappingCred(@RequestBody UserMappingProto.UserMapping userMapping) {
         Integer emailHash = retrieveHashEmail(userMapping.getEmail());
         if (isEmailHashAbsent(emailHash)) {
-            LOGGER.warn("User not found for updation of hash cred for email [{}]", userMapping.getEmail());
+            log.warn("User not found for updation of hash cred for email [{}]", userMapping.getEmail());
             return INT_RESPONSE_WONT_PROCESS;
         }
-        LOGGER.info("Updating user mapping: {} -> cred: {}", userMapping.getEmail(), userMapping.getHashCred());
+        log.info("Updating user mapping: {} -> cred: {}", userMapping.getEmail(), userMapping.getHashCred());
         Integer sqlResult = diurnalTableUserMapping.updateHashCred(generateCompleteUserMapping(userMapping, emailHash));
-        LOGGER.debug("Result of user updation: {}", sqlResult);
+        log.debug("Result of user updation: {}", sqlResult);
         return sqlResult;
     }
 
@@ -121,7 +120,7 @@ public class UserMappingController {
     public Integer updateUserMappingCredManually(@RequestParam String email,
                                                  @RequestParam String hashCred) {
         email = refineEmail(email);
-        LOGGER.info("Obtained manual req for user updation: {} -> cred: {}", email, hashCred);
+        log.info("Obtained manual req for user updation: {} -> cred: {}", email, hashCred);
         return updateUserMappingCred(generateUserMapping(DEFAULT_MOBILE, email, DEFAULT_USER_NAME, DEFAULT_PREMIUM_USER_STATUS, hashCred));
     }
 
@@ -130,12 +129,12 @@ public class UserMappingController {
     public Integer updateUserMappingMobile(@RequestBody UserMappingProto.UserMapping userMapping) {
         Integer emailHash = retrieveHashEmail(userMapping.getEmail());
         if (isEmailHashAbsent(emailHash)) {
-            LOGGER.warn("User not found for updation of mobile for email [{}]", userMapping.getEmail());
+            log.warn("User not found for updation of mobile for email [{}]", userMapping.getEmail());
             return INT_RESPONSE_WONT_PROCESS;
         }
-        LOGGER.info("Updating user mapping: {} -> mobile: {}", userMapping.getEmail(), userMapping.getMobile());
+        log.info("Updating user mapping: {} -> mobile: {}", userMapping.getEmail(), userMapping.getMobile());
         Integer sqlResult = diurnalTableUserMapping.updateMobile(generateCompleteUserMapping(userMapping, emailHash));
-        LOGGER.debug("Result of user updation: {}", sqlResult);
+        log.debug("Result of user updation: {}", sqlResult);
         return sqlResult;
     }
 
@@ -143,7 +142,7 @@ public class UserMappingController {
     public Integer updateUserMappingMobileManually(@RequestParam String email,
                                                    @RequestParam Long mobile) {
         email = refineEmail(email);
-        LOGGER.info("Obtained manual req for user updation: {} -> mobile: {}", email, mobile);
+        log.info("Obtained manual req for user updation: {} -> mobile: {}", email, mobile);
         return updateUserMappingMobile(generateUserMapping(mobile, email, DEFAULT_USER_NAME, DEFAULT_PREMIUM_USER_STATUS, DEFAULT_USER_CRED_HASH));
     }
 
@@ -152,12 +151,12 @@ public class UserMappingController {
     public Integer updateUserMappingCurrency(@RequestBody UserMappingProto.UserMapping userMapping) {
         Integer emailHash = retrieveHashEmail(userMapping.getEmail());
         if (isEmailHashAbsent(emailHash)) {
-            LOGGER.warn("User not found for updation of currency for email [{}]", userMapping.getEmail());
+            log.warn("User not found for updation of currency for email [{}]", userMapping.getEmail());
             return INT_RESPONSE_WONT_PROCESS;
         }
-        LOGGER.info("Updating user mapping: {} -> currency: {}", userMapping.getEmail(), userMapping.getCurrency());
+        log.info("Updating user mapping: {} -> currency: {}", userMapping.getEmail(), userMapping.getCurrency());
         Integer sqlResult = diurnalTableUserMapping.updateCurrency(generateCompleteUserMapping(userMapping, emailHash));
-        LOGGER.debug("Result of user updation: {}", sqlResult);
+        log.debug("Result of user updation: {}", sqlResult);
         return sqlResult;
     }
 
@@ -165,7 +164,7 @@ public class UserMappingController {
     public Integer updateUserMappingCurrencyManually(@RequestParam String email,
                                                      @RequestParam(defaultValue = "INR") UserMappingProto.Currency currency) {
         email = refineEmail(email);
-        LOGGER.info("Obtained manual req for user updation: {} -> currency: {}", email, currency);
+        log.info("Obtained manual req for user updation: {} -> currency: {}", email, currency);
         return updateUserMappingCurrency(generateUserMapping(email, currency));
     }
 
@@ -173,12 +172,12 @@ public class UserMappingController {
     @PostMapping("/update/user/timestamp/save/cloud")
     public Integer updateUserMappingLastCloudSaveTimestamp(@RequestBody UserMappingProto.UserMapping userMapping) {
         if (userMapping.getHashEmail() == 0) {
-            LOGGER.warn("Emailhash not supplied in the user mapping: {}", userMapping);
+            log.warn("Emailhash not supplied in the user mapping: {}", userMapping);
             return 0;
         }
-        LOGGER.info("Updating user mapping: {} -> last cloud save ts: {}", userMapping.getEmail(), userMapping.getLastCloudSaveTimestamp());
+        log.info("Updating user mapping: {} -> last cloud save ts: {}", userMapping.getEmail(), userMapping.getLastCloudSaveTimestamp());
         Integer sqlResult = diurnalTableUserMapping.updateLastCloudSaveTimestamp(userMapping);
-        LOGGER.debug("Result of user updation: {}", sqlResult);
+        log.debug("Result of user updation: {}", sqlResult);
         return sqlResult;
     }
 
@@ -187,12 +186,12 @@ public class UserMappingController {
     public Integer updateUserMappingLastSaveTimestamp(@RequestBody UserMappingProto.UserMapping userMapping) {
         Integer emailHash = retrieveHashEmail(userMapping.getEmail());
         if (isEmailHashAbsent(emailHash)) {
-            LOGGER.warn("User not found for updation of last local save ts for email [{}]", userMapping.getEmail());
+            log.warn("User not found for updation of last local save ts for email [{}]", userMapping.getEmail());
             return INT_RESPONSE_WONT_PROCESS;
         }
-        LOGGER.info("Updating user mapping: {} -> last local save ts: {}", userMapping.getEmail(), userMapping.getLastSavedTimestamp());
+        log.info("Updating user mapping: {} -> last local save ts: {}", userMapping.getEmail(), userMapping.getLastSavedTimestamp());
         Integer sqlResult = diurnalTableUserMapping.updateLastSavedTimestamp(generateCompleteUserMapping(userMapping, emailHash));
-        LOGGER.debug("Result of user updation: {}", sqlResult);
+        log.debug("Result of user updation: {}", sqlResult);
         return sqlResult;
     }
 
@@ -201,12 +200,12 @@ public class UserMappingController {
     public Integer updateUserMappingPaymentExpiryTimestamp(@RequestBody UserMappingProto.UserMapping userMapping) {
         Integer emailHash = retrieveHashEmail(userMapping.getEmail());
         if (isEmailHashAbsent(emailHash)) {
-            LOGGER.warn("User not found for updation of payment expiry ts for email [{}]", userMapping.getEmail());
+            log.warn("User not found for updation of payment expiry ts for email [{}]", userMapping.getEmail());
             return INT_RESPONSE_WONT_PROCESS;
         }
-        LOGGER.info("Updating user mapping: {} -> payment expiry ts: {}", userMapping.getEmail(), userMapping.getPaymentExpiryTimestamp());
+        log.info("Updating user mapping: {} -> payment expiry ts: {}", userMapping.getEmail(), userMapping.getPaymentExpiryTimestamp());
         Integer sqlResult = diurnalTableUserMapping.updatePaymentExpiryTimestamp(generateCompleteUserMapping(userMapping, emailHash));
-        LOGGER.debug("Result of user updation: {}", sqlResult);
+        log.debug("Result of user updation: {}", sqlResult);
         return sqlResult;
     }
 
@@ -226,18 +225,18 @@ public class UserMappingController {
     public Boolean updateUserInfo(@RequestBody UserMappingProto.UserMapping userMapping) {
         Integer emailHash = retrieveHashEmail(userMapping.getEmail());
         if (isEmailHashAbsent(emailHash)) {
-            LOGGER.warn("User not found for updation of user info for email [{}]", userMapping.getEmail());
+            log.warn("User not found for updation of user info for email [{}]", userMapping.getEmail());
             return false;
         }
-        LOGGER.info("Updating user mapping: {}", userMapping.getEmail());
+        log.info("Updating user mapping: {}", userMapping.getEmail());
         UserMappingProto.UserMapping inflatedUserMapping = generateCompleteUserMapping(userMapping, emailHash);
         if (diurnalTableUserMapping.updateEntity(inflatedUserMapping) == ONE
                 && diurnalTableUserMapping.updateMobile(inflatedUserMapping) == ONE
                 && diurnalTableUserMapping.updateCurrency(inflatedUserMapping) == ONE) {
-            LOGGER.info("Successfully updated user info!");
+            log.info("Successfully updated user info!");
             return true;
         }
-        LOGGER.warn("Failed to update complete user info!!");
+        log.warn("Failed to update complete user info!!");
         return false;
     }
 
@@ -247,15 +246,15 @@ public class UserMappingController {
                                                              @RequestParam Long newAccountCreationTimestamp) {
         Integer emailHash = retrieveHashEmail(refineEmail(email));
         if (isEmailHashAbsent(emailHash)) {
-            LOGGER.warn("User not found for updation of acc creation ts for email [{}]", email);
+            log.warn("User not found for updation of acc creation ts for email [{}]", email);
             return INT_RESPONSE_WONT_PROCESS;
         }
-        LOGGER.info("Updating user mapping: {} -> acc creation ts: {}", email, newAccountCreationTimestamp);
+        log.info("Updating user mapping: {} -> acc creation ts: {}", email, newAccountCreationTimestamp);
         Integer sqlResult = diurnalTableUserMapping.updateAccountCreationTimestamp(generateCompleteUserMapping(
                 DEFAULT_MOBILE, refineEmail(email), DEFAULT_USER_NAME, DEFAULT_PREMIUM_USER_STATUS, DEFAULT_USER_CRED_HASH, emailHash,
                 DEFAULT_LAST_CLOUD_SAVE_TS, DEFAULT_LAST_SAVE_TS, DEFAULT_PAYMENT_EXPIRY_TS, newAccountCreationTimestamp, DEFAULT_CURRENCY
         ));
-        LOGGER.debug("Result of user updation: {}", sqlResult);
+        log.debug("Result of user updation: {}", sqlResult);
         return sqlResult;
     }
 
@@ -265,13 +264,13 @@ public class UserMappingController {
         String email = refineEmail(userMapping.getEmail());
         Integer emailHash = retrieveHashEmail(email);
         if (isEmailHashAbsent(emailHash)) {
-            LOGGER.warn("User not found for updation of hash cred for email [{}]", email);
+            log.warn("User not found for updation of hash cred for email [{}]", email);
             return INT_RESPONSE_WONT_PROCESS;
         }
-        LOGGER.info("Obtained manual req for user updation: {} -> {}", email, userMapping.getPremiumUser());
+        log.info("Obtained manual req for user updation: {} -> {}", email, userMapping.getPremiumUser());
         userMapping = generateCompleteUserMapping(userMapping, emailHash);
         Integer sqlResult = diurnalTableUserMapping.updatePremiumUserStatus(userMapping);
-        LOGGER.info("Result of premium-user updation: {}", sqlResult);
+        log.info("Result of premium-user updation: {}", sqlResult);
         return sqlResult;
     }
 
@@ -280,41 +279,41 @@ public class UserMappingController {
                                                  @RequestParam(defaultValue = "false") Boolean premiumUserStatus) {
         UserMappingProto.UserMapping userMapping = generateUserMapping(DEFAULT_MOBILE, email, DEFAULT_USER_NAME, premiumUserStatus, DEFAULT_USER_CRED_HASH);
         int result = updatePremiumUserMapping(userMapping);
-        LOGGER.info("Manual premium user update done => {}", result);
+        log.info("Manual premium user update done => {}", result);
     }
 
     @ApiOperation(value = "retrieve user detail", hidden = true)
     @GetMapping("/retrieve/user")
     public UserMappingProto.UserMapping retrieveUserMapping(@RequestParam Integer emailHash) {
-        LOGGER.info("Retrieving user details for [{}]", emailHash);
+        log.info("Retrieving user details for [{}]", emailHash);
         UserMappingProto.UserMapping retrievedUserMapping = diurnalTableUserMapping.retrieveSingle(
                 generateUserMappingOnPk(emailHash));
-        LOGGER.info("Retrieved user detail");
+        log.info("Retrieved user detail");
         return retrievedUserMapping;
     }
 
     @ApiOperation(value = "retrieve all users", hidden = true)
     @GetMapping("/retrieve/all/users")
     public UserMappingProto.UserMappingList retrieveAllUserMappings() {
-        LOGGER.info("Retrieving all user mappings");
+        log.info("Retrieving all user mappings");
         UserMappingProto.UserMappingList userMappingList = diurnalTableUserMapping.retrieveAll();
-        LOGGER.info("Result of retrieving all user mappings: {} entries", userMappingList.getUserMappingCount());
+        log.info("Result of retrieving all user mappings: {} entries", userMappingList.getUserMappingCount());
         return userMappingList;
     }
 
     @GetMapping("/manual/retrieve/all/users")
     public List<String> retrieveAllUserMappingsManually() {
-        LOGGER.info("Obtained manual req for retrieving all user mappings");
+        log.info("Obtained manual req for retrieving all user mappings");
         return performBulkOpStr(retrieveAllUserMappings().getUserMappingList(), AbstractMessage::toString);
     }
 
     @ApiOperation(value = "retrieve hashed cred from db")
     @GetMapping("/retrieve/hash/cred")
     public String retrieveHashCred(@RequestParam Integer emailHash) {
-        LOGGER.info("Retrieve cred-hash for: {}", emailHash);
+        log.info("Retrieve cred-hash for: {}", emailHash);
         UserMappingProto.UserMapping userMapping = generateUserMappingOnPk(emailHash);
         String retrievedCred = diurnalTableUserMapping.retrieveHashCred(userMapping);
-        LOGGER.info("Result: [{}]", retrievedCred);
+        log.info("Result: [{}]", retrievedCred);
         return retrievedCred;
     }
 
@@ -322,17 +321,17 @@ public class UserMappingController {
     @GetMapping("/retrieve/hash/email")
     public Integer retrieveHashEmail(@RequestParam String email) {
         email = refineEmail(email);
-        LOGGER.info("Retrieve email hash for: {}", email);
+        log.info("Retrieve email hash for: {}", email);
         Integer retrievedHashEmail = diurnalTableUserMapping.retrieveHashEmail(generateUserMapping(email));
-        LOGGER.info("Result: [{}]", retrievedHashEmail);
+        log.info("Result: [{}]", retrievedHashEmail);
         return retrievedHashEmail;
     }
 
     public Boolean retrievePremiumUserStatus(@RequestParam Integer emailHash) {
-        LOGGER.info("Retrieve premium user status for: {}", emailHash);
+        log.info("Retrieve premium user status for: {}", emailHash);
         UserMappingProto.UserMapping userMapping = generateUserMappingOnPk(emailHash);
         Boolean premiumUserStatus = diurnalTableUserMapping.retrievePremiumUserStatus(userMapping);
-        LOGGER.info("Result: [{}]", premiumUserStatus);
+        log.info("Result: [{}]", premiumUserStatus);
         return premiumUserStatus;
     }
 
@@ -342,7 +341,7 @@ public class UserMappingController {
         email = refineEmail(email);
         Integer emailHash = retrieveHashEmail(email);
         if (isEmailHashAbsent(emailHash)) {
-            LOGGER.warn("User not found for checking of premium status for email [{}]", email);
+            log.warn("User not found for checking of premium status for email [{}]", email);
             return null;
         }
         return retrievePremiumUserStatus(emailHash);
@@ -351,26 +350,26 @@ public class UserMappingController {
     @ApiOperation(value = "check if user exists", hidden = true)
     @GetMapping("/check/user")
     public Boolean checkIfUserExists(@RequestParam UserMappingProto.UserMapping userMapping) {
-        LOGGER.info("Checking if user exists for email: [{}]", userMapping.getEmail());
+        log.info("Checking if user exists for email: [{}]", userMapping.getEmail());
         String email = refineEmail(userMapping.getEmail());
         Integer emailHash = retrieveHashEmail(email);
         boolean checkIfUserExists = !isEmailHashAbsent(emailHash);
-        LOGGER.info("Result: {}", checkIfUserExists);
+        log.info("Result: {}", checkIfUserExists);
         return checkIfUserExists;
     }
 
     @GetMapping("/manual/check/user")
     public Boolean checkIfUserExistsManually(@RequestParam String email) {
         email = refineEmail(email);
-        LOGGER.info("Checking if user exists for email: {}", email);
+        log.info("Checking if user exists for email: {}", email);
         return checkIfUserExists(DiurnalUtil.generateUserMapping(email));
     }
 
     @GetMapping("/manual/dump/table/csv/")
     public String dumpTableAsCsv() {
-        LOGGER.info("Dumping content of table '{}' onto csv now", diurnalTableUserMapping.getTableName());
+        log.info("Dumping content of table '{}' onto csv now", diurnalTableUserMapping.getTableName());
         String csvFileLocation = diurnalTableUserMapping.dumpTableToCsv();
-        LOGGER.info("Csv file location of the dump => [{}]", csvFileLocation);
+        log.info("Csv file location of the dump => [{}]", csvFileLocation);
         return csvFileLocation;
     }
 

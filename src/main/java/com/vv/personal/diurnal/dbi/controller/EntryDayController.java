@@ -7,8 +7,7 @@ import com.vv.personal.diurnal.dbi.engine.transformer.TransformFullBackupToProto
 import com.vv.personal.diurnal.dbi.interactor.diurnal.dbi.tables.DiurnalTableEntryDay;
 import com.vv.personal.diurnal.dbi.util.DiurnalUtil;
 import io.swagger.annotations.ApiOperation;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
@@ -23,10 +22,10 @@ import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.*;
  * @author Vivek
  * @since 06/03/21
  */
+@Slf4j
 @RestController("entry-day-controller")
 @RequestMapping("/diurnal/entry-day")
 public class EntryDayController {
-    private static final Logger LOGGER = LoggerFactory.getLogger(EntryDayController.class);
 
     @Autowired
     @Qualifier("DiurnalTableEntryDay")
@@ -39,16 +38,16 @@ public class EntryDayController {
     @PostMapping("/create/entry-day")
     public Integer createEntryDay(@RequestBody EntryDayProto.EntryDay entryDay) {
         Integer sqlResult = diurnalTableEntryDay.pushNewEntity(entryDay);
-        LOGGER.debug("Result of new entry-day creation: {}", sqlResult);
+        log.debug("Result of new entry-day creation: {}", sqlResult);
         return sqlResult;
     }
 
     @ApiOperation(value = "create bulk entry-days", hidden = true)
     @PostMapping("/create/entry-days")
     public List<Integer> bulkCreateEntryDays(@RequestBody EntryDayProto.EntryDayList entryDayList) {
-        LOGGER.info("Bulk creating {} entry-days", entryDayList.getEntryDayCount());
+        log.info("Bulk creating {} entry-days", entryDayList.getEntryDayCount());
         List<Integer> bulkEntriesCreationResult = performBulkOpInt(entryDayList.getEntryDayList(), this::createEntryDay);
-        LOGGER.info("Result of '{}' bulk entry-days creation: {}", bulkEntriesCreationResult.size(), bulkEntriesCreationResult);
+        log.info("Result of '{}' bulk entry-days creation: {}", bulkEntriesCreationResult.size(), bulkEntriesCreationResult);
         return bulkEntriesCreationResult;
     }
 
@@ -59,28 +58,28 @@ public class EntryDayController {
                                           @RequestParam String entriesAsString) {
         Integer emailHash = userMappingController.retrieveHashEmail(email);
         if (isEmailHashAbsent(emailHash)) {
-            LOGGER.warn("User not found for entry-day insertion for email [{}]", email);
+            log.warn("User not found for entry-day insertion for email [{}]", email);
             return INT_RESPONSE_WONT_PROCESS;
         }
-        LOGGER.info("Obtained manual req for new entry-day creation: {} x {}", email, date);
+        log.info("Obtained manual req for new entry-day creation: {} x {}", email, date);
         return createEntryDay(generateCompleteEntryDay(emailHash, date, title, entriesAsString));
     }
 
     @ApiOperation(value = "delete entry-day", hidden = true)
     @PostMapping("/delete/entry-day")
     public Integer deleteEntryDay(@RequestBody EntryDayProto.EntryDay entryDay) {
-        LOGGER.info("Deleting entry-day: {} x {}", entryDay.getHashEmail(), entryDay.getDate());
+        log.info("Deleting entry-day: {} x {}", entryDay.getHashEmail(), entryDay.getDate());
         Integer sqlResult = diurnalTableEntryDay.deleteEntity(entryDay);
-        LOGGER.info("Result of entry-day deletion: {}", sqlResult);
+        log.info("Result of entry-day deletion: {}", sqlResult);
         return sqlResult;
     }
 
     @ApiOperation(value = "delete bulk entry-days", hidden = true)
     @PostMapping("/delete/entry-days")
     public List<Integer> bulkDeleteEntryDays(@RequestBody EntryDayProto.EntryDayList entryDayList) {
-        LOGGER.info("Bulk deleting {} entry-days", entryDayList.getEntryDayCount());
+        log.info("Bulk deleting {} entry-days", entryDayList.getEntryDayCount());
         List<Integer> bulkEntriesDeletionResult = performBulkOpInt(entryDayList.getEntryDayList(), this::deleteEntryDay);
-        LOGGER.info("Result of bulk entry-days deletion: {}", bulkEntriesDeletionResult);
+        log.info("Result of bulk entry-days deletion: {}", bulkEntriesDeletionResult);
         return bulkEntriesDeletionResult;
     }
 
@@ -89,19 +88,19 @@ public class EntryDayController {
                                           @RequestParam Integer date) {
         Integer emailHash = userMappingController.retrieveHashEmail(email);
         if (isEmailHashAbsent(emailHash)) {
-            LOGGER.warn("User not found for entry-day deletion for email [{}]", email);
+            log.warn("User not found for entry-day deletion for email [{}]", email);
             return INT_RESPONSE_WONT_PROCESS;
         }
-        LOGGER.info("Obtained manual req for entry-day deletion: {} x {}", email, date);
+        log.info("Obtained manual req for entry-day deletion: {} x {}", email, date);
         return deleteEntryDay(generateEntryDayOnPk(emailHash, date));
     }
 
     @ApiOperation(value = "delete all entry-days of an user", hidden = true)
     @PostMapping("/delete/entry-days/user")
     public Integer bulkDeleteEntryDaysOfUser(@RequestBody UserMappingProto.UserMapping userMapping) {
-        LOGGER.info("Bulk deleting entry-days of user with hash: {}", userMapping.getHashEmail());
+        log.info("Bulk deleting entry-days of user with hash: {}", userMapping.getHashEmail());
         Integer bulkEntriesDeletionResult = diurnalTableEntryDay.bulkDeleteEntryDaysOfUser(userMapping);
-        LOGGER.info("Bulk deletion of '{}' entry-days done for user with hash: {}", bulkEntriesDeletionResult, userMapping.getHashEmail());
+        log.info("Bulk deletion of '{}' entry-days done for user with hash: {}", bulkEntriesDeletionResult, userMapping.getHashEmail());
         return bulkEntriesDeletionResult;
     }
 
@@ -110,7 +109,7 @@ public class EntryDayController {
     public Integer bulkDeleteEntryDaysOfUserManually(@RequestParam String email) {
         Integer emailHash = userMappingController.retrieveHashEmail(email);
         if (isEmailHashAbsent(emailHash)) {
-            LOGGER.warn("User doesn't exist for email: {}", email);
+            log.warn("User doesn't exist for email: {}", email);
             return INT_RESPONSE_WONT_PROCESS;
         }
         return bulkDeleteEntryDaysOfUser(generateUserMappingOnPk(emailHash));
@@ -118,21 +117,21 @@ public class EntryDayController {
 
     public List<Integer> deleteAndCreateEntryDays(TransformFullBackupToProtos transformFullBackupToProtos) {
         if (transformFullBackupToProtos.getEntryDayList().getEntryDayCount() == 0) return EMPTY_LIST_INT;
-        LOGGER.info("Received request to perform delete-create op on {} entry-days", transformFullBackupToProtos.getEntryDayList().getEntryDayCount());
+        log.info("Received request to perform delete-create op on {} entry-days", transformFullBackupToProtos.getEntryDayList().getEntryDayCount());
         bulkDeleteEntryDaysOfUser(DiurnalUtil.generateUserMappingOnPk(transformFullBackupToProtos.getEmailHash()));
 
         List<Integer> bulkOpResult = bulkCreateEntryDays(transformFullBackupToProtos.getEntryDayList());
         if (bulkOpResult.stream().anyMatch(integer -> integer == 0)) {
-            LOGGER.warn("Bulk create had some issues while creating certain entry-days. Check log for further details");
+            log.warn("Bulk create had some issues while creating certain entry-days. Check log for further details");
         }
-        LOGGER.info("Bulk creation op of entry-days completed.");
+        log.info("Bulk creation op of entry-days completed.");
         return bulkOpResult;
     }
 
     @ApiOperation(value = "update entry-day", hidden = true)
     @PostMapping("/update/entry-day")
     public Integer updateEntryDay(@RequestBody EntryDayProto.EntryDay entryDay) {
-        LOGGER.warn("Updating entry-day is not supported atm. Delete and re-insert if required.");
+        log.warn("Updating entry-day is not supported atm. Delete and re-insert if required.");
         return INT_RESPONSE_WONT_PROCESS;
     }
 
@@ -141,34 +140,34 @@ public class EntryDayController {
                                           @RequestParam Integer date) {
         Integer emailHash = userMappingController.retrieveHashEmail(email);
         if (isEmailHashAbsent(emailHash)) {
-            LOGGER.warn("User not found for entry-day updation for email [{}]", email);
+            log.warn("User not found for entry-day updation for email [{}]", email);
             return INT_RESPONSE_WONT_PROCESS;
         }
-        LOGGER.info("Obtained manual req for entry-day updation: {} x {}", email, date);
+        log.info("Obtained manual req for entry-day updation: {} x {}", email, date);
         return updateEntryDay(generateEntryDayOnPk(emailHash, date));
     }
 
     @ApiOperation(value = "retrieve all entry-days", hidden = true)
     @GetMapping("/retrieve/all/entry-days")
     public EntryDayProto.EntryDayList retrieveAllEntryDays() {
-        LOGGER.info("Retrieving all entry-days");
+        log.info("Retrieving all entry-days");
         EntryDayProto.EntryDayList entryDayList = diurnalTableEntryDay.retrieveAll();
-        LOGGER.info("Result of retrieving all: {} entry-days", entryDayList.getEntryDayCount());
+        log.info("Result of retrieving all: {} entry-days", entryDayList.getEntryDayCount());
         return entryDayList;
     }
 
     @GetMapping("/manual/retrieve/all/entry-days")
     public List<String> retrieveAllEntryDaysManually() {
-        LOGGER.info("Obtained manual req for retrieving all entry-days");
+        log.info("Obtained manual req for retrieving all entry-days");
         return performBulkOpStr(retrieveAllEntryDays().getEntryDayList(), AbstractMessage::toString);
     }
 
     @ApiOperation(value = "retrieve all entry-days of an email-hash", hidden = true)
     @GetMapping("/retrieve/all/entry-days/email-hash")
     public EntryDayProto.EntryDayList retrieveAllEntryDaysOfEmailHash(@RequestParam UserMappingProto.UserMapping userMapping) {
-        LOGGER.info("Retrieving all entry-days of email-hash => {}", userMapping.getHashEmail());
+        log.info("Retrieving all entry-days of email-hash => {}", userMapping.getHashEmail());
         EntryDayProto.EntryDayList entryDayList = diurnalTableEntryDay.retrieveSome(generateEntryDayOnHash(userMapping.getHashEmail()));
-        LOGGER.info("Result of retrieving all: {} entry-days of email hash {}", entryDayList.getEntryDayCount(), userMapping.getHashEmail());
+        log.info("Result of retrieving all: {} entry-days of email hash {}", entryDayList.getEntryDayCount(), userMapping.getHashEmail());
         return entryDayList;
     }
 
@@ -176,7 +175,7 @@ public class EntryDayController {
     public List<String> retrieveAllEntryDaysOfEmailHashManually(@RequestParam String email) {
         Integer emailHash = userMappingController.retrieveHashEmail(email);
         if (isEmailHashAbsent(emailHash)) {
-            LOGGER.warn("User not found for entry-days retrieval for email [{}]", email);
+            log.warn("User not found for entry-days retrieval for email [{}]", email);
             return new ArrayList<>();
         }
         return performBulkOpStr(retrieveAllEntryDaysOfEmailHash(generateUserMappingOnPk(emailHash)).getEntryDayList(), AbstractMessage::toString);
@@ -185,9 +184,9 @@ public class EntryDayController {
     @ApiOperation(value = "check if entry-day exists", hidden = true)
     @GetMapping("/check/entry-day")
     public Boolean checkIfEntryDayExists(@RequestParam EntryDayProto.EntryDay entryDay) {
-        LOGGER.info("Checking if entry-day exists for: {} x {}", entryDay.getHashEmail(), entryDay.getDate());
+        log.info("Checking if entry-day exists for: {} x {}", entryDay.getHashEmail(), entryDay.getDate());
         boolean checkIfEntryDayExists = diurnalTableEntryDay.checkEntity(entryDay);
-        LOGGER.info("Result: {}", checkIfEntryDayExists);
+        log.info("Result: {}", checkIfEntryDayExists);
         return checkIfEntryDayExists;
     }
 
@@ -196,18 +195,18 @@ public class EntryDayController {
                                                  @RequestParam Integer date) {
         Integer emailHash = userMappingController.retrieveHashEmail(email);
         if (isEmailHashAbsent(emailHash)) {
-            LOGGER.warn("User not found for entry-day updation for email [{}]", email);
+            log.warn("User not found for entry-day updation for email [{}]", email);
             return false;
         }
-        LOGGER.info("Checking if entry-day exists for: {} x {}", email, date);
+        log.info("Checking if entry-day exists for: {} x {}", email, date);
         return checkIfEntryDayExists(generateEntryDayOnPk(emailHash, date));
     }
 
     @GetMapping("/manual/dump/table/csv/")
     public String dumpTableAsCsv() {
-        LOGGER.info("Dumping content of table '{}' onto csv now", diurnalTableEntryDay.getTableName());
+        log.info("Dumping content of table '{}' onto csv now", diurnalTableEntryDay.getTableName());
         String csvFileLocation = diurnalTableEntryDay.dumpTableToCsv();
-        LOGGER.info("Csv file location of the dump => [{}]", csvFileLocation);
+        log.info("Csv file location of the dump => [{}]", csvFileLocation);
         return csvFileLocation;
     }
 

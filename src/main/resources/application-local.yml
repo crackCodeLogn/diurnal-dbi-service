@@ -1,12 +1,20 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:26257/postgres
+    username: root
+    password:
+  jpa:
+    show-sql: true
+
 db:
   diurnal:
     server:
       host: localhost
-      port: ${PROM_POSTGRES_PORT}
-    user: ${PROM_POSTGRES_REF_USER}
-    cred: ${PROM_POSTGRES_REF_CRED}
+      port: ${PROM_POSTGRES_PORT:26257}
+    user: ${PROM_POSTGRES_REF_USER:root}
+    cred: ${PROM_POSTGRES_REF_CRED:}
 
 dbi:
   tables:
     create:
-      onStartup: true
+      onStartup: false

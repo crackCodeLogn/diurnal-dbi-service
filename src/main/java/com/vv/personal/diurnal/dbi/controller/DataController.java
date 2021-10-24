@@ -52,11 +52,12 @@ public class DataController {
         log.info("Rx-ed user to sign up -> [{}]", userMapping.getEmail());
         StopWatch stopWatch = genericConfig.procureStopWatch();
         try {
+            boolean signUpResult = userMappingController.createUserMapping(userMapping) == ONE;
             UserMappingProto.UserMapping updatedUserMapping = UserMappingProto.UserMapping.newBuilder()
                     .mergeFrom(userMapping)
                     .setPaymentExpiryTimestamp(getTrialEndPeriod()) //putting trial '30' day period for new user
                     .build();
-            boolean signUpResult = userMappingController.createUserMapping(updatedUserMapping) == ONE;
+            userMappingController.updateUserMappingPaymentExpiryTimestamp(updatedUserMapping);
             log.info("Sign up result for [{}] => {}", updatedUserMapping.getEmail(), signUpResult);
             return signUpResult ? RESPOND_TRUE_BOOL : RESPOND_FALSE_BOOL;
         } finally {

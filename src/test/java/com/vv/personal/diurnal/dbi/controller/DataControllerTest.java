@@ -7,6 +7,7 @@ import com.vv.personal.diurnal.dbi.config.DbiConfig;
 import com.vv.personal.diurnal.dbi.config.GenericConfig;
 import com.vv.personal.diurnal.dbi.interactor.diurnal.dbi.tables.DiurnalTableEntryDay;
 import com.vv.personal.diurnal.dbi.util.DiurnalUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,8 +17,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -35,20 +34,21 @@ import static org.mockito.Mockito.when;
  * @author Vivek
  * @since 03/03/21
  */
+@Slf4j
 @ExtendWith(MockitoExtension.class)
-public class DataControllerTest {
-    private static final Logger LOGGER = LoggerFactory.getLogger(DataControllerTest.class);
-
+class DataControllerTest {
     @InjectMocks
-    private final DataController dataController = new DataController();
+    final DataController dataController = new DataController();
     @InjectMocks
-    private final EntryDayController entryDayController = new EntryDayController();
+    final EntryDayController entryDayController = new EntryDayController();
     @Mock
-    private UserMappingController userMappingController;
+    UserMappingController userMappingController;
     @Mock
-    private DiurnalTableEntryDay diurnalTableEntryDay;
+    DiurnalTableEntryDay diurnalTableEntryDay;
     @Mock
-    private GenericConfig genericConfig;
+    GenericConfig genericConfig;
+    @Mock
+    DbiConfig dbiConfig;
 
     public static List<String> readFileFromLocation(String src) {
         List<String> data = new ArrayList<>();
@@ -58,7 +58,7 @@ public class DataControllerTest {
                 if (!line.trim().isEmpty()) data.add(line.trim());
             }
         } catch (IOException e) {
-            LOGGER.error("Failed to read file contents from '{}'. ", src, e);
+            log.error("Failed to read file contents from '{}'. ", src, e);
         }
         //LOGGER.info("Data read in => \n{}", data);
         return data;
@@ -98,4 +98,16 @@ public class DataControllerTest {
         assertThat(backupPushResult.getBoolResponse()).isFalse();
     }
 
+    @Test
+    void testGetTrialEndPeriod() {
+        int daysToExtend = 30;
+        Mockito.when(dbiConfig.getTrialPeriodDays()).thenReturn(daysToExtend);
+        long currentTimeMillis = System.currentTimeMillis();
+
+        long trialEndPeriodTimeMillis = dataController.getTrialEndPeriod();
+        assertThat((trialEndPeriodTimeMillis - currentTimeMillis) / 1000)
+                .isGreaterThanOrEqualTo(24 * 60 * 60 * daysToExtend)
+                .isLessThan(24 * 60 * 60 * daysToExtend + 1); //allowing 1 second delta for upper bound check
+        System.out.printf("Current timestamp: %d\nTrial   timestamp: %d", currentTimeMillis, trialEndPeriodTimeMillis);
+    }
 }

@@ -43,6 +43,8 @@ public class DataController {
     private UserMappingController userMappingController;
     @Autowired
     private GenericConfig genericConfig;
+    @Autowired
+    private DbiConfig dbiConfig;
 
     @ApiOperation(value = "Sign up new user", hidden = true)
     @PostMapping("/signup")
@@ -50,8 +52,12 @@ public class DataController {
         log.info("Rx-ed user to sign up -> [{}]", userMapping.getEmail());
         StopWatch stopWatch = genericConfig.procureStopWatch();
         try {
-            boolean signUpResult = userMappingController.createUserMapping(userMapping) == ONE;
-            LOGGER.info("Sign up result for [{}] => {}", userMapping.getEmail(), signUpResult);
+            UserMappingProto.UserMapping updatedUserMapping = UserMappingProto.UserMapping.newBuilder()
+                    .mergeFrom(userMapping)
+                    .setPaymentExpiryTimestamp(getTrialEndPeriod()) //putting trial '30' day period for new user
+                    .build();
+            boolean signUpResult = userMappingController.createUserMapping(updatedUserMapping) == ONE;
+            log.info("Sign up result for [{}] => {}", updatedUserMapping.getEmail(), signUpResult);
             return signUpResult ? RESPOND_TRUE_BOOL : RESPOND_FALSE_BOOL;
         } finally {
             stopWatch.stop();
@@ -209,5 +215,11 @@ public class DataController {
     public DataController setGenericConfig(GenericConfig genericConfig) {
         this.genericConfig = genericConfig;
         return this;
+    }
+
+    Long getTrialEndPeriod() {
+        return Instant.now()
+                .plus(dbiConfig.getTrialPeriodDays(), ChronoUnit.DAYS)
+                .toEpochMilli();
     }
 }

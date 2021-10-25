@@ -3,7 +3,9 @@ package com.vv.personal.diurnal.dbi.controller;
 import com.google.protobuf.AbstractMessage;
 import com.vv.personal.diurnal.artifactory.generated.UserMappingProto;
 import com.vv.personal.diurnal.dbi.auth.Authorizer;
+import com.vv.personal.diurnal.dbi.config.DbiConfig;
 import com.vv.personal.diurnal.dbi.interactor.diurnal.dbi.tables.DiurnalTableUserMapping;
+import com.vv.personal.diurnal.dbi.model.UserMappingEntity;
 import com.vv.personal.diurnal.dbi.util.DiurnalUtil;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -11,6 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 import static com.vv.personal.diurnal.dbi.constants.Constants.*;
@@ -28,17 +32,30 @@ public class UserMappingController {
     @Autowired
     @Qualifier("DiurnalTableUserMapping")
     private DiurnalTableUserMapping diurnalTableUserMapping;
-
     @Autowired
     private Authorizer authorizer;
+    @Autowired
+    private DbiConfig dbiConfig;
 
     @ApiOperation(value = "create user", hidden = true)
     @PostMapping("/create/user")
     public Integer createUserMapping(@RequestBody UserMappingProto.UserMapping userMapping) {
         log.info("Creating new user mapping: {} x {} x {} x {}", userMapping.getMobile(), userMapping.getEmail(), userMapping.getUsername(), userMapping.getPremiumUser());
-        Integer sqlResult = diurnalTableUserMapping.pushNewEntity(userMapping);
-        log.info("Result of new user creation: {}", sqlResult);
-        return sqlResult;
+        ZonedDateTime currentZoned = ZonedDateTime.now().withZoneSameInstant(ZoneId.of(dbiConfig.getComputeTimezone(), ZoneId.SHORT_IDS));
+        ZonedDateTime trialPremiumPaymentExpiryZoned = currentZoned.plusDays(dbiConfig.getTrialPeriodDays());
+        final UserMappingEntity userMappingEntity = new UserMappingEntity()
+                .setMobile(userMapping.getMobile())
+                .setEmail(refineEmail(userMapping.getEmail()))
+                .setUser(userMapping.getUsername())
+                .setPremiumUser(true)
+                .setCredHash(userMapping.getHashCred())
+                .setEmailHash(generateHash(userMapping.getEmail()))
+                .setLastCloudSaveTimestamp(DEFAULT_ZONED_DATETIME)
+                .setLastSaveTimestamp(DEFAULT_ZONED_DATETIME)
+                .setAccountCreationTimestamp(currentZoned)
+                .setPaymentExpiryTimestamp(trialPremiumPaymentExpiryZoned)
+                .setCurrency(userMapping.getCurrency().name());
+        return diurnalTableUserMapping.pushNewEntity(userMappingEntity);
     }
 
     @PutMapping("/manual/create/user")
@@ -48,7 +65,6 @@ public class UserMappingController {
                                              @RequestParam(defaultValue = "false", required = false) Boolean premiumUser,
                                              @RequestParam String hashCred,
                                              @RequestParam(defaultValue = "INR") UserMappingProto.Currency currency) {
-        email = refineEmail(email);
         log.info("Obtained manual req for new user creation: {} x {} x {} x {} x {} x {}", mobile, email, user, premiumUser, hashCred, currency);
         return createUserMapping(generateCompleteUserMapping(mobile, email, user, premiumUser, hashCred, DEFAULT_EMAIL_HASH,
                 DEFAULT_LAST_CLOUD_SAVE_TS, DEFAULT_LAST_SAVE_TS, DEFAULT_PAYMENT_EXPIRY_TS, DEFAULT_ACCOUNT_CREATION_TS, currency));
@@ -67,15 +83,13 @@ public class UserMappingController {
             log.warn("User not found for deletion for email [{}]", userMapping.getEmail());
             return INT_RESPONSE_WONT_PROCESS;
         }
+        UserMappingEntity userMappingEntity = new UserMappingEntity().setEmailHash(emailHash);
         log.info("Deleting user mapping: {} x {}", userMapping.getEmail(), userMapping.getUsername());
-        Integer sqlResult = diurnalTableUserMapping.deleteEntity(generateUserMappingOnPk(emailHash)); //uses hash email
-        log.info("Result of user deletion: {}", sqlResult);
-        return sqlResult;
+        return diurnalTableUserMapping.deleteEntity(userMappingEntity);
     }
 
     @DeleteMapping("/manual/delete/user")
     public Integer deleteUserMappingManually(@RequestParam String email) {
-        email = refineEmail(email);
         log.info("Obtained manual req for user deletion: {}", email);
         return deleteUserMapping(DiurnalUtil.generateUserMapping(email));
     }

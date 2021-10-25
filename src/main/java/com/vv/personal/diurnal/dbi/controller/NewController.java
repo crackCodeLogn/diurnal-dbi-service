@@ -16,6 +16,7 @@ import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
+import static com.vv.personal.diurnal.dbi.constants.Constants.DEFAULT_ZONED_DATETIME;
 import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.generateHash;
 
 /**
@@ -40,7 +41,6 @@ public class NewController {
                                           @RequestParam(defaultValue = "INR") UserMappingProto.Currency currency) {
         log.info("Obtained manual req for new user creation: {} x {} x {} x {} x {} x {}", mobile, email, user, premiumUser, hashCred, currency);
         ZonedDateTime currentZoned = ZonedDateTime.now().withZoneSameInstant(ZoneId.of("IST", ZoneId.SHORT_IDS));
-        ZonedDateTime defaultZoned = ZonedDateTime.of(1970, 1, 1, 0, 0, 0, 0, ZoneId.of("UTC", ZoneId.SHORT_IDS));
         UserMappingEntity userMapping = new UserMappingEntity()
                 .setMobile(mobile)
                 .setEmail(email)
@@ -48,8 +48,8 @@ public class NewController {
                 .setPremiumUser(premiumUser)
                 .setCredHash(hashCred)
                 .setEmailHash(generateHash(email))
-                .setLastCloudSaveTimestamp(defaultZoned)
-                .setLastSaveTimestamp(defaultZoned)
+                .setLastCloudSaveTimestamp(DEFAULT_ZONED_DATETIME)
+                .setLastSaveTimestamp(DEFAULT_ZONED_DATETIME)
                 .setPaymentExpiryTimestamp(currentZoned.plusDays(dbiConfig.getTrialPeriodDays()))
                 .setAccountCreationTimestamp(currentZoned)
                 .setCurrency(currency.name());

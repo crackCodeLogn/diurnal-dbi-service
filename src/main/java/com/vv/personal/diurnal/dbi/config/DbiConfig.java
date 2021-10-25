@@ -7,8 +7,10 @@ import com.vv.personal.diurnal.dbi.interactor.diurnal.cache.CachedDiurnal;
 import com.vv.personal.diurnal.dbi.interactor.diurnal.dbi.DiurnalDbi;
 import com.vv.personal.diurnal.dbi.interactor.diurnal.dbi.tables.DiurnalTableEntryDay;
 import com.vv.personal.diurnal.dbi.interactor.diurnal.dbi.tables.DiurnalTableUserMapping;
+import com.vv.personal.diurnal.dbi.repository.UserMappingRepository;
 import com.vv.personal.diurnal.dbi.util.DbiUtil;
 import org.apache.commons.lang3.time.StopWatch;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -31,11 +33,17 @@ public class DbiConfig {
 
     private final List<DiurnalDbi> diurnalDbis = new ArrayList<>();
 
+    @Autowired
+    private UserMappingRepository userMappingRepository;
+
     @Value("${dbi.tables.create.onStartup:false}")
     private boolean createTablesOnStartup;
 
     @Value("${dbi.trialPeriodDays}")
     private int trialPeriodDays;
+
+    @Value("${dbi.timezone}")
+    private String computeTimezone;
 
     @Bean(initMethod = "getDbConnection", destroyMethod = "closeDbConnection")
     public DbiConfigForDiurnal DiurnalDbConnector() {
@@ -55,8 +63,9 @@ public class DbiConfig {
     @Bean(destroyMethod = "destroyExecutors")
     @Qualifier("DiurnalTableUserMapping")
     public DiurnalTableUserMapping diurnalTableUserMapping() {
-        return new DiurnalTableUserMapping(DbConstants.TABLE_DIURNAL_USER_MAPPING, DbConstants.PRIMARY_COL_USER_MAPPING, DiurnalDbConnector(), cachedDiurnal(),
-                DbiUtil::generateCreateTableSql, DIURNAL_USER_MAPPING_SQL);
+        return new DiurnalTableUserMapping(DbConstants.TABLE_DIURNAL_USER_MAPPING, userMappingRepository);
+        /*return new DiurnalTableUserMapping(DbConstants.TABLE_DIURNAL_USER_MAPPING, DbConstants.PRIMARY_COL_USER_MAPPING, DiurnalDbConnector(), cachedDiurnal(),
+                DbiUtil::generateCreateTableSql, DIURNAL_USER_MAPPING_SQL);*/
     }
 
     @Bean(destroyMethod = "destroyExecutors")
@@ -88,5 +97,9 @@ public class DbiConfig {
 
     public int getTrialPeriodDays() {
         return trialPeriodDays;
+    }
+
+    public String getComputeTimezone() {
+        return computeTimezone;
     }
 }

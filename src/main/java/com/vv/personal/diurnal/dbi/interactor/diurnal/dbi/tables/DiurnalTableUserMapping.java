@@ -1,10 +1,8 @@
 package com.vv.personal.diurnal.dbi.interactor.diurnal.dbi.tables;
 
 import com.vv.personal.diurnal.artifactory.generated.UserMappingProto;
-import com.vv.personal.diurnal.dbi.config.DbiConfigForDiurnal;
-import com.vv.personal.diurnal.dbi.interactor.diurnal.cache.CachedDiurnal;
-import com.vv.personal.diurnal.dbi.interactor.diurnal.dbi.DiurnalDbi;
-import com.vv.personal.diurnal.dbi.util.TimingUtil;
+import com.vv.personal.diurnal.dbi.model.UserMappingEntity;
+import com.vv.personal.diurnal.dbi.repository.UserMappingRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
@@ -12,22 +10,20 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.Queue;
-import java.util.function.Function;
 
 import static com.vv.personal.diurnal.dbi.constants.Constants.*;
 import static com.vv.personal.diurnal.dbi.constants.DbConstants.SELECT_ALL;
-import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.generateHash;
-import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.refineEmail;
 
 /**
  * @author Vivek
  * @since 23/02/21
  */
 @Slf4j
-public class DiurnalTableUserMapping extends DiurnalDbi<UserMappingProto.UserMapping, UserMappingProto.UserMappingList> {
-    private static final String INSERT_STMT_NEW_USER = "INSERT INTO %s(\"mobile\", \"email\", \"user\", \"premium_user\", \"hash_cred\", \"hash_email\"," +
+//public class DiurnalTableUserMapping extends DiurnalDbi<UserMappingProto.UserMapping, UserMappingProto.UserMappingList> {
+public class DiurnalTableUserMapping {
+    /*private static final String INSERT_STMT_NEW_USER = "INSERT INTO %s(\"mobile\", \"email\", \"user\", \"premium_user\", \"hash_cred\", \"hash_email\"," +
             " \"timestamp_save_cloud_last\", \"timestamp_save_last\", \"timestamp_expiry_payment\", \"timestamp_creation_account\", \"currency\") " +
-            "VALUES(%d, '%s', '%s', '%s', '%s', %d, %d, %d, %d, %d, '%s')";
+            "VALUES(%d, '%s', '%s', '%s', '%s', %d, %d, %d, %d, %d, '%s')";*/
     private static final String DELETE_STMT_USER = "DELETE FROM %s " +
             "WHERE \"%s\"=%d";
     private static final String UPDATE_STMT_USER_STR = "UPDATE %s " +
@@ -43,6 +39,9 @@ public class DiurnalTableUserMapping extends DiurnalDbi<UserMappingProto.UserMap
     private static final String SELECT_STMT_ENTRY_SINGLE_ROW = "SELECT * FROM %s " +
             "WHERE \"%s\"='%s'";
 
+    private final String tableName;
+    private final UserMappingRepository userMappingRepository;
+
     private static final String COL_MOBILE = "mobile";
     private static final String COL_EMAIL = "email";
     private static final String COL_USER = "user";
@@ -55,34 +54,31 @@ public class DiurnalTableUserMapping extends DiurnalDbi<UserMappingProto.UserMap
     private static final String COL_ACCOUNT_CREATION_TIMESTAMP = "timestamp_creation_account";
     private static final String COL_CURRENCY = "currency";
 
-    public DiurnalTableUserMapping(String table, String primaryColumns, DbiConfigForDiurnal dbiConfigForDiurnal, CachedDiurnal cachedDiurnal, Function<String, String> createTableIfNotExistSqlFunction, String createTableIfNotExistSqlLocation) {
-        super(table, primaryColumns, dbiConfigForDiurnal, cachedDiurnal, createTableIfNotExistSqlFunction, createTableIfNotExistSqlLocation, log);
+    public DiurnalTableUserMapping(String table, UserMappingRepository userMappingRepository) {
+        this.tableName = table;
+        this.userMappingRepository = userMappingRepository;
     }
 
-    @Override
-    public int pushNewEntity(UserMappingProto.UserMapping userMapping) {
-        String email = refineEmail(userMapping.getEmail());
-        log.info("Pushing new User entity: {} x {} x {}", email, userMapping.getUsername(), false);
-        return insertNewUser(userMapping.getMobile(), email, userMapping.getUsername(), false, userMapping.getHashCred(), generateHash(email),
-                NA_LONG, NA_LONG, NA_LONG, TimingUtil.extractCurrentUtcTimestamp(), userMapping.getCurrency()); //new user is always non-premium
+    public int pushNewEntity(UserMappingEntity userMappingEntity) {
+        try {
+            userMappingRepository.save(userMappingEntity);
+            log.info("Pushed new UserMapping entity: {}", userMappingEntity);
+            return 1;
+        } catch (Exception e) {
+            log.error("Failed to push new user mapping with email: {}. ", userMappingEntity.getEmail(), e);
+        }
+        return 0;
     }
 
-    private int insertNewUser(Long mobile, String email, String username, Boolean premiumUser, String credHash, Integer emailHash,
-                              Long lastCloudSaveTs, Long lastSaveTs, Long paymentExpiryTs, Long accountCreationTs, UserMappingProto.Currency currency) {
-        String sql = String.format(INSERT_STMT_NEW_USER, TABLE,
-                mobile, email, username, premiumUser, credHash, emailHash,
-                lastCloudSaveTs, lastSaveTs, paymentExpiryTs, accountCreationTs, currency.name());
-        int sqlExecResult = executeUpdateSql(sql);
-        return sqlExecResult;
-        //return addToCacheOnSqlResult(sqlExecResult, mobile);
-    }
-
-    @Override
-    public int deleteEntity(UserMappingProto.UserMapping userMapping) {
-        String sql = String.format(DELETE_STMT_USER, TABLE,
-                COL_HASH_EMAIL, userMapping.getHashEmail());
-        int sqlExecResult = executeUpdateSql(sql);
-        return sqlExecResult;
+    public int deleteEntity(UserMappingEntity userMappingEntity) {
+        try {
+            userMappingRepository.delete(userMappingEntity);
+            log.info("Deleted userMapping entity of: {}", userMappingEntity.getEmail());
+            return 1;
+        } catch (Exception e) {
+            log.error("Failed to delete user mapping entity with email: {}. ", userMappingEntity.getEmail(), e);
+        }
+        return 0;
     }
 
     @Override

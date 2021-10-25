@@ -13,8 +13,3 @@ db:
       port: ${PROM_POSTGRES_PORT:26257}
     user: ${PROM_POSTGRES_REF_USER:root}
     cred: ${PROM_POSTGRES_REF_CRED:}
-
-dbi:
-  tables:
-    create:
-      onStartup: false

@@ -103,9 +103,7 @@ public class UserMappingController {
             return INT_RESPONSE_WONT_PROCESS;
         }
         log.info("Updating user mapping: {} -> name: {}", userMapping.getEmail(), userMapping.getUsername());
-        Integer sqlResult = diurnalTableUserMapping.updateEntity(generateCompleteUserMapping(userMapping, emailHash));
-        log.debug("Result of user updation: {}", sqlResult);
-        return sqlResult;
+        return diurnalTableUserMapping.updateUsername(emailHash, userMapping.getUsername());
     }
 
     @PatchMapping("/manual/update/user/name")
@@ -244,7 +242,7 @@ public class UserMappingController {
         }
         log.info("Updating user mapping: {}", userMapping.getEmail());
         UserMappingProto.UserMapping inflatedUserMapping = generateCompleteUserMapping(userMapping, emailHash);
-        if (diurnalTableUserMapping.updateEntity(inflatedUserMapping) == ONE
+        if (diurnalTableUserMapping.updateUsername(emailHash, userMapping.getUsername()) == ONE
                 && diurnalTableUserMapping.updateMobile(inflatedUserMapping) == ONE
                 && diurnalTableUserMapping.updateCurrency(inflatedUserMapping) == ONE) {
             log.info("Successfully updated user info!");
@@ -300,8 +298,7 @@ public class UserMappingController {
     @GetMapping("/retrieve/user")
     public UserMappingProto.UserMapping retrieveUserMapping(@RequestParam Integer emailHash) {
         log.info("Retrieving user details for [{}]", emailHash);
-        UserMappingProto.UserMapping retrievedUserMapping = diurnalTableUserMapping.retrieveSingle(
-                generateUserMappingOnPk(emailHash));
+        UserMappingProto.UserMapping retrievedUserMapping = diurnalTableUserMapping.retrieveSingle(emailHash);
         log.info("Retrieved user detail");
         return retrievedUserMapping;
     }
@@ -336,9 +333,7 @@ public class UserMappingController {
     public Integer retrieveHashEmail(@RequestParam String email) {
         email = refineEmail(email);
         log.info("Retrieve email hash for: {}", email);
-        Integer retrievedHashEmail = diurnalTableUserMapping.retrieveHashEmail(generateUserMapping(email));
-        log.info("Result: [{}]", retrievedHashEmail);
-        return retrievedHashEmail;
+        return diurnalTableUserMapping.retrieveHashEmail(email);
     }
 
     public Boolean retrievePremiumUserStatus(@RequestParam Integer emailHash) {

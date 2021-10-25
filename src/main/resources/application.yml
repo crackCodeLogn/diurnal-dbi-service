@@ -23,9 +23,6 @@ db:
     url: ${LOCAL_DATABASE_URL:}
 
 dbi:
-  tables:
-    create:
-      onStartup: ${DBI_TABLES_CREATE_ONSTARTUP:true}
   inactive:
     timeout:
       enabled: ${DBI_INACTIVE_TIMEOUT_ENABLED:false}

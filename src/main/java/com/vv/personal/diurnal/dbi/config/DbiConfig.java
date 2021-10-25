@@ -2,9 +2,7 @@ package com.vv.personal.diurnal.dbi.config;
 
 
 import com.vv.personal.diurnal.dbi.auth.Authorizer;
-import com.vv.personal.diurnal.dbi.constants.DbConstants;
 import com.vv.personal.diurnal.dbi.interactor.diurnal.cache.CachedDiurnal;
-import com.vv.personal.diurnal.dbi.interactor.diurnal.dbi.DiurnalDbi;
 import com.vv.personal.diurnal.dbi.interactor.diurnal.dbi.tables.DiurnalTableEntryDay;
 import com.vv.personal.diurnal.dbi.interactor.diurnal.dbi.tables.DiurnalTableUserMapping;
 import com.vv.personal.diurnal.dbi.repository.UserMappingRepository;
@@ -18,10 +16,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
 import org.springframework.security.crypto.password.Pbkdf2PasswordEncoder;
 
-import javax.annotation.PostConstruct;
-import java.util.ArrayList;
-import java.util.List;
-
 import static com.vv.personal.diurnal.dbi.constants.DbConstants.*;
 
 /**
@@ -30,8 +24,6 @@ import static com.vv.personal.diurnal.dbi.constants.DbConstants.*;
  */
 @Configuration
 public class DbiConfig {
-
-    private final List<DiurnalDbi> diurnalDbis = new ArrayList<>();
 
     @Autowired
     private UserMappingRepository userMappingRepository;
@@ -63,9 +55,7 @@ public class DbiConfig {
     @Bean(destroyMethod = "destroyExecutors")
     @Qualifier("DiurnalTableUserMapping")
     public DiurnalTableUserMapping diurnalTableUserMapping() {
-        return new DiurnalTableUserMapping(DbConstants.TABLE_DIURNAL_USER_MAPPING, userMappingRepository);
-        /*return new DiurnalTableUserMapping(DbConstants.TABLE_DIURNAL_USER_MAPPING, DbConstants.PRIMARY_COL_USER_MAPPING, DiurnalDbConnector(), cachedDiurnal(),
-                DbiUtil::generateCreateTableSql, DIURNAL_USER_MAPPING_SQL);*/
+        return new DiurnalTableUserMapping(userMappingRepository);
     }
 
     @Bean(destroyMethod = "destroyExecutors")
@@ -79,20 +69,6 @@ public class DbiConfig {
     @Scope("prototype")
     public StopWatch stopWatch() {
         return new StopWatch();
-    }
-
-    @PostConstruct
-    public void postHaste() {
-        diurnalDbis.add(diurnalTableUserMapping());
-        diurnalDbis.add(diurnalTableEntryDays());
-    }
-
-    public boolean isCreateTablesOnStartup() {
-        return createTablesOnStartup;
-    }
-
-    public List<DiurnalDbi> getDiurnalDbis() {
-        return diurnalDbis;
     }
 
     public int getTrialPeriodDays() {

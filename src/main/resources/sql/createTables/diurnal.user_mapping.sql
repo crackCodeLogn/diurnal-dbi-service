@@ -6,10 +6,10 @@ CREATE TABLE IF NOT EXISTS public.user_mapping(
     hash_cred character varying(512),
     hash_email bigint NOT NULL,
 
-    timestamp_save_cloud_last bigint,
-    timestamp_save_last bigint,
-    timestamp_expiry_payment bigint,
-    timestamp_creation_account bigint NOT NULL,
+    timestamp_save_cloud_last timestamptz,
+    timestamp_save_last timestamptz,
+    timestamp_expiry_payment timestamptz,
+    timestamp_creation_account timestamptz NOT NULL,
 
     currency character varying(12),
 

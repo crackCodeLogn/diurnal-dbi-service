@@ -16,7 +16,7 @@ import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
-import static com.vv.personal.diurnal.dbi.constants.Constants.DEFAULT_ZONED_DATETIME;
+import static com.vv.personal.diurnal.dbi.constants.Constants.DEFAULT_INSTANT_DATETIME;
 import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.generateHash;
 
 /**
@@ -48,10 +48,10 @@ public class NewController {
                 .setPremiumUser(premiumUser)
                 .setCredHash(hashCred)
                 .setEmailHash(generateHash(email))
-                .setLastCloudSaveTimestamp(DEFAULT_ZONED_DATETIME)
-                .setLastSaveTimestamp(DEFAULT_ZONED_DATETIME)
-                .setPaymentExpiryTimestamp(currentZoned.plusDays(dbiConfig.getTrialPeriodDays()))
-                .setAccountCreationTimestamp(currentZoned)
+                .setLastCloudSaveTimestamp(DEFAULT_INSTANT_DATETIME)
+                .setLastSaveTimestamp(DEFAULT_INSTANT_DATETIME)
+                .setPaymentExpiryTimestamp(currentZoned.plusDays(dbiConfig.getTrialPeriodDays()).toInstant())
+                .setAccountCreationTimestamp(currentZoned.toInstant())
                 .setCurrency(currency.name());
         UserMappingEntity savedEntity = userMappingRepository.save(userMapping);
         log.info("Generated and saved: {}", savedEntity);

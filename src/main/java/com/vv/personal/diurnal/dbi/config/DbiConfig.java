@@ -52,7 +52,7 @@ public class DbiConfig {
         return new Authorizer(new Pbkdf2PasswordEncoder());
     }
 
-    @Bean(destroyMethod = "destroyExecutors")
+    @Bean
     @Qualifier("DiurnalTableUserMapping")
     public DiurnalTableUserMapping diurnalTableUserMapping() {
         return new DiurnalTableUserMapping(userMappingRepository);

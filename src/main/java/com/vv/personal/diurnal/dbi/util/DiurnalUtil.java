@@ -29,7 +29,7 @@ public class DiurnalUtil {
         return email.toLowerCase().trim();
     }
 
-    public static Boolean isEmailHashAbsent(Integer emailHash) {
+    public static boolean isEmailHashAbsent(Integer emailHash) {
         return emailHash == DEFAULT_EMAIL_HASH;
     }
 

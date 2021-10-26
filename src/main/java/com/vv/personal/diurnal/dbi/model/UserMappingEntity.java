@@ -8,7 +8,7 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import java.io.Serializable;
-import java.time.ZonedDateTime;
+import java.time.Instant;
 
 /**
  * @author Vivek
@@ -39,16 +39,16 @@ public class UserMappingEntity implements Serializable {
     private String credHash;
 
     @Column(name = "timestamp_save_cloud_last")
-    private ZonedDateTime lastCloudSaveTimestamp;
+    private Instant lastCloudSaveTimestamp;
 
     @Column(name = "timestamp_save_last")
-    private ZonedDateTime lastSaveTimestamp;
+    private Instant lastSaveTimestamp;
 
     @Column(name = "timestamp_expiry_payment")
-    private ZonedDateTime paymentExpiryTimestamp;
+    private Instant paymentExpiryTimestamp;
 
     @Column(name = "timestamp_creation_account")
-    private ZonedDateTime accountCreationTimestamp;
+    private Instant accountCreationTimestamp;
 
     @Column(name = "currency")
     private String currency;
@@ -128,38 +128,38 @@ public class UserMappingEntity implements Serializable {
         return this;
     }
 
-    public ZonedDateTime getLastCloudSaveTimestamp() {
+    public Instant getLastCloudSaveTimestamp() {
         return lastCloudSaveTimestamp;
     }
 
-    public UserMappingEntity setLastCloudSaveTimestamp(ZonedDateTime lastCloudSaveTimestamp) {
+    public UserMappingEntity setLastCloudSaveTimestamp(Instant lastCloudSaveTimestamp) {
         this.lastCloudSaveTimestamp = lastCloudSaveTimestamp;
         return this;
     }
 
-    public ZonedDateTime getLastSaveTimestamp() {
+    public Instant getLastSaveTimestamp() {
         return lastSaveTimestamp;
     }
 
-    public UserMappingEntity setLastSaveTimestamp(ZonedDateTime lastSaveTimestamp) {
+    public UserMappingEntity setLastSaveTimestamp(Instant lastSaveTimestamp) {
         this.lastSaveTimestamp = lastSaveTimestamp;
         return this;
     }
 
-    public ZonedDateTime getPaymentExpiryTimestamp() {
+    public Instant getPaymentExpiryTimestamp() {
         return paymentExpiryTimestamp;
     }
 
-    public UserMappingEntity setPaymentExpiryTimestamp(ZonedDateTime paymentExpiryTimestamp) {
+    public UserMappingEntity setPaymentExpiryTimestamp(Instant paymentExpiryTimestamp) {
         this.paymentExpiryTimestamp = paymentExpiryTimestamp;
         return this;
     }
 
-    public ZonedDateTime getAccountCreationTimestamp() {
+    public Instant getAccountCreationTimestamp() {
         return accountCreationTimestamp;
     }
 
-    public UserMappingEntity setAccountCreationTimestamp(ZonedDateTime accountCreationTimestamp) {
+    public UserMappingEntity setAccountCreationTimestamp(Instant accountCreationTimestamp) {
         this.accountCreationTimestamp = accountCreationTimestamp;
         return this;
     }

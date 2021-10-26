@@ -50,10 +50,10 @@ public class UserMappingController {
                 .setPremiumUser(true)
                 .setCredHash(userMapping.getHashCred())
                 .setEmailHash(generateHash(userMapping.getEmail()))
-                .setLastCloudSaveTimestamp(DEFAULT_ZONED_DATETIME)
-                .setLastSaveTimestamp(DEFAULT_ZONED_DATETIME)
-                .setAccountCreationTimestamp(currentZoned)
-                .setPaymentExpiryTimestamp(trialPremiumPaymentExpiryZoned)
+                .setLastCloudSaveTimestamp(DEFAULT_INSTANT_DATETIME)
+                .setLastSaveTimestamp(DEFAULT_INSTANT_DATETIME)
+                .setAccountCreationTimestamp(currentZoned.toInstant())
+                .setPaymentExpiryTimestamp(trialPremiumPaymentExpiryZoned.toInstant())
                 .setCurrency(userMapping.getCurrency().name());
         return diurnalTableUserMapping.pushNewEntity(userMappingEntity);
     }
@@ -83,9 +83,8 @@ public class UserMappingController {
             log.warn("User not found for deletion for email [{}]", userMapping.getEmail());
             return INT_RESPONSE_WONT_PROCESS;
         }
-        UserMappingEntity userMappingEntity = new UserMappingEntity().setEmailHash(emailHash);
         log.info("Deleting user mapping: {} x {}", userMapping.getEmail(), userMapping.getUsername());
-        return diurnalTableUserMapping.deleteEntity(userMappingEntity);
+        return diurnalTableUserMapping.deleteEntity(emailHash);
     }
 
     @DeleteMapping("/manual/delete/user")
@@ -123,9 +122,7 @@ public class UserMappingController {
             return INT_RESPONSE_WONT_PROCESS;
         }
         log.info("Updating user mapping: {} -> cred: {}", userMapping.getEmail(), userMapping.getHashCred());
-        Integer sqlResult = diurnalTableUserMapping.updateHashCred(generateCompleteUserMapping(userMapping, emailHash));
-        log.debug("Result of user updation: {}", sqlResult);
-        return sqlResult;
+        return diurnalTableUserMapping.updateHashCred(emailHash, userMapping.getHashCred());
     }
 
     @PatchMapping("/manual/update/user/hash/cred")
@@ -145,9 +142,7 @@ public class UserMappingController {
             return INT_RESPONSE_WONT_PROCESS;
         }
         log.info("Updating user mapping: {} -> mobile: {}", userMapping.getEmail(), userMapping.getMobile());
-        Integer sqlResult = diurnalTableUserMapping.updateMobile(generateCompleteUserMapping(userMapping, emailHash));
-        log.debug("Result of user updation: {}", sqlResult);
-        return sqlResult;
+        return diurnalTableUserMapping.updateMobile(emailHash, userMapping.getMobile());
     }
 
     @PatchMapping("/manual/update/user/mobile")
@@ -167,9 +162,7 @@ public class UserMappingController {
             return INT_RESPONSE_WONT_PROCESS;
         }
         log.info("Updating user mapping: {} -> currency: {}", userMapping.getEmail(), userMapping.getCurrency());
-        Integer sqlResult = diurnalTableUserMapping.updateCurrency(generateCompleteUserMapping(userMapping, emailHash));
-        log.debug("Result of user updation: {}", sqlResult);
-        return sqlResult;
+        return diurnalTableUserMapping.updateCurrency(emailHash, userMapping.getCurrency());
     }
 
     @PatchMapping("/manual/update/user/currency")
@@ -188,9 +181,7 @@ public class UserMappingController {
             return 0;
         }
         log.info("Updating user mapping: {} -> last cloud save ts: {}", userMapping.getEmail(), userMapping.getLastCloudSaveTimestamp());
-        Integer sqlResult = diurnalTableUserMapping.updateLastCloudSaveTimestamp(userMapping);
-        log.debug("Result of user updation: {}", sqlResult);
-        return sqlResult;
+        return diurnalTableUserMapping.updateLastCloudSaveTimestamp(userMapping.getHashEmail(), userMapping.getLastCloudSaveTimestamp());
     }
 
     @ApiOperation(value = "update user-save ts", hidden = true)
@@ -202,9 +193,7 @@ public class UserMappingController {
             return INT_RESPONSE_WONT_PROCESS;
         }
         log.info("Updating user mapping: {} -> last local save ts: {}", userMapping.getEmail(), userMapping.getLastSavedTimestamp());
-        Integer sqlResult = diurnalTableUserMapping.updateLastSavedTimestamp(generateCompleteUserMapping(userMapping, emailHash));
-        log.debug("Result of user updation: {}", sqlResult);
-        return sqlResult;
+        return diurnalTableUserMapping.updateLastSavedTimestamp(emailHash, userMapping.getLastSavedTimestamp());
     }
 
     @ApiOperation(value = "update user-payment expiry ts", hidden = true)
@@ -216,9 +205,7 @@ public class UserMappingController {
             return INT_RESPONSE_WONT_PROCESS;
         }
         log.info("Updating user mapping: {} -> payment expiry ts: {}", userMapping.getEmail(), userMapping.getPaymentExpiryTimestamp());
-        Integer sqlResult = diurnalTableUserMapping.updatePaymentExpiryTimestamp(generateCompleteUserMapping(userMapping, emailHash));
-        log.debug("Result of user updation: {}", sqlResult);
-        return sqlResult;
+        return diurnalTableUserMapping.updatePaymentExpiryTimestamp(emailHash, userMapping.getPaymentExpiryTimestamp());
     }
 
     @ApiOperation(value = "update user-payment expiry ts")
@@ -243,31 +230,13 @@ public class UserMappingController {
         log.info("Updating user mapping: {}", userMapping.getEmail());
         UserMappingProto.UserMapping inflatedUserMapping = generateCompleteUserMapping(userMapping, emailHash);
         if (diurnalTableUserMapping.updateUsername(emailHash, userMapping.getUsername()) == ONE
-                && diurnalTableUserMapping.updateMobile(inflatedUserMapping) == ONE
-                && diurnalTableUserMapping.updateCurrency(inflatedUserMapping) == ONE) {
+                && diurnalTableUserMapping.updateMobile(emailHash, userMapping.getMobile()) == ONE
+                && diurnalTableUserMapping.updateCurrency(emailHash, userMapping.getCurrency()) == ONE) {
             log.info("Successfully updated user info!");
             return true;
         }
         log.warn("Failed to update complete user info!!");
         return false;
-    }
-
-    @ApiOperation(value = "update user-acc creation ts, NOT TO BE USED GENERALLY")
-    @PostMapping("/manual/update/user/timestamp/account/creation")
-    public Integer updateUserMappingAccountCreationTimestamp(@RequestParam String email,
-                                                             @RequestParam Long newAccountCreationTimestamp) {
-        Integer emailHash = retrieveHashEmail(refineEmail(email));
-        if (isEmailHashAbsent(emailHash)) {
-            log.warn("User not found for updation of acc creation ts for email [{}]", email);
-            return INT_RESPONSE_WONT_PROCESS;
-        }
-        log.info("Updating user mapping: {} -> acc creation ts: {}", email, newAccountCreationTimestamp);
-        Integer sqlResult = diurnalTableUserMapping.updateAccountCreationTimestamp(generateCompleteUserMapping(
-                DEFAULT_MOBILE, refineEmail(email), DEFAULT_USER_NAME, DEFAULT_PREMIUM_USER_STATUS, DEFAULT_USER_CRED_HASH, emailHash,
-                DEFAULT_LAST_CLOUD_SAVE_TS, DEFAULT_LAST_SAVE_TS, DEFAULT_PAYMENT_EXPIRY_TS, newAccountCreationTimestamp, DEFAULT_CURRENCY
-        ));
-        log.debug("Result of user updation: {}", sqlResult);
-        return sqlResult;
     }
 
     @ApiOperation(value = "user premium updation", hidden = true)
@@ -280,8 +249,7 @@ public class UserMappingController {
             return INT_RESPONSE_WONT_PROCESS;
         }
         log.info("Obtained manual req for user updation: {} -> {}", email, userMapping.getPremiumUser());
-        userMapping = generateCompleteUserMapping(userMapping, emailHash);
-        Integer sqlResult = diurnalTableUserMapping.updatePremiumUserStatus(userMapping);
+        Integer sqlResult = diurnalTableUserMapping.updatePremiumUserStatus(emailHash, userMapping.getPremiumUser());
         log.info("Result of premium-user updation: {}", sqlResult);
         return sqlResult;
     }
@@ -299,7 +267,7 @@ public class UserMappingController {
     public UserMappingProto.UserMapping retrieveUserMapping(@RequestParam Integer emailHash) {
         log.info("Retrieving user details for [{}]", emailHash);
         UserMappingProto.UserMapping retrievedUserMapping = diurnalTableUserMapping.retrieveSingle(emailHash);
-        log.info("Retrieved user detail");
+        log.info("Retrieved user detail for {}", emailHash);
         return retrievedUserMapping;
     }
 
@@ -322,8 +290,7 @@ public class UserMappingController {
     @GetMapping("/retrieve/hash/cred")
     public String retrieveHashCred(@RequestParam Integer emailHash) {
         log.info("Retrieve cred-hash for: {}", emailHash);
-        UserMappingProto.UserMapping userMapping = generateUserMappingOnPk(emailHash);
-        String retrievedCred = diurnalTableUserMapping.retrieveHashCred(userMapping);
+        String retrievedCred = diurnalTableUserMapping.retrieveHashCred(emailHash);
         log.info("Result: [{}]", retrievedCred);
         return retrievedCred;
     }
@@ -338,10 +305,7 @@ public class UserMappingController {
 
     public Boolean retrievePremiumUserStatus(@RequestParam Integer emailHash) {
         log.info("Retrieve premium user status for: {}", emailHash);
-        UserMappingProto.UserMapping userMapping = generateUserMappingOnPk(emailHash);
-        Boolean premiumUserStatus = diurnalTableUserMapping.retrievePremiumUserStatus(userMapping);
-        log.info("Result: [{}]", premiumUserStatus);
-        return premiumUserStatus;
+        return diurnalTableUserMapping.retrievePremiumUserStatus(emailHash);
     }
 
     @ApiOperation(value = "retrieve premium user status from db")
@@ -372,28 +336,5 @@ public class UserMappingController {
         email = refineEmail(email);
         log.info("Checking if user exists for email: {}", email);
         return checkIfUserExists(DiurnalUtil.generateUserMapping(email));
-    }
-
-    @GetMapping("/manual/dump/table/csv/")
-    public String dumpTableAsCsv() {
-        log.info("Dumping content of table '{}' onto csv now", diurnalTableUserMapping.getTableName());
-        String csvFileLocation = diurnalTableUserMapping.dumpTableToCsv();
-        log.info("Csv file location of the dump => [{}]", csvFileLocation);
-        return csvFileLocation;
-    }
-
-    @PutMapping("/table/create")
-    public int createTableIfNotExists() {
-        return genericCreateTableIfNotExists(diurnalTableUserMapping);
-    }
-
-    @DeleteMapping("/table/drop")
-    public Boolean dropTable(@RequestParam(defaultValue = "false") Boolean absolutelyDropTable) {
-        return absolutelyDropTable ? genericDropTable(diurnalTableUserMapping) : false;
-    }
-
-    @DeleteMapping("/table/truncate")
-    public Boolean truncateTable(@RequestParam(defaultValue = "false") Boolean absolutelyTruncateTable) {
-        return absolutelyTruncateTable ? genericTruncateTable(diurnalTableUserMapping) : false;
     }
 }

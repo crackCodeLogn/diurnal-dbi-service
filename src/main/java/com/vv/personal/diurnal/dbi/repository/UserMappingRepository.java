@@ -2,12 +2,9 @@ package com.vv.personal.diurnal.dbi.repository;
 
 import com.vv.personal.diurnal.dbi.model.UserMappingEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-
-import javax.transaction.Transactional;
 
 /**
  * @author Vivek
@@ -15,11 +12,6 @@ import javax.transaction.Transactional;
  */
 @Repository
 public interface UserMappingRepository extends JpaRepository<UserMappingEntity, Integer> {
-
-    @Modifying
-    @Transactional
-    @Query(value = "UPDATE user_mapping SET \"user\" = :fieldValue where hash_email = :emailHash", nativeQuery = true)
-    int updateUserName(@Param("emailHash") Integer emailHash, @Param("fieldValue") String fieldValue);
 
     @Query(value = "SELECT hash_email from user_mapping where email = :email", nativeQuery = true)
     Integer retrieveEmailHash(@Param("email") String email);

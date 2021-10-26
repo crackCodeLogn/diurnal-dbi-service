@@ -3,6 +3,7 @@ package com.vv.personal.diurnal.dbi.constants;
 import com.vv.personal.diurnal.artifactory.generated.ResponsePrimitiveProto;
 import com.vv.personal.diurnal.artifactory.generated.UserMappingProto;
 
+import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -64,7 +65,7 @@ public class Constants {
     public static final DateTimeFormatter DTF_ENTRY_DAY_DATE_PATTERN = DateTimeFormatter.ofPattern("yyyyMMdd");
     public static final DateTimeFormatter DTF_APP_DISPLAY_DATE_PATTERN = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
-    public static final ZonedDateTime DEFAULT_ZONED_DATETIME = ZonedDateTime.of(1970, 1, 1, 0, 0, 0, 0, ZoneId.of("UTC", ZoneId.SHORT_IDS));
+    public static final Instant DEFAULT_INSTANT_DATETIME = ZonedDateTime.of(1970, 1, 1, 0, 0, 0, 0, ZoneId.of("UTC", ZoneId.SHORT_IDS)).toInstant();
 
     //FORMATTERS
     public static final String HEROKU_SWAGGER_UI_URL = "https://%s/swagger-ui/index.html";

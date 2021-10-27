@@ -13,7 +13,7 @@ import java.io.Serializable;
  * @since 27/10/21
  */
 @Embeddable
-public class EntryDayIdentifier implements Serializable {
+public class EntryDayId implements Serializable {
     private static final long serialVersionUID = 3339611967067170028L;
 
     @Column(name = "hash_email", nullable = false)
@@ -22,10 +22,10 @@ public class EntryDayIdentifier implements Serializable {
     @Column(name = "date", nullable = false)
     private int date;
 
-    public EntryDayIdentifier() {
+    public EntryDayId() {
     }
 
-    public EntryDayIdentifier(int emailHash, int date) {
+    public EntryDayId(int emailHash, int date) {
         this.emailHash = emailHash;
         this.date = date;
     }
@@ -42,7 +42,7 @@ public class EntryDayIdentifier implements Serializable {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        EntryDayIdentifier that = (EntryDayIdentifier) o;
+        EntryDayId that = (EntryDayId) o;
         return new EqualsBuilder().append(emailHash, that.emailHash).append(date, that.date).isEquals();
     }
 
@@ -55,7 +55,7 @@ public class EntryDayIdentifier implements Serializable {
         return emailHash;
     }
 
-    public EntryDayIdentifier setEmailHash(int emailHash) {
+    public EntryDayId setEmailHash(int emailHash) {
         this.emailHash = emailHash;
         return this;
     }
@@ -64,7 +64,7 @@ public class EntryDayIdentifier implements Serializable {
         return date;
     }
 
-    public EntryDayIdentifier setDate(int date) {
+    public EntryDayId setDate(int date) {
         this.date = date;
         return this;
     }

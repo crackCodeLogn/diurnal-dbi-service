@@ -15,7 +15,9 @@ public interface UserMappingRepository extends JpaRepository<UserMappingEntity, 
 
     @Query(value = "SELECT hash_email from user_mapping where email = :email", nativeQuery = true)
     Integer retrieveEmailHash(@Param("email") String email);
+    //Integer findEmailHashByEmail(String email); //proper query is above!
 
-    @Query(value = "SELECT * from user_mapping where hash_email = :emailHash", nativeQuery = true)
-    UserMappingEntity retrieveUserDetail(@Param("emailHash") Integer emailHash);
+    //@Query(value = "SELECT * from user_mapping where hash_email = :emailHash", nativeQuery = true)
+    //UserMappingEntity retrieveUserDetail(@Param("emailHash") Integer emailHash);
+    UserMappingEntity findByEmailHash(Integer emailHash); //proper query is above!
 }

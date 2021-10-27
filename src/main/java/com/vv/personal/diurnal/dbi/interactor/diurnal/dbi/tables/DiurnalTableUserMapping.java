@@ -189,7 +189,7 @@ public class DiurnalTableUserMapping {
 
     public UserMappingProto.UserMapping retrieveSingle(int emailHash) {
         try {
-            UserMappingEntity userMappingEntity = userMappingRepository.retrieveUserDetail(emailHash);
+            UserMappingEntity userMappingEntity = userMappingRepository.findByEmailHash(emailHash);
             return generateDetail(userMappingEntity);
         } catch (Exception e) {
             log.error("Failed to retrieve single entity from db. ", e);

@@ -21,7 +21,7 @@ public class EntryDayEntity implements Serializable {
     private static final long serialVersionUID = 3945060484397253781L;
 
     @EmbeddedId
-    public EntryDayIdentifier entryDayId;
+    public EntryDayId entryDayId;
 
     @Column(name = "title")
     private String title;
@@ -32,7 +32,7 @@ public class EntryDayEntity implements Serializable {
     public EntryDayEntity() {
     }
 
-    public EntryDayEntity(EntryDayIdentifier entryDayId, String title, String entriesAsString) {
+    public EntryDayEntity(EntryDayId entryDayId, String title, String entriesAsString) {
         this.entryDayId = entryDayId;
         this.title = title;
         this.entriesAsString = entriesAsString;
@@ -60,11 +60,11 @@ public class EntryDayEntity implements Serializable {
         return new HashCodeBuilder(17, 37).append(entryDayId).append(title).append(entriesAsString).toHashCode();
     }
 
-    public EntryDayIdentifier getEntryDayId() {
+    public EntryDayId getEntryDayId() {
         return entryDayId;
     }
 
-    public EntryDayEntity setEntryDayId(EntryDayIdentifier entryDayId) {
+    public EntryDayEntity setEntryDayId(EntryDayId entryDayId) {
         this.entryDayId = entryDayId;
         return this;
     }

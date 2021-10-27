@@ -105,7 +105,7 @@ public class EntryDayController {
     }
 
     @ApiOperation(value = "manually delete all entry-days of an user")
-    @PostMapping("/manual/delete/entry-days/user")
+    @DeleteMapping("/manual/delete/entry-days/user")
     public Integer bulkDeleteEntryDaysOfUserManually(@RequestParam String email) {
         Integer emailHash = userMappingController.retrieveHashEmail(email);
         if (isEmailHashAbsent(emailHash)) {
@@ -126,25 +126,6 @@ public class EntryDayController {
         }
         log.info("Bulk creation op of entry-days completed.");
         return bulkOpResult;
-    }
-
-    @ApiOperation(value = "update entry-day", hidden = true)
-    @PostMapping("/update/entry-day")
-    public Integer updateEntryDay(@RequestBody EntryDayProto.EntryDay entryDay) {
-        log.warn("Updating entry-day is not supported atm. Delete and re-insert if required.");
-        return INT_RESPONSE_WONT_PROCESS;
-    }
-
-    @PatchMapping("/manual/update/entry-day")
-    public Integer updateEntryDayManually(@RequestParam String email,
-                                          @RequestParam Integer date) {
-        Integer emailHash = userMappingController.retrieveHashEmail(email);
-        if (isEmailHashAbsent(emailHash)) {
-            log.warn("User not found for entry-day updation for email [{}]", email);
-            return INT_RESPONSE_WONT_PROCESS;
-        }
-        log.info("Obtained manual req for entry-day updation: {} x {}", email, date);
-        return updateEntryDay(generateEntryDayOnPk(emailHash, date));
     }
 
     @ApiOperation(value = "retrieve all entry-days", hidden = true)

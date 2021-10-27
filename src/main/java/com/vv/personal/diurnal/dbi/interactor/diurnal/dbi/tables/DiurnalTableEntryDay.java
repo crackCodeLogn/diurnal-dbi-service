@@ -2,7 +2,7 @@ package com.vv.personal.diurnal.dbi.interactor.diurnal.dbi.tables;
 
 import com.vv.personal.diurnal.artifactory.generated.EntryDayProto;
 import com.vv.personal.diurnal.dbi.model.EntryDayEntity;
-import com.vv.personal.diurnal.dbi.model.EntryDayIdentifier;
+import com.vv.personal.diurnal.dbi.model.EntryDayId;
 import com.vv.personal.diurnal.dbi.repository.EntryDayRepository;
 import com.vv.personal.diurnal.dbi.util.DiurnalUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -44,12 +44,12 @@ public class DiurnalTableEntryDay {
         return -1;
     }
 
-    private EntryDayIdentifier generateEntryDayIdentifier(Integer emailHash, Integer date) {
-        return new EntryDayIdentifier().setEmailHash(emailHash).setDate(date);
+    private EntryDayId generateEntryDayIdentifier(Integer emailHash, Integer date) {
+        return new EntryDayId().setEmailHash(emailHash).setDate(date);
     }
 
     public int deleteEntity(Integer emailHash, Integer date) {
-        EntryDayIdentifier entryDayIdentifier = generateEntryDayIdentifier(emailHash, date);
+        EntryDayId entryDayIdentifier = generateEntryDayIdentifier(emailHash, date);
         try {
             entryDayRepository.deleteById(entryDayIdentifier);
             log.info("Deleted EntryDay entity: {}", entryDayIdentifier);
@@ -61,7 +61,7 @@ public class DiurnalTableEntryDay {
     }
 
     public boolean checkEntity(Integer emailHash, Integer date) {
-        EntryDayIdentifier entryDayIdentifier = generateEntryDayIdentifier(emailHash, date);
+        EntryDayId entryDayIdentifier = generateEntryDayIdentifier(emailHash, date);
         try {
             return entryDayRepository.existsById(entryDayIdentifier);
         } catch (Exception e) {
@@ -95,7 +95,7 @@ public class DiurnalTableEntryDay {
     }
 
     public EntryDayEntity retrieveSingleEntity(Integer emailHash, Integer date) {
-        EntryDayIdentifier entryDayIdentifier = generateEntryDayIdentifier(emailHash, date);
+        EntryDayId entryDayIdentifier = generateEntryDayIdentifier(emailHash, date);
         try {
             return entryDayRepository.getById(entryDayIdentifier);
         } catch (Exception e) {
@@ -106,7 +106,7 @@ public class DiurnalTableEntryDay {
 
     public EntryDayProto.EntryDayList retrieveSome(Integer emailHash) {
         //for now only retrieving some on basis of the hash_email for the backup data retrieval step
-        List<EntryDayEntity> entryDaysOnHash = entryDayRepository.retrieveEntryDaysOnEmailHash(emailHash);
+        List<EntryDayEntity> entryDaysOnHash = entryDayRepository.findByEntryDayIdEmailHash(emailHash);
         return generateDetails(entryDaysOnHash);
     }
 
@@ -135,9 +135,9 @@ public class DiurnalTableEntryDay {
 
     public Integer bulkDeleteEntryDaysOfUser(Integer emailHash) {
         try {
-            entryDayRepository.deleteEntryDaysOnEmailHash(emailHash);
-            log.info("Deleted all entry days on email hash of {}", emailHash);
-            return 1;
+            int deletedRowCount = entryDayRepository.deleteByEntryDayIdEmailHash(emailHash).size();
+            log.info("Deleted all {} entry days on email hash of {}", deletedRowCount, emailHash);
+            return deletedRowCount;
         } catch (Exception e) {
             log.error("Failed to delete all entry days on email hash of: {}. ", emailHash, e);
         }

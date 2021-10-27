@@ -13,8 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 import static com.vv.personal.diurnal.dbi.constants.Constants.*;
@@ -41,8 +41,8 @@ public class UserMappingController {
     @PostMapping("/create/user")
     public Integer createUserMapping(@RequestBody UserMappingProto.UserMapping userMapping) {
         log.info("Creating new user mapping: {} x {} x {} x {}", userMapping.getMobile(), userMapping.getEmail(), userMapping.getUsername(), userMapping.getPremiumUser());
-        ZonedDateTime currentZoned = ZonedDateTime.now().withZoneSameInstant(ZoneId.of(dbiConfig.getComputeTimezone(), ZoneId.SHORT_IDS));
-        ZonedDateTime trialPremiumPaymentExpiryZoned = currentZoned.plusDays(dbiConfig.getTrialPeriodDays());
+        Instant currentInstant = Instant.now();
+        Instant trialPremiumPaymentExpiryInstant = getTrialEndPeriod(dbiConfig.getTrialPeriodDays());
         final UserMappingEntity userMappingEntity = new UserMappingEntity()
                 .setMobile(userMapping.getMobile())
                 .setEmail(refineEmail(userMapping.getEmail()))
@@ -52,8 +52,8 @@ public class UserMappingController {
                 .setEmailHash(generateHash(userMapping.getEmail()))
                 .setLastCloudSaveTimestamp(DEFAULT_INSTANT_DATETIME)
                 .setLastSaveTimestamp(DEFAULT_INSTANT_DATETIME)
-                .setAccountCreationTimestamp(currentZoned.toInstant())
-                .setPaymentExpiryTimestamp(trialPremiumPaymentExpiryZoned.toInstant())
+                .setAccountCreationTimestamp(currentInstant)
+                .setPaymentExpiryTimestamp(trialPremiumPaymentExpiryInstant)
                 .setCurrency(userMapping.getCurrency().name());
         return diurnalTableUserMapping.pushNewEntity(userMappingEntity);
     }
@@ -249,7 +249,7 @@ public class UserMappingController {
             return INT_RESPONSE_WONT_PROCESS;
         }
         log.info("Obtained manual req for user updation: {} -> {}", email, userMapping.getPremiumUser());
-        if (diurnalTableUserMapping.updatePaymentExpiryTimestamp(emailHash, userMapping.getPaymentExpiryTimestamp()) == ONE
+        if (diurnalTableUserMapping.updatePaymentExpiryTimestamp(emailHash, userMapping.getPremiumUser() ? userMapping.getPaymentExpiryTimestamp() : DEFAULT_PAYMENT_EXPIRY_TS) == ONE
                 && diurnalTableUserMapping.updatePremiumUserStatus(emailHash, userMapping.getPremiumUser()) == ONE) {
             log.info("Premium user updation complete for {}", emailHash);
             return ONE;
@@ -345,5 +345,9 @@ public class UserMappingController {
         email = refineEmail(email);
         log.info("Checking if user exists for email: {}", email);
         return checkIfUserExists(DiurnalUtil.generateUserMapping(email));
+    }
+
+    Instant getTrialEndPeriod(int trialDays) {
+        return Instant.now().plus(trialDays, ChronoUnit.DAYS);
     }
 }

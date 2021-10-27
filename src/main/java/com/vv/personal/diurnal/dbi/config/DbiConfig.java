@@ -34,9 +34,6 @@ public class DbiConfig {
     @Value("${dbi.trialPeriodDays}")
     private int trialPeriodDays;
 
-    @Value("${dbi.timezone}")
-    private String computeTimezone;
-
     @Bean(initMethod = "getDbConnection", destroyMethod = "closeDbConnection")
     public DbiConfigForDiurnal DiurnalDbConnector() {
         return new DbiConfigForDiurnal();
@@ -73,9 +70,5 @@ public class DbiConfig {
 
     public int getTrialPeriodDays() {
         return trialPeriodDays;
-    }
-
-    public String getComputeTimezone() {
-        return computeTimezone;
     }
 }

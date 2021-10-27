@@ -3,7 +3,6 @@ package com.vv.personal.diurnal.dbi.controller;
 import com.vv.personal.diurnal.artifactory.generated.EntryDayProto;
 import com.vv.personal.diurnal.artifactory.generated.ResponsePrimitiveProto;
 import com.vv.personal.diurnal.artifactory.generated.UserMappingProto;
-import com.vv.personal.diurnal.dbi.config.DbiConfig;
 import com.vv.personal.diurnal.dbi.config.GenericConfig;
 import com.vv.personal.diurnal.dbi.interactor.diurnal.dbi.tables.DiurnalTableEntryDay;
 import com.vv.personal.diurnal.dbi.util.DiurnalUtil;
@@ -15,7 +14,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.BufferedReader;
@@ -47,8 +45,6 @@ class DataControllerTest {
     DiurnalTableEntryDay diurnalTableEntryDay;
     @Mock
     GenericConfig genericConfig;
-    @Mock
-    DbiConfig dbiConfig;
 
     public static List<String> readFileFromLocation(String src) {
         List<String> data = new ArrayList<>();
@@ -96,18 +92,5 @@ class DataControllerTest {
                 DiurnalUtil.generateDataTransit(mobile, email, 20210304, UserMappingProto.Currency.INR,
                         StringUtils.join(testData, "\n")));
         assertThat(backupPushResult.getBoolResponse()).isFalse();
-    }
-
-    @Test
-    void testGetTrialEndPeriod() {
-        int daysToExtend = 30;
-        Mockito.when(dbiConfig.getTrialPeriodDays()).thenReturn(daysToExtend);
-        long currentTimeMillis = System.currentTimeMillis();
-
-        long trialEndPeriodTimeMillis = dataController.getTrialEndPeriod();
-        assertThat((trialEndPeriodTimeMillis - currentTimeMillis) / 1000)
-                .isGreaterThanOrEqualTo(24 * 60 * 60 * daysToExtend)
-                .isLessThan(24 * 60 * 60 * daysToExtend + 1); //allowing 1 second delta for upper bound check
-        System.out.printf("Current timestamp: %d\nTrial   timestamp: %d", currentTimeMillis, trialEndPeriodTimeMillis);
     }
 }

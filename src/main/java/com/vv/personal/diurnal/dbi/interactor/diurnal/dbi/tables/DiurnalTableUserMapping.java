@@ -50,24 +50,6 @@ public class DiurnalTableUserMapping {
         return 0;
     }
 
-    public Integer retrieveHashEmail(String email) {
-        try {
-            return userMappingRepository.retrieveEmailHash(email);
-        } catch (Exception e) {
-            log.error("Failed to retrieve email hash for '{}'. ", email, e);
-        }
-        return DEFAULT_EMAIL_HASH;
-    }
-
-    public UserMappingEntity retrieveSingleEntity(int emailHash) {
-        try {
-            return userMappingRepository.getById(emailHash);
-        } catch (Exception e) {
-            log.error("Failed to retrieve single entity og email-hash: {}. ", emailHash, e);
-        }
-        return EMPTY_USER_MAPPING_ENTITY;
-    }
-
     public int updateUsername(int emailHash, String username) { //updates the user name
         try {
             UserMappingEntity userMappingEntity = retrieveSingleEntity(emailHash).setUser(username);
@@ -159,6 +141,24 @@ public class DiurnalTableUserMapping {
         return -1;
     }
 
+    public Integer retrieveHashEmail(String email) {
+        try {
+            return userMappingRepository.retrieveEmailHash(email);
+        } catch (Exception e) {
+            log.error("Failed to retrieve email hash for '{}'. ", email, e);
+        }
+        return DEFAULT_EMAIL_HASH;
+    }
+
+    public UserMappingEntity retrieveSingleEntity(int emailHash) {
+        try {
+            return userMappingRepository.getById(emailHash);
+        } catch (Exception e) {
+            log.error("Failed to retrieve single entity og email-hash: {}. ", emailHash, e);
+        }
+        return EMPTY_USER_MAPPING_ENTITY;
+    }
+
     public String retrieveHashCred(int emailHash) {
         try {
             return retrieveSingleEntity(emailHash).getCredHash();
@@ -197,7 +197,7 @@ public class DiurnalTableUserMapping {
         return EMPTY_USER_MAPPING;
     }
 
-    public UserMappingProto.UserMapping generateDetail(UserMappingEntity userMappingEntity) {
+    UserMappingProto.UserMapping generateDetail(UserMappingEntity userMappingEntity) {
         UserMappingProto.UserMapping.Builder builder = UserMappingProto.UserMapping.newBuilder();
         try {
             builder.setMobile(userMappingEntity.getMobile());

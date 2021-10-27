@@ -184,9 +184,7 @@ public class DiurnalTableUserMapping {
         userMappingsBuilder.addAllUserMapping(
                 userMappingEntityList.stream().map(this::generateDetail).collect(Collectors.toList())
         );
-        UserMappingProto.UserMappingList userMappingList = userMappingsBuilder.build();
-        log.info("Final extract from DB on retrieveAll operation gave {} rows", userMappingList.getUserMappingCount());
-        return userMappingList;
+        return userMappingsBuilder.build();
     }
 
     public UserMappingProto.UserMapping retrieveSingle(int emailHash) {

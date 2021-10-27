@@ -249,16 +249,25 @@ public class UserMappingController {
             return INT_RESPONSE_WONT_PROCESS;
         }
         log.info("Obtained manual req for user updation: {} -> {}", email, userMapping.getPremiumUser());
-        Integer sqlResult = diurnalTableUserMapping.updatePremiumUserStatus(emailHash, userMapping.getPremiumUser());
-        log.info("Result of premium-user updation: {}", sqlResult);
-        return sqlResult;
+        if (diurnalTableUserMapping.updatePaymentExpiryTimestamp(emailHash, userMapping.getPaymentExpiryTimestamp()) == ONE
+                && diurnalTableUserMapping.updatePremiumUserStatus(emailHash, userMapping.getPremiumUser()) == ONE) {
+            log.info("Premium user updation complete for {}", emailHash);
+            return ONE;
+        }
+        log.warn("Premium user updation failed for {}", emailHash);
+        return NA_INT;
     }
 
     @PatchMapping("/manual/update/user/premium")
     public void updatePremiumUserMappingManually(@RequestParam String email,
+                                                 @RequestParam(defaultValue = "0") Long paymentExpiryTimestamp,
                                                  @RequestParam(defaultValue = "false") Boolean premiumUserStatus) {
         UserMappingProto.UserMapping userMapping = generateUserMapping(DEFAULT_MOBILE, email, DEFAULT_USER_NAME, premiumUserStatus, DEFAULT_USER_CRED_HASH);
-        int result = updatePremiumUserMapping(userMapping);
+        UserMappingProto.UserMapping userMapping1 = UserMappingProto.UserMapping.newBuilder()
+                .mergeFrom(userMapping)
+                .setPaymentExpiryTimestamp(paymentExpiryTimestamp)
+                .build();
+        int result = updatePremiumUserMapping(userMapping1);
         log.info("Manual premium user update done => {}", result);
     }
 

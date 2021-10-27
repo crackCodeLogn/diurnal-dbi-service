@@ -1,154 +1,146 @@
 package com.vv.personal.diurnal.dbi.interactor.diurnal.dbi.tables;
 
 import com.vv.personal.diurnal.artifactory.generated.EntryDayProto;
-import com.vv.personal.diurnal.artifactory.generated.UserMappingProto;
-import com.vv.personal.diurnal.dbi.config.DbiConfigForDiurnal;
-import com.vv.personal.diurnal.dbi.interactor.diurnal.cache.CachedDiurnal;
-import com.vv.personal.diurnal.dbi.interactor.diurnal.dbi.DiurnalDbi;
+import com.vv.personal.diurnal.dbi.model.EntryDayEntity;
+import com.vv.personal.diurnal.dbi.model.EntryDayIdentifier;
+import com.vv.personal.diurnal.dbi.repository.EntryDayRepository;
 import com.vv.personal.diurnal.dbi.util.DiurnalUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
-import java.util.function.Function;
+import java.util.stream.Collectors;
 
-import static com.vv.personal.diurnal.dbi.constants.Constants.ONE;
-import static com.vv.personal.diurnal.dbi.constants.DbConstants.*;
+import static com.vv.personal.diurnal.dbi.constants.Constants.EMPTY_ENTRY_DAY;
 
 /**
  * @author Vivek
  * @since 06/03/21
  */
 @Slf4j
-public class DiurnalTableEntryDay extends DiurnalDbi<EntryDayProto.EntryDay, EntryDayProto.EntryDayList> {
-    private static final String INSERT_STMT_NEW_ENTRY_DAY = "INSERT INTO %s(\"hash_email\", \"date\", \"title\", \"entries_as_string\") " +
-            "VALUES(%d, %d, '%s', '%s')";
-    private static final String DELETE_STMT_ENTRY = "DELETE FROM %s " +
-            "WHERE \"%s\"=%d and \"%s\"=%d";
-    private static final String CHECK_STMT_ENTRY_EXISTS = "SELECT %s from %s " +
-            "WHERE \"%s\"=%d and \"%s\"=%d";
-    private static final String DELETE_STMT_ALL_ENTRY_DAY_OF_USER = "DELETE FROM %s " +
-            "WHERE \"%s\"=%d";
+public class DiurnalTableEntryDay {
+    private static final EntryDayEntity EMPTY_ENTRY_DAY_ENTITY = new EntryDayEntity();
 
-    private static final String COL_DATE = "date";
-    private static final String COL_HASH_EMAIL = "hash_email";
-    private static final String COL_TITLE = "title";
-    private static final String COL_ENTRIES_AS_STRING = "entries_as_string";
+    private final EntryDayRepository entryDayRepository;
 
-    public DiurnalTableEntryDay(String table, String primaryColumns, DbiConfigForDiurnal dbiConfigForDiurnal, CachedDiurnal cachedDiurnal, Function<String, String> createTableIfNotExistSqlFunction, String createTableIfNotExistSqlLocation,
-                                boolean dbLogEveryInsertInBackup) {
-        super(table, primaryColumns, dbiConfigForDiurnal, cachedDiurnal, createTableIfNotExistSqlFunction, createTableIfNotExistSqlLocation, log);
-        this.dbLogEveryInsertInBackup = dbLogEveryInsertInBackup;
+    public DiurnalTableEntryDay(EntryDayRepository entryDayRepository) {
+        this.entryDayRepository = entryDayRepository;
     }
 
-    private int insertNewEntryDay(Integer emailHash, Integer date, String title, String description) {
-        String sql = String.format(INSERT_STMT_NEW_ENTRY_DAY, TABLE,
-                emailHash, date, title, description); //description should already be in the json-ized format + processed
-        int sqlExecResult = executeUpdateSql(sql);
-        return sqlExecResult;
-    }
-
-    @Override
-    public int pushNewEntity(EntryDayProto.EntryDay entryDay) {
-        log.debug("Pushing new EntryDay entity: {} x {} x {}", entryDay.getHashEmail(), entryDay.getDate(), entryDay.getTitle());
-        return insertNewEntryDay(entryDay.getHashEmail(), entryDay.getDate(), entryDay.getTitle(), entryDay.getEntriesAsString());
-    }
-
-    @Override
-    public int deleteEntity(EntryDayProto.EntryDay entryDay) {
-        String sql = String.format(DELETE_STMT_ENTRY, TABLE,
-                COL_HASH_EMAIL, entryDay.getHashEmail(),
-                COL_DATE, entryDay.getDate());
-        int sqlExecResult = executeUpdateSql(sql);
-        return sqlExecResult;
-    }
-
-    @Override
-    public int updateEntity(EntryDayProto.EntryDay entryDay) {
-        throw new UnsupportedOperationException("Entry-Day can't be updated. They need to be deleted and re-created for DB!");
-    }
-
-    @Override
-    public boolean checkEntity(EntryDayProto.EntryDay entryDay) {
-        String sql = String.format(CHECK_STMT_ENTRY_EXISTS, PRIMARY_COL_ENTRY_DAY, TABLE,
-                COL_HASH_EMAIL, entryDay.getHashEmail(),
-                COL_DATE, entryDay.getDate());
-        return checkIfEntityExists(sql, ONE);
-    }
-
-    @Override
-    public EntryDayProto.EntryDayList retrieveAll() {
-        String sql = String.format(SELECT_ALL, TABLE);
-        ResultSet resultSet = executeNonUpdateSql(sql);
-        return parseResultSet(resultSet, sql);
-    }
-
-    @Override
-    public EntryDayProto.EntryDay retrieveSingle(EntryDayProto.EntryDay entryDay) {
-        return null;
-    }
-
-    @Override
-    public EntryDayProto.EntryDayList retrieveSome(EntryDayProto.EntryDay queryEntryDay) {
-        //for now only retrieving some on basis of the hash_email for the backup data retrieval step
-        String sql = String.format(SELECT_ALL_ON_EMAIL_HASH, TABLE,
-                COL_HASH_EMAIL, queryEntryDay.getHashEmail());
-        ResultSet resultSet = executeNonUpdateSql(sql);
-        return parseResultSet(resultSet, sql);
-    }
-
-    private EntryDayProto.EntryDayList parseResultSet(ResultSet resultSet, String sql) {
-        int rowsReturned = 0;
-        EntryDayProto.EntryDayList.Builder entriesBuilder = EntryDayProto.EntryDayList.newBuilder();
+    public int pushNewEntity(Integer emailHash, Integer date, String title, String description) {
+        if (log.isDebugEnabled()) log.debug("Pushing new EntryDay entity: {} x {} x {}", emailHash, date, title);
+        EntryDayEntity entryDayEntity = new EntryDayEntity()
+                .setEntryDayId(generateEntryDayIdentifier(emailHash, date))
+                .setTitle(title).setEntriesAsString(description);
         try {
-            while (true) {
-                try {
-                    if (!resultSet.next()) break;
-                    EntryDayProto.EntryDay entryDay = generateDetail(resultSet);
-                    entriesBuilder.addEntryDay(entryDay);
-                    rowsReturned++;
-                } catch (SQLException throwables) {
-                    log.error("Failed to completely extract result from the above select all query. ", throwables);
-                }
-            }
+            entryDayRepository.save(entryDayEntity);
+            log.info("Pushed new EntryDay entity: {}", entryDayEntity);
+            return 1;
         } catch (Exception e) {
-            log.error("Failed to execute / process sql '{}'. ", sql, e);
+            log.error("Failed to push new entry-day mapping with identifier: {}. ", entryDayEntity.getEntryDayId(), e);
         }
-        log.info("Received {} entries for sql => '{}'", rowsReturned, sql);
-        return entriesBuilder.build();
+        return -1;
     }
 
-    @Override
-    public EntryDayProto.EntryDay generateDetail(ResultSet resultSet) {
+    private EntryDayIdentifier generateEntryDayIdentifier(Integer emailHash, Integer date) {
+        return new EntryDayIdentifier().setEmailHash(emailHash).setDate(date);
+    }
+
+    public int deleteEntity(Integer emailHash, Integer date) {
+        EntryDayIdentifier entryDayIdentifier = generateEntryDayIdentifier(emailHash, date);
+        try {
+            entryDayRepository.deleteById(entryDayIdentifier);
+            log.info("Deleted EntryDay entity: {}", entryDayIdentifier);
+            return 1;
+        } catch (Exception e) {
+            log.error("Failed to delete entry-day mapping with identifier: {}. ", entryDayIdentifier, e);
+        }
+        return -1;
+    }
+
+    public boolean checkEntity(Integer emailHash, Integer date) {
+        EntryDayIdentifier entryDayIdentifier = generateEntryDayIdentifier(emailHash, date);
+        try {
+            return entryDayRepository.existsById(entryDayIdentifier);
+        } catch (Exception e) {
+            log.error("Failed to check entry-day mapping with identifier: {}. ", entryDayIdentifier, e);
+        }
+        return false;
+    }
+
+    public EntryDayProto.EntryDayList retrieveAll() {
+        List<EntryDayEntity> entryDayEntityList = entryDayRepository.findAll();
+        return generateDetails(entryDayEntityList);
+    }
+
+    private EntryDayProto.EntryDayList generateDetails(List<EntryDayEntity> entryDayEntityList) {
+        EntryDayProto.EntryDayList.Builder entryDayBuilder = EntryDayProto.EntryDayList.newBuilder();
+        log.info("Extracted {} rows from DB on entry-day retrieveAll operation.", entryDayEntityList.size());
+        entryDayBuilder.addAllEntryDay(
+                entryDayEntityList.stream().map(this::generateDetail).collect(Collectors.toList())
+        );
+        return entryDayBuilder.build();
+    }
+
+    public EntryDayProto.EntryDay retrieveSingle(Integer emailHash, Integer date) {
+        try {
+            EntryDayEntity entryDayEntity = retrieveSingleEntity(emailHash, date);
+            return generateDetail(entryDayEntity);
+        } catch (Exception e) {
+            log.error("Failed to retrieve single entry day entity from db. ", e);
+        }
+        return EMPTY_ENTRY_DAY;
+    }
+
+    public EntryDayEntity retrieveSingleEntity(Integer emailHash, Integer date) {
+        EntryDayIdentifier entryDayIdentifier = generateEntryDayIdentifier(emailHash, date);
+        try {
+            return entryDayRepository.getById(entryDayIdentifier);
+        } catch (Exception e) {
+            log.error("Failed to get entry-day mapping with identifier: {}. ", entryDayIdentifier, e);
+        }
+        return EMPTY_ENTRY_DAY_ENTITY;
+    }
+
+    public EntryDayProto.EntryDayList retrieveSome(Integer emailHash) {
+        //for now only retrieving some on basis of the hash_email for the backup data retrieval step
+        List<EntryDayEntity> entryDaysOnHash = entryDayRepository.retrieveEntryDaysOnEmailHash(emailHash);
+        return generateDetails(entryDaysOnHash);
+    }
+
+    public EntryDayProto.EntryDay generateDetail(EntryDayEntity entryDayEntity) {
         EntryDayProto.EntryDay.Builder builder = EntryDayProto.EntryDay.newBuilder();
         try {
-            builder.setHashEmail(resultSet.getInt(COL_HASH_EMAIL));
-            builder.setDate(resultSet.getInt(COL_DATE));
-            builder.setTitle(DiurnalUtil.refineDbStringForOriginal(resultSet.getString(COL_TITLE)));
+            builder.setHashEmail(entryDayEntity.getEntryDayId().getEmailHash());
+            builder.setDate(entryDayEntity.getEntryDayId().getDate());
+            builder.setTitle(DiurnalUtil.refineDbStringForOriginal(entryDayEntity.getTitle()));
             builder.setEntriesAsString(
-                    DiurnalUtil.refineDbStringForOriginal(resultSet.getString(COL_ENTRIES_AS_STRING))); //refinement - for getting quotes back
-        } catch (SQLException throwables) {
-            log.error("Failed to retrieve entry detail from DB. ", throwables);
+                    DiurnalUtil.refineDbStringForOriginal(entryDayEntity.getEntriesAsString())); //refinement - for getting quotes back
+        } catch (Exception e) {
+            log.error("Failed to retrieve entry-day detail from DB. ", e);
         }
         return builder.build();
     }
 
-    @Override
     protected Queue<String> processDataToCsv(EntryDayProto.EntryDayList dataList) {
         Queue<String> dataLines = new LinkedList<>();
         dataList.getEntryDayList().forEach(entryDay -> dataLines.add(
-                StringUtils.joinWith(csvLineSeparator,
+                StringUtils.joinWith(",",
                         String.valueOf(entryDay.getHashEmail()), entryDay.getDate(), entryDay.getTitle(), entryDay.getEntriesAsString())
         ));
         return dataLines;
     }
 
-    public Integer bulkDeleteEntryDaysOfUser(UserMappingProto.UserMapping userMapping) {
-        String sql = String.format(DELETE_STMT_ALL_ENTRY_DAY_OF_USER, TABLE,
-                COL_HASH_EMAIL, userMapping.getHashEmail());
-        return executeUpdateSql(sql);
+    public Integer bulkDeleteEntryDaysOfUser(Integer emailHash) {
+        try {
+            entryDayRepository.deleteEntryDaysOnEmailHash(emailHash);
+            log.info("Deleted all entry days on email hash of {}", emailHash);
+            return 1;
+        } catch (Exception e) {
+            log.error("Failed to delete all entry days on email hash of: {}. ", emailHash, e);
+        }
+        return -1;
     }
 }

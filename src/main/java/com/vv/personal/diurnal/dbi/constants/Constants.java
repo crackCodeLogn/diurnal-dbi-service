@@ -1,5 +1,6 @@
 package com.vv.personal.diurnal.dbi.constants;
 
+import com.vv.personal.diurnal.artifactory.generated.EntryDayProto;
 import com.vv.personal.diurnal.artifactory.generated.ResponsePrimitiveProto;
 import com.vv.personal.diurnal.artifactory.generated.UserMappingProto;
 
@@ -17,6 +18,9 @@ import java.util.Set;
  * @since 23/12/20
  */
 public class Constants {
+
+    private Constants() {
+    }
 
     public static final String EMPTY_STR = "";
     public static final String SPACE_STR = " ";
@@ -53,6 +57,7 @@ public class Constants {
     public static final ResponsePrimitiveProto.ResponsePrimitive RESPOND_TRUE_BOOL = ResponsePrimitiveProto.ResponsePrimitive.newBuilder().setBoolResponse(true).build();
     public static final ResponsePrimitiveProto.ResponsePrimitive RESPOND_EMPTY_BODY = ResponsePrimitiveProto.ResponsePrimitive.newBuilder().setResponse(EMPTY_STR).build();
     public static final UserMappingProto.UserMapping EMPTY_USER_MAPPING = UserMappingProto.UserMapping.newBuilder().build();
+    public static final EntryDayProto.EntryDay EMPTY_ENTRY_DAY = EntryDayProto.EntryDay.newBuilder().build();
 
     public static final Set<String> TITLES_TO_EXEMPT = new HashSet<>();
 

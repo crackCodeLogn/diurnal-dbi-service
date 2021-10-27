@@ -37,7 +37,7 @@ public class EntryDayController {
     @ApiOperation(value = "create entry day", hidden = true)
     @PostMapping("/create/entry-day")
     public Integer createEntryDay(@RequestBody EntryDayProto.EntryDay entryDay) {
-        Integer sqlResult = diurnalTableEntryDay.pushNewEntity(entryDay);
+        Integer sqlResult = diurnalTableEntryDay.pushNewEntity(entryDay.getHashEmail(), entryDay.getDate(), entryDay.getTitle(), entryDay.getEntriesAsString());
         log.debug("Result of new entry-day creation: {}", sqlResult);
         return sqlResult;
     }
@@ -69,7 +69,7 @@ public class EntryDayController {
     @PostMapping("/delete/entry-day")
     public Integer deleteEntryDay(@RequestBody EntryDayProto.EntryDay entryDay) {
         log.info("Deleting entry-day: {} x {}", entryDay.getHashEmail(), entryDay.getDate());
-        Integer sqlResult = diurnalTableEntryDay.deleteEntity(entryDay);
+        Integer sqlResult = diurnalTableEntryDay.deleteEntity(entryDay.getHashEmail(), entryDay.getDate());
         log.info("Result of entry-day deletion: {}", sqlResult);
         return sqlResult;
     }
@@ -99,7 +99,7 @@ public class EntryDayController {
     @PostMapping("/delete/entry-days/user")
     public Integer bulkDeleteEntryDaysOfUser(@RequestBody UserMappingProto.UserMapping userMapping) {
         log.info("Bulk deleting entry-days of user with hash: {}", userMapping.getHashEmail());
-        Integer bulkEntriesDeletionResult = diurnalTableEntryDay.bulkDeleteEntryDaysOfUser(userMapping);
+        Integer bulkEntriesDeletionResult = diurnalTableEntryDay.bulkDeleteEntryDaysOfUser(userMapping.getHashEmail());
         log.info("Bulk deletion of '{}' entry-days done for user with hash: {}", bulkEntriesDeletionResult, userMapping.getHashEmail());
         return bulkEntriesDeletionResult;
     }
@@ -166,7 +166,7 @@ public class EntryDayController {
     @GetMapping("/retrieve/all/entry-days/email-hash")
     public EntryDayProto.EntryDayList retrieveAllEntryDaysOfEmailHash(@RequestParam UserMappingProto.UserMapping userMapping) {
         log.info("Retrieving all entry-days of email-hash => {}", userMapping.getHashEmail());
-        EntryDayProto.EntryDayList entryDayList = diurnalTableEntryDay.retrieveSome(generateEntryDayOnHash(userMapping.getHashEmail()));
+        EntryDayProto.EntryDayList entryDayList = diurnalTableEntryDay.retrieveSome(userMapping.getHashEmail());
         log.info("Result of retrieving all: {} entry-days of email hash {}", entryDayList.getEntryDayCount(), userMapping.getHashEmail());
         return entryDayList;
     }
@@ -185,7 +185,7 @@ public class EntryDayController {
     @GetMapping("/check/entry-day")
     public Boolean checkIfEntryDayExists(@RequestParam EntryDayProto.EntryDay entryDay) {
         log.info("Checking if entry-day exists for: {} x {}", entryDay.getHashEmail(), entryDay.getDate());
-        boolean checkIfEntryDayExists = diurnalTableEntryDay.checkEntity(entryDay);
+        boolean checkIfEntryDayExists = diurnalTableEntryDay.checkEntity(entryDay.getHashEmail(), entryDay.getDate());
         log.info("Result: {}", checkIfEntryDayExists);
         return checkIfEntryDayExists;
     }
@@ -200,28 +200,5 @@ public class EntryDayController {
         }
         log.info("Checking if entry-day exists for: {} x {}", email, date);
         return checkIfEntryDayExists(generateEntryDayOnPk(emailHash, date));
-    }
-
-    @GetMapping("/manual/dump/table/csv/")
-    public String dumpTableAsCsv() {
-        log.info("Dumping content of table '{}' onto csv now", diurnalTableEntryDay.getTableName());
-        String csvFileLocation = diurnalTableEntryDay.dumpTableToCsv();
-        log.info("Csv file location of the dump => [{}]", csvFileLocation);
-        return csvFileLocation;
-    }
-
-    @PutMapping("/table/create")
-    public int createTableIfNotExists() {
-        return genericCreateTableIfNotExists(diurnalTableEntryDay);
-    }
-
-    @DeleteMapping("/table/drop")
-    public Boolean dropTable(@RequestParam(defaultValue = "false") Boolean absolutelyDropTable) {
-        return absolutelyDropTable ? genericDropTable(diurnalTableEntryDay) : false;
-    }
-
-    @DeleteMapping("/table/truncate")
-    public Boolean truncateTable(@RequestParam(defaultValue = "false") Boolean absolutelyTruncateTable) {
-        return absolutelyTruncateTable ? genericTruncateTable(diurnalTableEntryDay) : false;
     }
 }

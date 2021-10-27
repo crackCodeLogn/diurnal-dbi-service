@@ -5,18 +5,15 @@ import com.vv.personal.diurnal.dbi.auth.Authorizer;
 import com.vv.personal.diurnal.dbi.interactor.diurnal.cache.CachedDiurnal;
 import com.vv.personal.diurnal.dbi.interactor.diurnal.dbi.tables.DiurnalTableEntryDay;
 import com.vv.personal.diurnal.dbi.interactor.diurnal.dbi.tables.DiurnalTableUserMapping;
+import com.vv.personal.diurnal.dbi.repository.EntryDayRepository;
 import com.vv.personal.diurnal.dbi.repository.UserMappingRepository;
-import com.vv.personal.diurnal.dbi.util.DbiUtil;
 import org.apache.commons.lang3.time.StopWatch;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
 import org.springframework.security.crypto.password.Pbkdf2PasswordEncoder;
-
-import static com.vv.personal.diurnal.dbi.constants.DbConstants.*;
 
 /**
  * @author Vivek
@@ -25,19 +22,11 @@ import static com.vv.personal.diurnal.dbi.constants.DbConstants.*;
 @Configuration
 public class DbiConfig {
 
-    @Autowired
-    private UserMappingRepository userMappingRepository;
-
     @Value("${dbi.tables.create.onStartup:false}")
     private boolean createTablesOnStartup;
 
     @Value("${dbi.trialPeriodDays}")
     private int trialPeriodDays;
-
-    @Bean(initMethod = "getDbConnection", destroyMethod = "closeDbConnection")
-    public DbiConfigForDiurnal DiurnalDbConnector() {
-        return new DbiConfigForDiurnal();
-    }
 
     @Bean
     public CachedDiurnal cachedDiurnal() {
@@ -51,15 +40,14 @@ public class DbiConfig {
 
     @Bean
     @Qualifier("DiurnalTableUserMapping")
-    public DiurnalTableUserMapping diurnalTableUserMapping() {
+    public DiurnalTableUserMapping diurnalTableUserMapping(UserMappingRepository userMappingRepository) {
         return new DiurnalTableUserMapping(userMappingRepository);
     }
 
-    @Bean(destroyMethod = "destroyExecutors")
+    @Bean
     @Qualifier("DiurnalTableEntryDay")
-    public DiurnalTableEntryDay diurnalTableEntryDays() {
-        return new DiurnalTableEntryDay(TABLE_DIURNAL_ENTRY_DAY, PRIMARY_COL_ENTRY_DAY, DiurnalDbConnector(), cachedDiurnal(),
-                DbiUtil::generateCreateTableSql, DIURNAL_ENTRY_DAY_SQL, DiurnalDbConnector().getDbLogEveryInsertInBackup());
+    public DiurnalTableEntryDay diurnalTableEntryDays(EntryDayRepository entryDayRepository) {
+        return new DiurnalTableEntryDay(entryDayRepository);
     }
 
     @Bean(initMethod = "start")

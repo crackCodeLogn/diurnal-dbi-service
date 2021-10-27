@@ -1,6 +1,5 @@
 package com.vv.personal.diurnal.dbi.controller;
 
-import com.vv.personal.diurnal.artifactory.generated.EntryDayProto;
 import com.vv.personal.diurnal.artifactory.generated.ResponsePrimitiveProto;
 import com.vv.personal.diurnal.artifactory.generated.UserMappingProto;
 import com.vv.personal.diurnal.dbi.config.GenericConfig;
@@ -25,7 +24,7 @@ import java.util.List;
 import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.generateHash;
 import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.procureStopWatch;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 
 /**
@@ -76,7 +75,7 @@ class DataControllerTest {
         when(userMappingController.retrieveHashEmail(email)).thenReturn(emailHash);
         when(userMappingController.retrievePremiumUserStatus(emailHash)).thenReturn(true);
         when(userMappingController.updateUserMappingLastCloudSaveTimestamp(any(UserMappingProto.UserMapping.class))).thenReturn(1);
-        when(diurnalTableEntryDay.pushNewEntity(any(EntryDayProto.EntryDay.class))).thenReturn(1);
+        when(diurnalTableEntryDay.pushNewEntity(anyInt(), anyInt(), anyString(), anyString())).thenReturn(1);
         StopWatch stopWatch = procureStopWatch();
         when(genericConfig.procureStopWatch()).thenReturn(stopWatch);
         stopWatch.start();

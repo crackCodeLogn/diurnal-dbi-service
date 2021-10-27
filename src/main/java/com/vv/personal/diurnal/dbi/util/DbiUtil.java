@@ -1,6 +1,5 @@
 package com.vv.personal.diurnal.dbi.util;
 
-import com.vv.personal.diurnal.dbi.constants.DbConstants;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
@@ -17,6 +16,9 @@ import static com.vv.personal.diurnal.dbi.constants.Constants.EMPTY_STR;
  */
 public class DbiUtil {
 
+    private DbiUtil() {
+    }
+
     public static String extractContactNumbers(Collection<String> contactNumbers) {
         String contactNumbersString = EMPTY_STR;
         if (!contactNumbers.isEmpty())
@@ -31,10 +33,5 @@ public class DbiUtil {
         if (contactNumbers.isEmpty()) return Collections.emptyList();
         return Arrays.stream(StringUtils.split(contactNumbers, COMMA_STR))
                 .collect(Collectors.toList());
-    }
-
-    public static String generateCreateTableSql(String tableName) {
-        String sqlPath = String.format("%s/%s.sql", DbConstants.FILE_SQL_LOCATION_BASE_CREATETABLES, tableName);
-        return FileUtil.readFileFromLocation(Thread.currentThread().getContextClassLoader().getResourceAsStream(sqlPath));
     }
 }

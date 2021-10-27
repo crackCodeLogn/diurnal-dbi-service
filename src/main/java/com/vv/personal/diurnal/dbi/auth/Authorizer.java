@@ -7,7 +7,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
  * @since 09/01/21
  */
 public class Authorizer {
-
     private final PasswordEncoder passwordEncoder;
 
     public Authorizer(PasswordEncoder passwordEncoder) {
@@ -21,5 +20,4 @@ public class Authorizer {
     public boolean hashMatches(String incomingRawCred, String hash) {
         return passwordEncoder.matches(incomingRawCred, hash);
     }
-
 }

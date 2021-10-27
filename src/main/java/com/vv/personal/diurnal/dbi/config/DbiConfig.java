@@ -22,9 +22,6 @@ import org.springframework.security.crypto.password.Pbkdf2PasswordEncoder;
 @Configuration
 public class DbiConfig {
 
-    @Value("${dbi.tables.create.onStartup:false}")
-    private boolean createTablesOnStartup;
-
     @Value("${dbi.trialPeriodDays}")
     private int trialPeriodDays;
 

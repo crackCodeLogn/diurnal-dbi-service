@@ -29,7 +29,7 @@ public class DiurnalUtil {
     }
 
     public static boolean isEmailHashAbsent(Integer emailHash) {
-        return emailHash == DEFAULT_EMAIL_HASH;
+        return emailHash == null || emailHash == DEFAULT_EMAIL_HASH;
     }
 
     public static UserMappingProto.UserMapping generateUserMapping(String email) {

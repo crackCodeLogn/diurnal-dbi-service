@@ -21,3 +21,17 @@
 <ul>
 <li>Database is using timestamptz to store all time in UTC by default. Whenever the java process will read it from DB, it will get the time converted into the JVM time.</li>
 </ul> 
+
+## Deployments - Server only (!app):
+
+### 1. Release 1.2:
+
+    Time: 2021-10-28 2330 IST
+    Artifact version: 0.0.3-SNAPSHOT
+    Most significant change: Using JPA completely and replacing the hand-written SQL logic
+
+### 2. Release 1.1:
+
+    Time: 2021-10-24
+    Artifact version: 0.0.2-SNAPSHOT
+    Most significant change: Giving 1 month free premium status to new sign ups

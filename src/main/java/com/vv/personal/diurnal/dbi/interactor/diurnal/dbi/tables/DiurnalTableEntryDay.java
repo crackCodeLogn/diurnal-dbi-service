@@ -29,8 +29,15 @@ public class DiurnalTableEntryDay {
         this.entryDayRepository = entryDayRepository;
     }
 
-    public static EntryDayId generateEntryDayIdentifier(Integer emailHash, Integer date) {
+    private static EntryDayId generateEntryDayIdentifier(Integer emailHash, Integer date) {
         return new EntryDayId().setEmailHash(emailHash).setDate(date);
+    }
+
+    public static EntryDayEntity generateEntryDayEntity(Integer emailHash, Integer date, String title, String description) {
+        return new EntryDayEntity()
+                .setEntryDayId(generateEntryDayIdentifier(emailHash, date))
+                .setTitle(title)
+                .setEntriesAsString(description);
     }
 
     public int pushNewEntity(Integer emailHash, Integer date, String title, String description) {

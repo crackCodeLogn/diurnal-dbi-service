@@ -56,10 +56,8 @@ public class EntryDayController {
     }
 
     private List<EntryDayEntity> generateBulkEntryDaysFromProto(EntryDayProto.EntryDayList entryDayList) {
-        return entryDayList.getEntryDayList().stream().map(entryDay -> new EntryDayEntity()
-                .setEntryDayId(DiurnalTableEntryDay.generateEntryDayIdentifier(entryDay.getHashEmail(), entryDay.getDate()))
-                .setTitle(entryDay.getTitle())
-                .setEntriesAsString(entryDay.getEntriesAsString())
+        return entryDayList.getEntryDayList().stream().map(entryDay ->
+                DiurnalTableEntryDay.generateEntryDayEntity(entryDay.getHashEmail(), entryDay.getDate(), entryDay.getTitle(), entryDay.getEntriesAsString())
         ).collect(Collectors.toList());
     }
 

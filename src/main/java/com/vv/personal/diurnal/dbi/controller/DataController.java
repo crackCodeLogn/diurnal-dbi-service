@@ -18,7 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static com.vv.personal.diurnal.dbi.constants.Constants.*;
@@ -97,8 +96,7 @@ public class DataController {
                     Arrays.asList(StringUtils.split(dataTransit.getBackupData(), NEW_LINE)),
                     emailHash);
             if (transformFullBackupToProtos.transformWithoutSuppliedDate()) {
-                List<Integer> bulkEntryDayOpResult = entryDayController.deleteAndCreateEntryDays(transformFullBackupToProtos);
-                if (bulkEntryDayOpResult.stream().allMatch(integer -> integer == 1)) {
+                if (entryDayController.deleteAndCreateEntryDays(transformFullBackupToProtos)) {
                     UserMappingProto.UserMapping userMapping = UserMappingProto.UserMapping.newBuilder()
                             .setEmail(dataTransit.getEmail())
                             .setHashEmail(emailHash)

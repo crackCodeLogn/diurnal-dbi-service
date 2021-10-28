@@ -29,14 +29,19 @@ public class DiurnalTableEntryDay {
         this.entryDayRepository = entryDayRepository;
     }
 
+    public static EntryDayId generateEntryDayIdentifier(Integer emailHash, Integer date) {
+        return new EntryDayId().setEmailHash(emailHash).setDate(date);
+    }
+
     public int pushNewEntity(Integer emailHash, Integer date, String title, String description) {
         if (log.isDebugEnabled()) log.debug("Pushing new EntryDay entity: {} x {} x {}", emailHash, date, title);
         EntryDayEntity entryDayEntity = new EntryDayEntity()
                 .setEntryDayId(generateEntryDayIdentifier(emailHash, date))
-                .setTitle(title).setEntriesAsString(description);
+                .setTitle(title)
+                .setEntriesAsString(description);
         try {
             entryDayRepository.save(entryDayEntity);
-            log.info("Pushed new EntryDay entity: {}", entryDayEntity);
+            if (log.isDebugEnabled()) log.debug("Pushed new EntryDay entity: {}", entryDayEntity);
             return 1;
         } catch (Exception e) {
             log.error("Failed to push new entry-day mapping with identifier: {}. ", entryDayEntity.getEntryDayId(), e);
@@ -44,8 +49,16 @@ public class DiurnalTableEntryDay {
         return -1;
     }
 
-    private EntryDayId generateEntryDayIdentifier(Integer emailHash, Integer date) {
-        return new EntryDayId().setEmailHash(emailHash).setDate(date);
+    public int pushNewEntities(List<EntryDayEntity> entryDays) {
+        if (log.isDebugEnabled()) log.debug("Pushing {} new EntryDay entity", entryDays.size());
+        try {
+            int newEntitiesCreated = entryDayRepository.saveAllAndFlush(entryDays).size();
+            if (log.isDebugEnabled()) log.debug("Pushed {} new EntryDay entities", newEntitiesCreated);
+            return newEntitiesCreated;
+        } catch (Exception e) {
+            log.error("Failed to push {} new entry-day mapping. ", entryDays.size(), e);
+        }
+        return -1;
     }
 
     public int deleteEntity(Integer emailHash, Integer date) {
@@ -135,7 +148,7 @@ public class DiurnalTableEntryDay {
 
     public Integer bulkDeleteEntryDaysOfUser(Integer emailHash) {
         try {
-            int deletedRowCount = entryDayRepository.deleteByEntryDayIdEmailHash(emailHash);
+            int deletedRowCount = entryDayRepository.deleteRowsWithEmailHash(emailHash);
             log.info("Deleted all {} entry days on email hash of {}", deletedRowCount, emailHash);
             return deletedRowCount;
         } catch (Exception e) {

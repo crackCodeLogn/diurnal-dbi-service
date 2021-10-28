@@ -4,4 +4,4 @@ spring:
     username: root
     password:
   jpa:
-    show-sql: true
+    show-sql: false

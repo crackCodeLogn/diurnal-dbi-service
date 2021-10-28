@@ -4,7 +4,9 @@ import com.vv.personal.diurnal.dbi.model.EntryDayEntity;
 import com.vv.personal.diurnal.dbi.model.EntryDayId;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.transaction.Transactional;
 import java.util.List;
@@ -20,5 +22,6 @@ public interface EntryDayRepository extends JpaRepository<EntryDayEntity, EntryD
 
     @Modifying
     @Transactional
-    int deleteByEntryDayIdEmailHash(Integer emailHash); //didn't have time to find sufficient query
+    @Query(value = "DELETE from entry_day where hash_email = :emailHash", nativeQuery = true)
+    int deleteRowsWithEmailHash(@RequestParam("emailHash") Integer emailHash);
 }

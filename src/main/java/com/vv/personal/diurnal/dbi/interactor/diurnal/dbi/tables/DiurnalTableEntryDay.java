@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Queue;
 import java.util.stream.Collectors;
 
-import static com.vv.personal.diurnal.dbi.constants.Constants.EMPTY_ENTRY_DAY;
+import static com.vv.personal.diurnal.dbi.constants.Constants.*;
 
 /**
  * @author Vivek
@@ -49,11 +49,11 @@ public class DiurnalTableEntryDay {
         try {
             entryDayRepository.save(entryDayEntity);
             if (log.isDebugEnabled()) log.debug("Pushed new EntryDay entity: {}", entryDayEntity);
-            return 1;
+            return ONE;
         } catch (Exception e) {
             log.error("Failed to push new entry-day mapping with identifier: {}. ", entryDayEntity.getEntryDayId(), e);
         }
-        return -1;
+        return NA_INT;
     }
 
     public int pushNewEntities(List<EntryDayEntity> entryDays) {
@@ -65,7 +65,7 @@ public class DiurnalTableEntryDay {
         } catch (Exception e) {
             log.error("Failed to push {} new entry-day mapping. ", entryDays.size(), e);
         }
-        return -1;
+        return NA_INT;
     }
 
     public int deleteEntity(Integer emailHash, Integer date) {
@@ -73,11 +73,11 @@ public class DiurnalTableEntryDay {
         try {
             entryDayRepository.deleteById(entryDayIdentifier);
             log.info("Deleted EntryDay entity: {}", entryDayIdentifier);
-            return 1;
+            return ONE;
         } catch (Exception e) {
             log.error("Failed to delete entry-day mapping with identifier: {}. ", entryDayIdentifier, e);
         }
-        return -1;
+        return NA_INT;
     }
 
     public boolean checkEntity(Integer emailHash, Integer date) {
@@ -147,7 +147,7 @@ public class DiurnalTableEntryDay {
     protected Queue<String> processDataToCsv(EntryDayProto.EntryDayList dataList) {
         Queue<String> dataLines = new LinkedList<>();
         dataList.getEntryDayList().forEach(entryDay -> dataLines.add(
-                StringUtils.joinWith(",",
+                StringUtils.joinWith(PIPE,
                         String.valueOf(entryDay.getHashEmail()), entryDay.getDate(), entryDay.getTitle(), entryDay.getEntriesAsString())
         ));
         return dataLines;
@@ -161,6 +161,6 @@ public class DiurnalTableEntryDay {
         } catch (Exception e) {
             log.error("Failed to delete all entry days on email hash of: {}. ", emailHash, e);
         }
-        return -1;
+        return NA_INT;
     }
 }

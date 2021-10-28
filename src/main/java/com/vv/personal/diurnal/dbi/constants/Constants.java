@@ -23,10 +23,8 @@ public class Constants {
     }
 
     public static final String EMPTY_STR = "";
-    public static final String SPACE_STR = " ";
     public static final String NEW_LINE = "\n";
     public static final String COMMA_STR = ",";
-    public static final String COLON_STR = ":";
     public static final String REPLACE_JSON_DI = "`@%"; //DI - double inverts
     public static final String DEFAULT_TITLE = "-TITLE-";
     public static final String PIPE = "|";

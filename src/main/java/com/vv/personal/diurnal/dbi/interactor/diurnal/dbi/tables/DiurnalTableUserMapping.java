@@ -32,7 +32,7 @@ public class DiurnalTableUserMapping {
         try {
             userMappingRepository.save(userMappingEntity);
             log.info("Pushed new UserMapping entity: {}", userMappingEntity);
-            return 1;
+            return ONE;
         } catch (Exception e) {
             log.error("Failed to push new user mapping with email: {}. ", userMappingEntity.getEmail(), e);
         }
@@ -43,7 +43,7 @@ public class DiurnalTableUserMapping {
         try {
             userMappingRepository.deleteById(emailHash);
             log.info("Deleted userMapping entity having email-hash {}", emailHash);
-            return 1;
+            return ONE;
         } catch (Exception e) {
             log.error("Failed to delete user mapping entity with email-hash: {}. ", emailHash, e);
         }
@@ -54,55 +54,55 @@ public class DiurnalTableUserMapping {
         try {
             UserMappingEntity userMappingEntity = retrieveSingleEntity(emailHash).setUser(username);
             userMappingRepository.save(userMappingEntity);
-            return 1;
+            return ONE;
         } catch (Exception e) {
             log.error("Failed to update name for hash email {} with {}", emailHash, username, e);
         }
-        return -1;
+        return NA_INT;
     }
 
     public int updatePremiumUserStatus(int emailHash, boolean isPremiumUser) {
         try {
             UserMappingEntity userMappingEntity = retrieveSingleEntity(emailHash).setPremiumUser(isPremiumUser);
             userMappingRepository.save(userMappingEntity);
-            return 1;
+            return ONE;
         } catch (Exception e) {
             log.error("Failed to update isPremiumUser for hash email {} with {}", emailHash, isPremiumUser, e);
         }
-        return -1;
+        return NA_INT;
     }
 
     public int updateHashCred(int emailHash, String credHash) {
         try {
             UserMappingEntity userMappingEntity = retrieveSingleEntity(emailHash).setCredHash(credHash);
             userMappingRepository.save(userMappingEntity);
-            return 1;
+            return ONE;
         } catch (Exception e) {
             log.error("Failed to update credhash for hash email {} with {}", emailHash, credHash, e);
         }
-        return -1;
+        return NA_INT;
     }
 
     public int updateMobile(int emailHash, long mobile) {
         try {
             UserMappingEntity userMappingEntity = retrieveSingleEntity(emailHash).setMobile(mobile);
             userMappingRepository.save(userMappingEntity);
-            return 1;
+            return ONE;
         } catch (Exception e) {
             log.error("Failed to update name for mobile email {} with {}", emailHash, mobile, e);
         }
-        return -1;
+        return NA_INT;
     }
 
     public int updateCurrency(int emailHash, UserMappingProto.Currency currency) {
         try {
             UserMappingEntity userMappingEntity = retrieveSingleEntity(emailHash).setCurrency(currency.name());
             userMappingRepository.save(userMappingEntity);
-            return 1;
+            return ONE;
         } catch (Exception e) {
             log.error("Failed to update currency for hash email {} with {}", emailHash, currency, e);
         }
-        return -1;
+        return NA_INT;
     }
 
     public int updateLastCloudSaveTimestamp(int emailHash, long lastCloudSaveTimestamp) {
@@ -110,11 +110,11 @@ public class DiurnalTableUserMapping {
             UserMappingEntity userMappingEntity = retrieveSingleEntity(emailHash)
                     .setLastCloudSaveTimestamp(Instant.ofEpochMilli(lastCloudSaveTimestamp));
             userMappingRepository.save(userMappingEntity);
-            return 1;
+            return ONE;
         } catch (Exception e) {
             log.error("Failed to update lastCloudSaveTimestamp for hash email {} with {}", emailHash, lastCloudSaveTimestamp, e);
         }
-        return -1;
+        return NA_INT;
     }
 
     public int updateLastSavedTimestamp(int emailHash, long lastSavedTimestamp) {
@@ -122,11 +122,11 @@ public class DiurnalTableUserMapping {
             UserMappingEntity userMappingEntity = retrieveSingleEntity(emailHash)
                     .setLastSaveTimestamp(Instant.ofEpochMilli(lastSavedTimestamp));
             userMappingRepository.save(userMappingEntity);
-            return 1;
+            return ONE;
         } catch (Exception e) {
             log.error("Failed to update lastSavedTimestamp for hash email {} with {}", emailHash, lastSavedTimestamp, e);
         }
-        return -1;
+        return NA_INT;
     }
 
     public int updatePaymentExpiryTimestamp(int emailHash, long paymentExpiryTimestamp) {
@@ -134,11 +134,11 @@ public class DiurnalTableUserMapping {
             UserMappingEntity userMappingEntity = retrieveSingleEntity(emailHash)
                     .setPaymentExpiryTimestamp(Instant.ofEpochMilli(paymentExpiryTimestamp));
             userMappingRepository.save(userMappingEntity);
-            return 1;
+            return ONE;
         } catch (Exception e) {
             log.error("Failed to update paymentExpiryTimestamp for hash email {} with {}", emailHash, paymentExpiryTimestamp, e);
         }
-        return -1;
+        return NA_INT;
     }
 
     public Integer retrieveHashEmail(String email) {
@@ -225,9 +225,9 @@ public class DiurnalTableUserMapping {
     protected Queue<String> processDataToCsv(UserMappingProto.UserMappingList dataList) {
         Queue<String> dataLines = new LinkedList<>();
         dataList.getUserMappingList().forEach(userMapping -> dataLines.add(
-                        StringUtils.joinWith(",",
-                                String.valueOf(userMapping.getMobile()), userMapping.getEmail(), userMapping.getUsername(), userMapping.getPremiumUser(), userMapping.getHashCred(), userMapping.getHashEmail(),
-                                userMapping.getLastCloudSaveTimestamp(), userMapping.getLastSavedTimestamp(), userMapping.getPaymentExpiryTimestamp(), userMapping.getAccountCreationTimestamp(), userMapping.getCurrency())
+                StringUtils.joinWith(PIPE,
+                        String.valueOf(userMapping.getMobile()), userMapping.getEmail(), userMapping.getUsername(), userMapping.getPremiumUser(), userMapping.getHashCred(), userMapping.getHashEmail(),
+                        userMapping.getLastCloudSaveTimestamp(), userMapping.getLastSavedTimestamp(), userMapping.getPaymentExpiryTimestamp(), userMapping.getAccountCreationTimestamp(), userMapping.getCurrency())
                 )
         );
         return dataLines;

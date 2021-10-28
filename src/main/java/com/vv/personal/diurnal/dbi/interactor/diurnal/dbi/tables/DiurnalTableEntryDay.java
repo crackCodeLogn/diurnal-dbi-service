@@ -135,7 +135,7 @@ public class DiurnalTableEntryDay {
 
     public Integer bulkDeleteEntryDaysOfUser(Integer emailHash) {
         try {
-            int deletedRowCount = entryDayRepository.deleteByEntryDayIdEmailHash(emailHash).size();
+            int deletedRowCount = entryDayRepository.deleteByEntryDayIdEmailHash(emailHash);
             log.info("Deleted all {} entry days on email hash of {}", deletedRowCount, emailHash);
             return deletedRowCount;
         } catch (Exception e) {

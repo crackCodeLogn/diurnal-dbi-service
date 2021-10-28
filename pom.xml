@@ -11,7 +11,7 @@
 
     <groupId>com.vv.personal</groupId>
     <artifactId>diurnal-dbi-service</artifactId>
-    <version>0.0.2-SNAPSHOT</version>
+    <version>0.0.3-SNAPSHOT</version>
     <name>Diurnal DBI service</name>
     <description>DBI service connecting to postgres server</description>
 

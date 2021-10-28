@@ -7,6 +7,7 @@ import com.vv.personal.diurnal.dbi.config.DbiConfig;
 import com.vv.personal.diurnal.dbi.interactor.diurnal.dbi.tables.DiurnalTableUserMapping;
 import com.vv.personal.diurnal.dbi.model.UserMappingEntity;
 import com.vv.personal.diurnal.dbi.util.DiurnalUtil;
+import com.vv.personal.diurnal.dbi.util.FileUtil;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,8 @@ import org.springframework.web.bind.annotation.*;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import static com.vv.personal.diurnal.dbi.constants.Constants.*;
 import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.*;
@@ -345,6 +348,47 @@ public class UserMappingController {
         email = refineEmail(email);
         log.info("Checking if user exists for email: {}", email);
         return checkIfUserExists(DiurnalUtil.generateUserMapping(email));
+    }
+
+    @PutMapping("/upload/csv")
+    int uploadCsv(@RequestParam("csv-location") String csvLocation) {
+        AtomicInteger counter = new AtomicInteger(0);
+        List<UserMappingEntity> userMappingEntities = FileUtil.readFileFromLocation(csvLocation).stream()
+                .map(data -> {
+                    if (counter.get() == 0) data = data.substring(1);
+                    counter.incrementAndGet();
+                    //log.info(data);
+                    String[] vals = data.split(",");
+
+                    long mobile = Long.parseLong(vals[0].trim());
+                    String email = vals[1];
+                    String user = vals[2];
+                    boolean premium = "t".equals(vals[3]);
+                    String credHash = vals[4];
+                    int emailHash = Integer.parseInt(vals[5].trim());
+                    Instant cloudTs = Instant.parse(vals[6]);
+                    Instant saveTs = Instant.parse(vals[7]);
+                    Instant pymtTs = Instant.parse(vals[8]);
+                    Instant crtTs = Instant.parse(vals[9]);
+                    String curr = vals[10];
+                    return new UserMappingEntity()
+                            .setMobile(mobile)
+                            .setEmail(email)
+                            .setUser(user)
+                            .setPremiumUser(premium)
+                            .setCredHash(credHash)
+                            .setEmailHash(emailHash)
+                            .setLastCloudSaveTimestamp(cloudTs)
+                            .setLastSaveTimestamp(saveTs)
+                            .setPaymentExpiryTimestamp(pymtTs)
+                            .setAccountCreationTimestamp(crtTs)
+                            .setCurrency(curr)
+                            ;
+                }).collect(Collectors.toList());
+        log.info("Extracted {} entities from '{}'", userMappingEntities.size(), csvLocation);
+        int saved = diurnalTableUserMapping.pushNewEntities(userMappingEntities);
+        log.info("Saved {} into db", saved);
+        return saved;
     }
 
     Instant getTrialEndPeriod(int trialDays) {

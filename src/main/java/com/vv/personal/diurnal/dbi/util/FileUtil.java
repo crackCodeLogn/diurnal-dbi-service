@@ -3,6 +3,8 @@ package com.vv.personal.diurnal.dbi.util;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Vivek
@@ -10,16 +12,16 @@ import java.io.*;
  */
 @Slf4j
 public class FileUtil {
-    public static String readFileFromLocation(String src) {
-        StringBuilder data = new StringBuilder();
+    public static List<String> readFileFromLocation(String src) {
+        List<String> data = new ArrayList<>();
         try (BufferedReader in = new BufferedReader(new FileReader(src))) {
             String line;
-            while ((line = in.readLine()) != null) data.append(line.trim()).append("\n");
+            while ((line = in.readLine()) != null) data.add(line.trim());
         } catch (IOException e) {
             log.error("Failed to read file contents from '{}'. ", src, e);
         }
         //log.info("Data read in => \n{}", data);
-        return data.toString();
+        return data;
     }
 
     public static String readFileFromLocation(InputStream inputStream) {

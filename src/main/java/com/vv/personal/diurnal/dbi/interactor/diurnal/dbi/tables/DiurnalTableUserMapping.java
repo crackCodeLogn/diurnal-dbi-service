@@ -39,6 +39,15 @@ public class DiurnalTableUserMapping {
         return 0;
     }
 
+    public int pushNewEntities(List<UserMappingEntity> userMappingEntityList) {
+        try {
+            return userMappingRepository.saveAllAndFlush(userMappingEntityList).size();
+        } catch (Exception e) {
+            log.error("Failed to bulk push {} new user mappings. ", userMappingEntityList.size(), e);
+        }
+        return NA_INT;
+    }
+
     public int deleteEntity(int emailHash) {
         try {
             userMappingRepository.deleteById(emailHash);
@@ -225,9 +234,9 @@ public class DiurnalTableUserMapping {
     protected Queue<String> processDataToCsv(UserMappingProto.UserMappingList dataList) {
         Queue<String> dataLines = new LinkedList<>();
         dataList.getUserMappingList().forEach(userMapping -> dataLines.add(
-                StringUtils.joinWith(PIPE,
-                        String.valueOf(userMapping.getMobile()), userMapping.getEmail(), userMapping.getUsername(), userMapping.getPremiumUser(), userMapping.getHashCred(), userMapping.getHashEmail(),
-                        userMapping.getLastCloudSaveTimestamp(), userMapping.getLastSavedTimestamp(), userMapping.getPaymentExpiryTimestamp(), userMapping.getAccountCreationTimestamp(), userMapping.getCurrency())
+                        StringUtils.joinWith(PIPE,
+                                String.valueOf(userMapping.getMobile()), userMapping.getEmail(), userMapping.getUsername(), userMapping.getPremiumUser(), userMapping.getHashCred(), userMapping.getHashEmail(),
+                                userMapping.getLastCloudSaveTimestamp(), userMapping.getLastSavedTimestamp(), userMapping.getPaymentExpiryTimestamp(), userMapping.getAccountCreationTimestamp(), userMapping.getCurrency())
                 )
         );
         return dataLines;

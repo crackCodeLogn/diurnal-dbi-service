@@ -1,8 +1,7 @@
-db:
-  diurnal:
-    server:
-      host:
-      port: ${DIURNAL_POSTGRES_HEROKU_PORT:5432}
-    user:
-    cred:
+spring:
+  datasource:
     url: ${DATABASE_URL:}
+    username:
+    password:
+  jpa:
+    show-sql: true

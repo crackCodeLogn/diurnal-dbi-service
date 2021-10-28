@@ -1,15 +1,7 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:${db.diurnal.server.port}/${CRDB_DB}
+    url: jdbc:postgresql://localhost:${CRDB_PORT}/${CRDB_DB}
     username: root
     password:
   jpa:
     show-sql: true
-
-db:
-  diurnal:
-    server:
-      host: localhost
-      port: ${CRDB_PORT:26257}
-    user: ${CRDB_USER:root}
-    cred: ${CRDB_CRED:}

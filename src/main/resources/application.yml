@@ -12,16 +12,6 @@ spring:
 server:
   port: ${SERVER_PORT:25641}
 
-db:
-  diurnal:
-    name: diurnal
-    server:
-      host: localhost
-      port: ${PROM_POSTGRES_PORT}
-    user: ${PROM_POSTGRES_REF_USER}
-    cred: ${PROM_POSTGRES_REF_CRED}
-    url: ${LOCAL_DATABASE_URL:}
-
 dbi:
   inactive:
     timeout:
@@ -31,6 +21,5 @@ dbi:
     exit:
       code: ${DBI_SHUTDOWN_EXIT_CODE:0}
   trialPeriodDays: ${DBI_TRIAL_PERIOD_DAYS:30}
-  timezone: ${DBI_TIMEZONE:IST}
 
 logging.level.org.springframework.web: ${LOGGING:INFO}

@@ -4,8 +4,7 @@ import com.vv.personal.diurnal.artifactory.generated.DataTransitProto;
 import com.vv.personal.diurnal.artifactory.generated.EntryDayProto;
 import com.vv.personal.diurnal.artifactory.generated.ResponsePrimitiveProto;
 import com.vv.personal.diurnal.artifactory.generated.UserMappingProto;
-import com.vv.personal.diurnal.dbi.config.DbiConfig;
-import com.vv.personal.diurnal.dbi.config.GenericConfig;
+import com.vv.personal.diurnal.dbi.config.BeanStore;
 import com.vv.personal.diurnal.dbi.engine.transformer.TransformBackupToString;
 import com.vv.personal.diurnal.dbi.engine.transformer.TransformFullBackupToProtos;
 import com.vv.personal.diurnal.dbi.util.DiurnalUtil;
@@ -39,15 +38,13 @@ public class DataController {
     @Autowired
     private UserMappingController userMappingController;
     @Autowired
-    private GenericConfig genericConfig;
-    @Autowired
-    private DbiConfig dbiConfig;
+    private BeanStore beanStore;
 
     @ApiOperation(value = "Sign up new user", hidden = true)
     @PostMapping("/signup")
     public ResponsePrimitiveProto.ResponsePrimitive signUpUser(@RequestBody UserMappingProto.UserMapping userMapping) {
         log.info("Rx-ed user to sign up -> [{}]", userMapping.getEmail());
-        StopWatch stopWatch = genericConfig.procureStopWatch();
+        StopWatch stopWatch = beanStore.procureStopWatch();
         try {
             boolean signUpResult = userMappingController.createUserMapping(userMapping) == ONE;
             log.info("Sign up result for [{}] => {}", userMapping.getEmail(), signUpResult);
@@ -62,7 +59,7 @@ public class DataController {
     @PostMapping("/signup/check/email")
     public ResponsePrimitiveProto.ResponsePrimitive checkSignUpUserEmail(@RequestBody DataTransitProto.DataTransit dataTransit) {
         log.info("Checking if user with email [{}] exists in DB", dataTransit.getEmail());
-        StopWatch stopWatch = genericConfig.procureStopWatch();
+        StopWatch stopWatch = beanStore.procureStopWatch();
         try {
             Integer emailHash = userMappingController.retrieveHashEmail(dataTransit.getEmail());
             if (isEmailHashAbsent(emailHash)) {
@@ -81,7 +78,7 @@ public class DataController {
     public ResponsePrimitiveProto.ResponsePrimitive pushWholeBackup(@RequestBody DataTransitProto.DataTransit dataTransit) {
         log.info("Rx-ed data in dataTransit to backup to DB: {} bytes, for email [{}]", dataTransit.getBackupData().getBytes().length,
                 dataTransit.getEmail());
-        StopWatch stopWatch = genericConfig.procureStopWatch();
+        StopWatch stopWatch = beanStore.procureStopWatch();
         try {
             Integer emailHash = userMappingController.retrieveHashEmail(dataTransit.getEmail());
             if (isEmailHashAbsent(emailHash)) {
@@ -118,7 +115,7 @@ public class DataController {
     @PostMapping("/retrieve/backup/whole")
     public ResponsePrimitiveProto.ResponsePrimitive retrieveWholeBackup(@RequestBody DataTransitProto.DataTransit dataTransit) {
         log.info("Rx-ed request in dataTransit to retrieve backup from DB: {} bytes, for email [{}]", dataTransit.getBackupData().getBytes().length, dataTransit.getEmail());
-        StopWatch stopWatch = genericConfig.procureStopWatch();
+        StopWatch stopWatch = beanStore.procureStopWatch();
         try {
             Integer emailHash = userMappingController.retrieveHashEmail(dataTransit.getEmail());
             if (isEmailHashAbsent(emailHash)) {

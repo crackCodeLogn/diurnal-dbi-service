@@ -3,7 +3,7 @@ package com.vv.personal.diurnal.dbi.controller;
 import com.google.protobuf.AbstractMessage;
 import com.vv.personal.diurnal.artifactory.generated.UserMappingProto;
 import com.vv.personal.diurnal.dbi.auth.Authorizer;
-import com.vv.personal.diurnal.dbi.config.DbiConfig;
+import com.vv.personal.diurnal.dbi.config.DbiLimitPeriodDaysConfig;
 import com.vv.personal.diurnal.dbi.interactor.diurnal.dbi.tables.DiurnalTableUserMapping;
 import com.vv.personal.diurnal.dbi.model.UserMappingEntity;
 import com.vv.personal.diurnal.dbi.util.DiurnalUtil;
@@ -38,14 +38,14 @@ public class UserMappingController {
     @Autowired
     private Authorizer authorizer;
     @Autowired
-    private DbiConfig dbiConfig;
+    private DbiLimitPeriodDaysConfig dbiLimitPeriodDaysConfig;
 
     @ApiOperation(value = "create user", hidden = true)
     @PostMapping("/create/user")
     public Integer createUserMapping(@RequestBody UserMappingProto.UserMapping userMapping) {
         log.info("Creating new user mapping: {} x {} x {} x {}", userMapping.getMobile(), userMapping.getEmail(), userMapping.getUsername(), userMapping.getPremiumUser());
         Instant currentInstant = Instant.now();
-        Instant trialPremiumPaymentExpiryInstant = getTrialEndPeriod(dbiConfig.getTrialPeriodDays());
+        Instant trialPremiumPaymentExpiryInstant = getTrialEndPeriod(dbiLimitPeriodDaysConfig.getTrialPremium());
         final UserMappingEntity userMappingEntity = new UserMappingEntity()
                 .setMobile(userMapping.getMobile())
                 .setEmail(refineEmail(userMapping.getEmail()))

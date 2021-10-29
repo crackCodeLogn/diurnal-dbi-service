@@ -20,6 +20,9 @@ dbi:
   shutdown:
     exit:
       code: ${DBI_SHUTDOWN_EXIT_CODE:0}
-  trialPeriodDays: ${DBI_TRIAL_PERIOD_DAYS:30}
+  limit:
+    period-days:
+      cloud: ${DBI_LIMIT_PERIOD_DAYS_CLOUD:365}
+      trialPremium: ${DBI_TRIAL_PERIOD_DAYS:30}
 
 logging.level.org.springframework.web: ${LOGGING:INFO}

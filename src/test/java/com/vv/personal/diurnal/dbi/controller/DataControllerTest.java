@@ -3,6 +3,7 @@ package com.vv.personal.diurnal.dbi.controller;
 import com.vv.personal.diurnal.artifactory.generated.ResponsePrimitiveProto;
 import com.vv.personal.diurnal.artifactory.generated.UserMappingProto;
 import com.vv.personal.diurnal.dbi.config.BeanStore;
+import com.vv.personal.diurnal.dbi.config.DbiLimitPeriodDaysConfig;
 import com.vv.personal.diurnal.dbi.interactor.diurnal.dbi.tables.DiurnalTableEntryDay;
 import com.vv.personal.diurnal.dbi.util.DiurnalUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -18,8 +19,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,6 +46,8 @@ class DataControllerTest {
     DiurnalTableEntryDay diurnalTableEntryDay;
     @Mock
     BeanStore beanStore;
+    @Mock
+    DbiLimitPeriodDaysConfig dbiLimitPeriodDaysConfig;
 
     public static List<String> readFileFromLocation(String src) {
         List<String> data = new ArrayList<>();
@@ -79,6 +80,7 @@ class DataControllerTest {
         when(userMappingController.retrievePremiumUserStatus(emailHash)).thenReturn(true);
         when(userMappingController.updateUserMappingLastCloudSaveTimestamp(any(UserMappingProto.UserMapping.class))).thenReturn(1);
         when(diurnalTableEntryDay.pushNewEntities(anyList())).thenReturn(3);
+        when(dbiLimitPeriodDaysConfig.getCloud()).thenReturn(365);
         StopWatch stopWatch = procureStopWatch();
         when(beanStore.procureStopWatch()).thenReturn(stopWatch);
         stopWatch.start();
@@ -94,14 +96,5 @@ class DataControllerTest {
                 DiurnalUtil.generateDataTransit(mobile, email, 20210304, UserMappingProto.Currency.INR,
                         StringUtils.join(testData, "\n")));
         assertThat(backupPushResult.getBoolResponse()).isFalse();
-    }
-
-    @Test
-    void test() {
-        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMdd");
-        LocalDate localDate = LocalDate.parse(String.valueOf(20211029), dateTimeFormatter);
-        System.out.println(localDate.format(dateTimeFormatter));
-        System.out.println(localDate);
-        System.out.println(localDate.minusDays(365));
     }
 }

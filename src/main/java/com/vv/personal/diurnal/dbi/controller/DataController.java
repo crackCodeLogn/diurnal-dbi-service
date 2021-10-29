@@ -5,6 +5,7 @@ import com.vv.personal.diurnal.artifactory.generated.EntryDayProto;
 import com.vv.personal.diurnal.artifactory.generated.ResponsePrimitiveProto;
 import com.vv.personal.diurnal.artifactory.generated.UserMappingProto;
 import com.vv.personal.diurnal.dbi.config.BeanStore;
+import com.vv.personal.diurnal.dbi.config.DbiLimitPeriodDaysConfig;
 import com.vv.personal.diurnal.dbi.engine.transformer.TransformBackupToString;
 import com.vv.personal.diurnal.dbi.engine.transformer.TransformFullBackupToProtos;
 import com.vv.personal.diurnal.dbi.util.DiurnalUtil;
@@ -39,6 +40,8 @@ public class DataController {
     private UserMappingController userMappingController;
     @Autowired
     private BeanStore beanStore;
+    @Autowired
+    private DbiLimitPeriodDaysConfig dbiLimitPeriodDaysConfig;
 
     @ApiOperation(value = "Sign up new user", hidden = true)
     @PostMapping("/signup")
@@ -91,8 +94,10 @@ public class DataController {
             }
             TransformFullBackupToProtos transformFullBackupToProtos = new TransformFullBackupToProtos(
                     Arrays.asList(StringUtils.split(dataTransit.getBackupData(), NEW_LINE)),
-                    emailHash);
+                    emailHash,
+                    dbiLimitPeriodDaysConfig.getCloud());
             if (transformFullBackupToProtos.transformWithoutSuppliedDate()) {
+                transformFullBackupToProtos.trimDownDataToBeSaved();
                 if (entryDayController.deleteAndCreateEntryDays(transformFullBackupToProtos)) {
                     UserMappingProto.UserMapping userMapping = UserMappingProto.UserMapping.newBuilder()
                             .setEmail(dataTransit.getEmail())

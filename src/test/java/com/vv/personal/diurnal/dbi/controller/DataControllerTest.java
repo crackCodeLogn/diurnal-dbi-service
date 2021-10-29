@@ -18,6 +18,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -92,5 +94,14 @@ class DataControllerTest {
                 DiurnalUtil.generateDataTransit(mobile, email, 20210304, UserMappingProto.Currency.INR,
                         StringUtils.join(testData, "\n")));
         assertThat(backupPushResult.getBoolResponse()).isFalse();
+    }
+
+    @Test
+    void test() {
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+        LocalDate localDate = LocalDate.parse(String.valueOf(20211029), dateTimeFormatter);
+        System.out.println(localDate.format(dateTimeFormatter));
+        System.out.println(localDate);
+        System.out.println(localDate.minusDays(365));
     }
 }

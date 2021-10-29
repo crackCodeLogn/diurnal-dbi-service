@@ -10,6 +10,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -28,11 +30,13 @@ import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.procureStopWatch;
 public class TransformFullBackupToProtos {
     private final List<String> fullBackupText;
     private final Integer emailHash;
+    private final Integer cloudLimitPeriodDays;
     private final EntryDayProto.EntryDayList.Builder entryDayListBuilder = EntryDayProto.EntryDayList.newBuilder();
 
-    public TransformFullBackupToProtos(List<String> fullBackupText, Integer emailHash) {
+    public TransformFullBackupToProtos(List<String> fullBackupText, Integer emailHash, Integer cloudLimitPeriodDays) {
         this.fullBackupText = fullBackupText;
         this.emailHash = emailHash;
+        this.cloudLimitPeriodDays = cloudLimitPeriodDays;
     }
 
     public boolean transformWithoutSuppliedDate() {
@@ -100,6 +104,29 @@ public class TransformFullBackupToProtos {
         return false;
     }
 
+    public void trimDownDataToBeSaved() {
+        StopWatch stopWatch = new StopWatch();
+        stopWatch.start();
+        int allowedEndDate = entryDayListBuilder.getEntryDayList().get(entryDayListBuilder.getEntryDayCount() - 1).getDate();
+        log.info("First entry date: {}", entryDayListBuilder.getEntryDayList().get(0).getDate());
+        log.info("Last entry date: {}", allowedEndDate);
+        int allowedStartDate = getAllowedFirstDayForCloud(allowedEndDate);
+
+        List<EntryDayProto.EntryDay> entryDays = entryDayListBuilder.getEntryDayList().stream()
+                .filter(entryDay -> entryDay.getDate() > allowedStartDate).collect(Collectors.toList());
+        entryDayListBuilder.clear();
+        entryDayListBuilder.addAllEntryDay(entryDays);
+        stopWatch.stop();
+        log.info("Took {} ms to trim down data to be saved on cloud. New first entry date: {}, total days to be saved: {}",
+                stopWatch.getTime(TimeUnit.MILLISECONDS), entryDayListBuilder.getEntryDayList().get(0).getDate(), entryDayListBuilder.getEntryDayCount());
+    }
+
+    Integer getAllowedFirstDayForCloud(Integer lastDayInBackup) {
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+        LocalDate localDate = LocalDate.parse(String.valueOf(lastDayInBackup), dateTimeFormatter);
+        return Integer.parseInt(localDate.minusDays(cloudLimitPeriodDays).format(dateTimeFormatter));
+    }
+
     private EntryDayProto.EntryDay computeEntryDay(Queue<EntryProto.Entry> entries, String title, Integer date) {
         EntryDayProto.EntryDay.Builder entryDayBuilder = EntryDayProto.EntryDay.newBuilder();
         entryDayBuilder.setHashEmail(emailHash);
@@ -119,6 +146,10 @@ public class TransformFullBackupToProtos {
         if (line.contains("::")) return LINE_TYPE.TITLE;
         if (line.contains(":") || line.startsWith("//")) return LINE_TYPE.ENTRY;
         return null;
+    }
+
+    public EntryDayProto.EntryDayList.Builder getEntryDayListBuilder() {
+        return entryDayListBuilder;
     }
 
     public EntryDayProto.EntryDayList getEntryDayList() {

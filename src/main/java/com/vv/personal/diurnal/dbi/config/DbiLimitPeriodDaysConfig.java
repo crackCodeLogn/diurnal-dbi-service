@@ -14,4 +14,5 @@ import org.springframework.context.annotation.Configuration;
 public class DbiLimitPeriodDaysConfig {
     private int cloud;
     private int trialPremium;
+    private String cloudExemptionEmails;
 }

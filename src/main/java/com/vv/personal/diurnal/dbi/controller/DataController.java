@@ -1,5 +1,6 @@
 package com.vv.personal.diurnal.dbi.controller;
 
+import com.google.common.collect.Sets;
 import com.vv.personal.diurnal.artifactory.generated.DataTransitProto;
 import com.vv.personal.diurnal.artifactory.generated.EntryDayProto;
 import com.vv.personal.diurnal.artifactory.generated.ResponsePrimitiveProto;
@@ -17,7 +18,9 @@ import org.apache.commons.lang3.time.StopWatch;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.PostConstruct;
 import java.util.Arrays;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import static com.vv.personal.diurnal.dbi.constants.Constants.*;
@@ -34,6 +37,8 @@ import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.*;
 @RequestMapping("/diurnal/data")
 public class DataController {
 
+    private Set<String> exemptedEmails;
+
     @Autowired
     private EntryDayController entryDayController;
     @Autowired
@@ -42,6 +47,12 @@ public class DataController {
     private BeanStore beanStore;
     @Autowired
     private DbiLimitPeriodDaysConfig dbiLimitPeriodDaysConfig;
+
+    @PostConstruct
+    public void postHaste() {
+        exemptedEmails = Sets.newHashSet(dbiLimitPeriodDaysConfig.getCloudExemptionEmails().split(COMMA_STR));
+        if (log.isDebugEnabled()) log.debug("Exempted emails: {} => {}", exemptedEmails.size(), exemptedEmails);
+    }
 
     @ApiOperation(value = "Sign up new user", hidden = true)
     @PostMapping("/signup")
@@ -97,7 +108,9 @@ public class DataController {
                     emailHash,
                     dbiLimitPeriodDaysConfig.getCloud());
             if (transformFullBackupToProtos.transformWithoutSuppliedDate()) {
-                transformFullBackupToProtos.trimDownDataToBeSaved();
+                if (!exemptedEmails.contains(dataTransit.getEmail())) transformFullBackupToProtos.trimDownDataToBeSaved();
+                else log.info("Email '{}' is exempted from cloud row reduction. Going with full force!", dataTransit.getEmail());
+
                 if (entryDayController.deleteAndCreateEntryDays(transformFullBackupToProtos)) {
                     UserMappingProto.UserMapping userMapping = UserMappingProto.UserMapping.newBuilder()
                             .setEmail(dataTransit.getEmail())

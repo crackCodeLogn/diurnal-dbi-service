@@ -42,4 +42,4 @@ psql <DATABASE_URL> \copy (select * from <table_name) to '<local_file.csv>' with
 
 ## Backup restore into postgres:-
 
-I had to write customized code to red csv and use the upload endpoint to bulk add.
+I had to write customized code to read csv and use the upload endpoint to bulk add.

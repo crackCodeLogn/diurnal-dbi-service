@@ -21,6 +21,8 @@
         <lombok-version>1.18.22</lombok-version>
         <protobuf-util.version>3.18.1</protobuf-util.version>
         <heroku-maven.version>3.0.4</heroku-maven.version>
+        <feign-okhttp.version>11.6</feign-okhttp.version>
+        <feign-gson.version>11.6</feign-gson.version>
         <junit.version>5.8.1</junit.version>
         <assertj.version>3.21.0</assertj.version>
         <diurnal-artifactory.version>1.0-SNAPSHOT</diurnal-artifactory.version>
@@ -71,6 +73,21 @@
             <groupId>com.vv.personal</groupId>
             <artifactId>diurnal-artifactory</artifactId>
             <version>${diurnal-artifactory.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.openfeign</groupId>
+            <artifactId>feign-core</artifactId>
+            <version>${feign-gson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.openfeign</groupId>
+            <artifactId>feign-okhttp</artifactId>
+            <version>${feign-okhttp.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.openfeign</groupId>
+            <artifactId>feign-gson</artifactId>
+            <version>${feign-gson.version}</version>
         </dependency>
 
         <dependency>

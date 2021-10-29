@@ -3,7 +3,8 @@ package com.vv.personal.diurnal.dbi.controller;
 import com.google.protobuf.AbstractMessage;
 import com.vv.personal.diurnal.artifactory.generated.UserMappingProto;
 import com.vv.personal.diurnal.dbi.auth.Authorizer;
-import com.vv.personal.diurnal.dbi.client.impl.GitHubFeignClientImpl;
+import com.vv.personal.diurnal.dbi.client.impl.GitHubUserMappingFeignClientImpl;
+import com.vv.personal.diurnal.dbi.config.BeanStore;
 import com.vv.personal.diurnal.dbi.config.DbiLimitPeriodDaysConfig;
 import com.vv.personal.diurnal.dbi.interactor.diurnal.dbi.tables.DiurnalTableUserMapping;
 import com.vv.personal.diurnal.dbi.model.UserMappingEntity;
@@ -12,6 +13,7 @@ import com.vv.personal.diurnal.dbi.util.FileUtil;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.StopWatch;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
@@ -19,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -42,7 +45,9 @@ public class UserMappingController {
     @Autowired
     private DbiLimitPeriodDaysConfig dbiLimitPeriodDaysConfig;
     @Autowired
-    private GitHubFeignClientImpl gitHubFeignClient;
+    private GitHubUserMappingFeignClientImpl gitHubUserMappingFeignClient;
+    @Autowired
+    private BeanStore beanStore;
 
     @ApiOperation(value = "create user", hidden = true)
     @PostMapping("/create/user")
@@ -395,6 +400,7 @@ public class UserMappingController {
 
     @PutMapping("/backup/github/csv")
     public boolean backupUserMappingDataToGitHubInCsv(@RequestParam(name = "delimiter", defaultValue = ",") String delimiter) {
+        StopWatch stopWatch = beanStore.procureStopWatch();
         StringBuilder dataLines = new StringBuilder();
         diurnalTableUserMapping.retrieveAll().getUserMappingList().forEach(userMapping ->
                 dataLines.append(StringUtils.joinWith(delimiter,
@@ -402,7 +408,10 @@ public class UserMappingController {
                                 userMapping.getLastCloudSaveTimestamp(), userMapping.getLastSavedTimestamp(), userMapping.getPaymentExpiryTimestamp(), userMapping.getAccountCreationTimestamp(), userMapping.getCurrency()))
                         .append(NEW_LINE)
         );
-        return gitHubFeignClient.backupAndUploadToGitHub(dataLines.toString());
+        boolean compute = gitHubUserMappingFeignClient.backupAndUploadToGitHub(dataLines.toString());
+        stopWatch.stop();
+        log.info("Took {} ms to complete user_mapping table backup from user-mapping controller. Result: {}", stopWatch.getTime(TimeUnit.MILLISECONDS), compute);
+        return compute;
     }
 
     Instant getTrialEndPeriod(int trialDays) {

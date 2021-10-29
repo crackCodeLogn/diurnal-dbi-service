@@ -3,22 +3,26 @@ package com.vv.personal.diurnal.dbi.controller;
 import com.google.protobuf.AbstractMessage;
 import com.vv.personal.diurnal.artifactory.generated.EntryDayProto;
 import com.vv.personal.diurnal.artifactory.generated.UserMappingProto;
+import com.vv.personal.diurnal.dbi.client.impl.GitHubEntryDayFeignClientImpl;
+import com.vv.personal.diurnal.dbi.config.BeanStore;
 import com.vv.personal.diurnal.dbi.engine.transformer.TransformFullBackupToProtos;
 import com.vv.personal.diurnal.dbi.interactor.diurnal.dbi.tables.DiurnalTableEntryDay;
 import com.vv.personal.diurnal.dbi.model.EntryDayEntity;
 import com.vv.personal.diurnal.dbi.util.DiurnalUtil;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.StopWatch;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import static com.vv.personal.diurnal.dbi.constants.Constants.EMPTY_STR;
-import static com.vv.personal.diurnal.dbi.constants.Constants.INT_RESPONSE_WONT_PROCESS;
+import static com.vv.personal.diurnal.dbi.constants.Constants.*;
 import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.*;
 
 /**
@@ -33,9 +37,12 @@ public class EntryDayController {
     @Autowired
     @Qualifier("DiurnalTableEntryDay")
     private DiurnalTableEntryDay diurnalTableEntryDay;
-
     @Autowired
     private UserMappingController userMappingController;
+    @Autowired
+    private GitHubEntryDayFeignClientImpl gitHubEntryDayFeignClient;
+    @Autowired
+    private BeanStore beanStore;
 
     @ApiOperation(value = "create entry day", hidden = true)
     @PostMapping("/create/entry-day")
@@ -193,5 +200,20 @@ public class EntryDayController {
         }
         log.info("Checking if entry-day exists for: {} x {}", email, date);
         return checkIfEntryDayExists(generateEntryDayOnPk(emailHash, date));
+    }
+
+    @PutMapping("/backup/github/csv")
+    public boolean backupUserMappingDataToGitHubInCsv(@RequestParam(name = "delimiter", defaultValue = ",") String delimiter) {
+        StopWatch stopWatch = beanStore.procureStopWatch();
+        StringBuilder dataLines = new StringBuilder();
+        diurnalTableEntryDay.retrieveAll().getEntryDayList().forEach(entryDay ->
+                dataLines.append(StringUtils.joinWith(delimiter,
+                                String.valueOf(entryDay.getHashEmail()), entryDay.getDate(), entryDay.getTitle(), entryDay.getEntriesAsString()))
+                        .append(NEW_LINE)
+        );
+        boolean compute = gitHubEntryDayFeignClient.backupAndUploadToGitHub(dataLines.toString());
+        stopWatch.stop();
+        log.info("Took {} ms to complete entry_day table backup from entry-day controller. Result: {}", stopWatch.getTime(TimeUnit.MILLISECONDS), compute);
+        return compute;
     }
 }

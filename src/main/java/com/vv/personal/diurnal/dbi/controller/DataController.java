@@ -195,6 +195,16 @@ public class DataController {
         return retrieveUserDetailsFromDb(DiurnalUtil.generateDataTransit(email)).getHashCred();
     }
 
+    @PutMapping("/manual/backup/github/csv")
+    public boolean backupUserMappingDataToGitHubInCsv(@RequestParam(name = "delimiter", defaultValue = ",") String delimiter) {
+        StopWatch stopWatch = beanStore.procureStopWatch();
+        boolean compute = userMappingController.backupUserMappingDataToGitHubInCsv(delimiter)
+                && entryDayController.backupUserMappingDataToGitHubInCsv(delimiter);
+        stopWatch.stop();
+        log.info("Took {} ms to complete full db table backup from data controller. Result: {}", stopWatch.getTime(TimeUnit.MILLISECONDS), compute);
+        return compute;
+    }
+
     public DataController setEntryDayController(EntryDayController entryDayController) {
         this.entryDayController = entryDayController;
         return this;

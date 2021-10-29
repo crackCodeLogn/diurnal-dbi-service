@@ -8,7 +8,6 @@ import feign.Feign;
 import feign.gson.GsonEncoder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import java.time.ZonedDateTime;
 import java.util.Base64;
@@ -19,14 +18,17 @@ import java.util.Map;
  * @since 30/10/21
  */
 @Slf4j
-@Component
-public class GitHubFeignClientImpl {
+public abstract class AbstractGitHubFeignClientImpl {
 
     public static final String HEADER_AUTHORIZATION = "Authorization";
     public static final String HEADER_AUTH_TOKEN_FORMAT = "token %s";
 
     @Autowired
-    private DbiAccessConfig dbiAccessConfig;
+    protected DbiAccessConfig dbiAccessConfig;
+
+    abstract String getFolderName();
+
+    abstract String getBackupFileName();
 
     public boolean backupAndUploadToGitHub(String backupData) {
         final ZonedDateTime zonedDateTime = ZonedDateTime.now();
@@ -44,13 +46,14 @@ public class GitHubFeignClientImpl {
                 .put(HEADER_AUTHORIZATION, String.format(HEADER_AUTH_TOKEN_FORMAT, dbiAccessConfig.getToken()))
                 .build();
 
-        log.info("Proceeding to writing backup of {} bytes!", data.getBytes().length);
+        String folder = String.format(getFolderName(), zonedDateTime.toLocalDate().toString());
+        String fileName = String.format(getBackupFileName(), zonedDateTime.toInstant());
+        log.info("Proceeding to writing backup of {} bytes at '{}/{}'!", data.getBytes().length, folder, fileName);
         try {
             gitHubFeignClient.uploadBackup(dbiAccessConfig.getUser(), dbiAccessConfig.getRepo(),
-                    String.format(dbiAccessConfig.getUserMapping().getFolder(), zonedDateTime.toLocalDate().toString()),
-                    String.format(dbiAccessConfig.getUserMapping().getBackupFileName(), zonedDateTime.toInstant()),
+                    folder, fileName,
                     gitHubPayload, map);
-            log.info("Upload complete!");
+            log.info("Upload complete of '{}/{}'!", folder, fileName);
             return true;
         } catch (Exception e) {
             log.error("Failed to upload backup to github on '{}'. ", zonedDateTime, e);

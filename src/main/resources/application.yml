@@ -32,6 +32,9 @@ dbi:
     commitMessage: ${DBI_ACCESS_GH_COMMIT_MSG:Took backup at %s}
     user-mapping:
       folder: backup/ump/%s
-      backupFileName: ${DBI_ACCESS_GH_BACKUP_FILE_NAME:Backup-UserMapping-%s.csv}
+      backupFileName: ${DBI_ACCESS_GH_BACKUP_FILE_NAME_UMP:Backup-UserMapping-%s.csv}
+    entry-day:
+      folder: backup/edy/%s
+      backupFileName: ${DBI_ACCESS_GH_BACKUP_FILE_NAME_EDY:Backup-EntryDay-%s.csv}
 
 logging.level.org.springframework.web: ${LOGGING:INFO}

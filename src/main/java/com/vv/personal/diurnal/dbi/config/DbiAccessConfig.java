@@ -18,9 +18,16 @@ public class DbiAccessConfig {
     private String user;
     private String commitMessage;
     private UserMapping userMapping;
+    private EntryDay entryDay;
 
     @Data
     public static class UserMapping {
+        private String folder;
+        private String backupFileName;
+    }
+
+    @Data
+    public static class EntryDay {
         private String folder;
         private String backupFileName;
     }

@@ -35,3 +35,11 @@
     Time: 2021-10-24
     Artifact version: 0.0.2-SNAPSHOT
     Most significant change: Giving 1 month free premium status to new sign ups
+
+## Backup option from postgres:-
+
+psql <DATABASE_URL> \copy (select * from <table_name) to '<local_file.csv>' with CSV;
+
+## Backup restore into postgres:-
+
+I had to write customized code to red csv and use the upload endpoint to bulk add.

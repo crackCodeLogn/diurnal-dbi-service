@@ -1,307 +1,244 @@
 package com.vv.personal.diurnal.dbi.interactor.diurnal.dbi.tables;
 
 import com.vv.personal.diurnal.artifactory.generated.UserMappingProto;
-import com.vv.personal.diurnal.dbi.config.DbiConfigForDiurnal;
-import com.vv.personal.diurnal.dbi.interactor.diurnal.cache.CachedDiurnal;
-import com.vv.personal.diurnal.dbi.interactor.diurnal.dbi.DiurnalDbi;
-import com.vv.personal.diurnal.dbi.util.TimingUtil;
+import com.vv.personal.diurnal.dbi.model.UserMappingEntity;
+import com.vv.personal.diurnal.dbi.repository.UserMappingRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.time.Instant;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
-import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static com.vv.personal.diurnal.dbi.constants.Constants.*;
-import static com.vv.personal.diurnal.dbi.constants.DbConstants.SELECT_ALL;
-import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.generateHash;
-import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.refineEmail;
 
 /**
  * @author Vivek
  * @since 23/02/21
  */
 @Slf4j
-public class DiurnalTableUserMapping extends DiurnalDbi<UserMappingProto.UserMapping, UserMappingProto.UserMappingList> {
-    private static final String INSERT_STMT_NEW_USER = "INSERT INTO %s(\"mobile\", \"email\", \"user\", \"premium_user\", \"hash_cred\", \"hash_email\"," +
-            " \"timestamp_save_cloud_last\", \"timestamp_save_last\", \"timestamp_expiry_payment\", \"timestamp_creation_account\", \"currency\") " +
-            "VALUES(%d, '%s', '%s', '%s', '%s', %d, %d, %d, %d, %d, '%s')";
-    private static final String DELETE_STMT_USER = "DELETE FROM %s " +
-            "WHERE \"%s\"=%d";
-    private static final String UPDATE_STMT_USER_STR = "UPDATE %s " +
-            "SET \"%s\"='%s' " +
-            "WHERE \"%s\"=%d";
-    private static final String UPDATE_STMT_USER_LONG = "UPDATE %s " +
-            "SET \"%s\"=%d " +
-            "WHERE \"%s\"=%d";
-    private static final String CHECK_STMT_ENTRY_SINGLE_COL = "SELECT %s from %s " +
-            "WHERE \"%s\"=%d";
-    private static final String SELECT_STMT_ENTRY_SINGLE_COL_STR = "SELECT %s from %s " +
-            "WHERE \"%s\"='%s'";
-    private static final String SELECT_STMT_ENTRY_SINGLE_ROW = "SELECT * FROM %s " +
-            "WHERE \"%s\"='%s'";
+public class DiurnalTableUserMapping {
+    private static final UserMappingEntity EMPTY_USER_MAPPING_ENTITY = new UserMappingEntity();
 
-    private static final String COL_MOBILE = "mobile";
-    private static final String COL_EMAIL = "email";
-    private static final String COL_USER = "user";
-    private static final String COL_PREMIUM_USER = "premium_user";
-    private static final String COL_HASH_CRED = "hash_cred";
-    private static final String COL_HASH_EMAIL = "hash_email";
-    private static final String COL_LAST_CLOUD_SAVE_TIMESTAMP = "timestamp_save_cloud_last";
-    private static final String COL_LAST_SAVE_TIMESTAMP = "timestamp_save_last";
-    private static final String COL_PAYMENT_EXPIRY_TIMESTAMP = "timestamp_expiry_payment";
-    private static final String COL_ACCOUNT_CREATION_TIMESTAMP = "timestamp_creation_account";
-    private static final String COL_CURRENCY = "currency";
+    private final UserMappingRepository userMappingRepository;
 
-    public DiurnalTableUserMapping(String table, String primaryColumns, DbiConfigForDiurnal dbiConfigForDiurnal, CachedDiurnal cachedDiurnal, Function<String, String> createTableIfNotExistSqlFunction, String createTableIfNotExistSqlLocation) {
-        super(table, primaryColumns, dbiConfigForDiurnal, cachedDiurnal, createTableIfNotExistSqlFunction, createTableIfNotExistSqlLocation, log);
+    public DiurnalTableUserMapping(UserMappingRepository userMappingRepository) {
+        this.userMappingRepository = userMappingRepository;
     }
 
-    @Override
-    public int pushNewEntity(UserMappingProto.UserMapping userMapping) {
-        String email = refineEmail(userMapping.getEmail());
-        log.info("Pushing new User entity: {} x {} x {}", email, userMapping.getUsername(), false);
-        return insertNewUser(userMapping.getMobile(), email, userMapping.getUsername(), false, userMapping.getHashCred(), generateHash(email),
-                NA_LONG, NA_LONG, NA_LONG, TimingUtil.extractCurrentUtcTimestamp(), userMapping.getCurrency()); //new user is always non-premium
-    }
-
-    private int insertNewUser(Long mobile, String email, String username, Boolean premiumUser, String credHash, Integer emailHash,
-                              Long lastCloudSaveTs, Long lastSaveTs, Long paymentExpiryTs, Long accountCreationTs, UserMappingProto.Currency currency) {
-        String sql = String.format(INSERT_STMT_NEW_USER, TABLE,
-                mobile, email, username, premiumUser, credHash, emailHash,
-                lastCloudSaveTs, lastSaveTs, paymentExpiryTs, accountCreationTs, currency.name());
-        int sqlExecResult = executeUpdateSql(sql);
-        return sqlExecResult;
-        //return addToCacheOnSqlResult(sqlExecResult, mobile);
-    }
-
-    @Override
-    public int deleteEntity(UserMappingProto.UserMapping userMapping) {
-        String sql = String.format(DELETE_STMT_USER, TABLE,
-                COL_HASH_EMAIL, userMapping.getHashEmail());
-        int sqlExecResult = executeUpdateSql(sql);
-        return sqlExecResult;
-    }
-
-    @Override
-    public int updateEntity(UserMappingProto.UserMapping userMapping) { //updates the user name
-        String sql = String.format(UPDATE_STMT_USER_STR, TABLE,
-                COL_USER, userMapping.getUsername(),
-                COL_HASH_EMAIL, userMapping.getHashEmail());
-        int sqlExecResult = executeUpdateSql(sql);
-        return sqlExecResult;
-    }
-
-    public int updatePremiumUserStatus(UserMappingProto.UserMapping userMapping) {
-        String sql = String.format(UPDATE_STMT_USER_STR, TABLE,
-                COL_PREMIUM_USER, userMapping.getPremiumUser(),
-                COL_HASH_EMAIL, userMapping.getHashEmail());
-        int sqlExecResult = executeUpdateSql(sql);
-        return sqlExecResult;
-    }
-
-    public int updateHashCred(UserMappingProto.UserMapping userMapping) {
-        String sql = String.format(UPDATE_STMT_USER_STR, TABLE,
-                COL_HASH_CRED, userMapping.getHashCred(),
-                COL_HASH_EMAIL, userMapping.getHashEmail());
-        int sqlExecResult = executeUpdateSql(sql);
-        return sqlExecResult;
-    }
-
-    public int updateMobile(UserMappingProto.UserMapping userMapping) {
-        String sql = String.format(UPDATE_STMT_USER_LONG, TABLE,
-                COL_MOBILE, userMapping.getMobile(),
-                COL_HASH_EMAIL, userMapping.getHashEmail());
-        int sqlExecResult = executeUpdateSql(sql);
-        return sqlExecResult;
-    }
-
-    public int updateCurrency(UserMappingProto.UserMapping userMapping) {
-        String sql = String.format(UPDATE_STMT_USER_STR, TABLE,
-                COL_CURRENCY, userMapping.getCurrency(),
-                COL_HASH_EMAIL, userMapping.getHashEmail());
-        int sqlExecResult = executeUpdateSql(sql);
-        return sqlExecResult;
-    }
-
-    public int updateLastCloudSaveTimestamp(UserMappingProto.UserMapping userMapping) {
-        String sql = String.format(UPDATE_STMT_USER_LONG, TABLE,
-                COL_LAST_CLOUD_SAVE_TIMESTAMP, userMapping.getLastCloudSaveTimestamp(),
-                COL_HASH_EMAIL, userMapping.getHashEmail());
-        int sqlExecResult = executeUpdateSql(sql);
-        return sqlExecResult;
-    }
-
-    public int updateLastSavedTimestamp(UserMappingProto.UserMapping userMapping) {
-        String sql = String.format(UPDATE_STMT_USER_LONG, TABLE,
-                COL_LAST_SAVE_TIMESTAMP, userMapping.getLastSavedTimestamp(),
-                COL_HASH_EMAIL, userMapping.getHashEmail());
-        int sqlExecResult = executeUpdateSql(sql);
-        return sqlExecResult;
-    }
-
-    public int updatePaymentExpiryTimestamp(UserMappingProto.UserMapping userMapping) {
-        String sql = String.format(UPDATE_STMT_USER_LONG, TABLE,
-                COL_PAYMENT_EXPIRY_TIMESTAMP, userMapping.getPaymentExpiryTimestamp(),
-                COL_HASH_EMAIL, userMapping.getHashEmail());
-        int sqlExecResult = executeUpdateSql(sql);
-        return sqlExecResult;
-    }
-
-    //Shouldn't be invoked as doesn't make sense
-    public int updateAccountCreationTimestamp(UserMappingProto.UserMapping userMapping) {
-        String sql = String.format(UPDATE_STMT_USER_LONG, TABLE,
-                COL_ACCOUNT_CREATION_TIMESTAMP, userMapping.getAccountCreationTimestamp(),
-                COL_HASH_EMAIL, userMapping.getHashEmail());
-        int sqlExecResult = executeUpdateSql(sql);
-        return sqlExecResult;
-    }
-
-    public String retrieveHashCred(UserMappingProto.UserMapping userMapping) {
-        String sql = String.format(CHECK_STMT_ENTRY_SINGLE_COL, COL_HASH_CRED, TABLE,
-                COL_HASH_EMAIL, userMapping.getHashEmail());
-        ResultSet resultSet = executeNonUpdateSql(sql);
+    public int pushNewEntity(UserMappingEntity userMappingEntity) {
         try {
-            if (resultSet.next()) return generateHashCredDetail(resultSet).getHashCred();
-        } catch (SQLException throwables) {
-            log.error("Failed to retrieve cred hash from db. ", throwables);
+            userMappingRepository.save(userMappingEntity);
+            log.info("Pushed new UserMapping entity: {}", userMappingEntity);
+            return ONE;
+        } catch (Exception e) {
+            log.error("Failed to push new user mapping with email: {}. ", userMappingEntity.getEmail(), e);
         }
-        return EMPTY_STR;
+        return 0;
     }
 
-    public Integer retrieveHashEmail(UserMappingProto.UserMapping userMapping) {
-        String sql = String.format(SELECT_STMT_ENTRY_SINGLE_COL_STR, COL_HASH_EMAIL, TABLE,
-                COL_EMAIL, userMapping.getEmail());
-        ResultSet resultSet = executeNonUpdateSql(sql);
+    public int pushNewEntities(List<UserMappingEntity> userMappingEntityList) {
         try {
-            if (resultSet.next()) return generateHashEmailDetail(resultSet).getHashEmail();
-        } catch (SQLException throwables) {
-            log.error("Failed to retrieve email hash from db. ", throwables);
+            return userMappingRepository.saveAllAndFlush(userMappingEntityList).size();
+        } catch (Exception e) {
+            log.error("Failed to bulk push {} new user mappings. ", userMappingEntityList.size(), e);
         }
         return NA_INT;
     }
 
-    public Boolean retrievePremiumUserStatus(UserMappingProto.UserMapping userMapping) {
-        String sql = String.format(CHECK_STMT_ENTRY_SINGLE_COL, COL_PREMIUM_USER, TABLE,
-                COL_HASH_EMAIL, userMapping.getHashEmail());
-        ResultSet resultSet = executeNonUpdateSql(sql);
+    public int deleteEntity(int emailHash) {
         try {
-            if (resultSet.next()) return generatePremiumUserDetail(resultSet).getPremiumUser();
-        } catch (SQLException throwables) {
-            log.error("Failed to retrieve cred hash from db. ", throwables);
+            userMappingRepository.deleteById(emailHash);
+            log.info("Deleted userMapping entity having email-hash {}", emailHash);
+            return ONE;
+        } catch (Exception e) {
+            log.error("Failed to delete user mapping entity with email-hash: {}. ", emailHash, e);
+        }
+        return 0;
+    }
+
+    public int updateUsername(int emailHash, String username) { //updates the user name
+        try {
+            UserMappingEntity userMappingEntity = retrieveSingleEntity(emailHash).setUser(username);
+            userMappingRepository.save(userMappingEntity);
+            return ONE;
+        } catch (Exception e) {
+            log.error("Failed to update name for hash email {} with {}", emailHash, username, e);
+        }
+        return NA_INT;
+    }
+
+    public int updatePremiumUserStatus(int emailHash, boolean isPremiumUser) {
+        try {
+            UserMappingEntity userMappingEntity = retrieveSingleEntity(emailHash).setPremiumUser(isPremiumUser);
+            userMappingRepository.save(userMappingEntity);
+            return ONE;
+        } catch (Exception e) {
+            log.error("Failed to update isPremiumUser for hash email {} with {}", emailHash, isPremiumUser, e);
+        }
+        return NA_INT;
+    }
+
+    public int updateHashCred(int emailHash, String credHash) {
+        try {
+            UserMappingEntity userMappingEntity = retrieveSingleEntity(emailHash).setCredHash(credHash);
+            userMappingRepository.save(userMappingEntity);
+            return ONE;
+        } catch (Exception e) {
+            log.error("Failed to update credhash for hash email {} with {}", emailHash, credHash, e);
+        }
+        return NA_INT;
+    }
+
+    public int updateMobile(int emailHash, long mobile) {
+        try {
+            UserMappingEntity userMappingEntity = retrieveSingleEntity(emailHash).setMobile(mobile);
+            userMappingRepository.save(userMappingEntity);
+            return ONE;
+        } catch (Exception e) {
+            log.error("Failed to update name for mobile email {} with {}", emailHash, mobile, e);
+        }
+        return NA_INT;
+    }
+
+    public int updateCurrency(int emailHash, UserMappingProto.Currency currency) {
+        try {
+            UserMappingEntity userMappingEntity = retrieveSingleEntity(emailHash).setCurrency(currency.name());
+            userMappingRepository.save(userMappingEntity);
+            return ONE;
+        } catch (Exception e) {
+            log.error("Failed to update currency for hash email {} with {}", emailHash, currency, e);
+        }
+        return NA_INT;
+    }
+
+    public int updateLastCloudSaveTimestamp(int emailHash, long lastCloudSaveTimestamp) {
+        try {
+            UserMappingEntity userMappingEntity = retrieveSingleEntity(emailHash)
+                    .setLastCloudSaveTimestamp(Instant.ofEpochMilli(lastCloudSaveTimestamp));
+            userMappingRepository.save(userMappingEntity);
+            return ONE;
+        } catch (Exception e) {
+            log.error("Failed to update lastCloudSaveTimestamp for hash email {} with {}", emailHash, lastCloudSaveTimestamp, e);
+        }
+        return NA_INT;
+    }
+
+    public int updateLastSavedTimestamp(int emailHash, long lastSavedTimestamp) {
+        try {
+            UserMappingEntity userMappingEntity = retrieveSingleEntity(emailHash)
+                    .setLastSaveTimestamp(Instant.ofEpochMilli(lastSavedTimestamp));
+            userMappingRepository.save(userMappingEntity);
+            return ONE;
+        } catch (Exception e) {
+            log.error("Failed to update lastSavedTimestamp for hash email {} with {}", emailHash, lastSavedTimestamp, e);
+        }
+        return NA_INT;
+    }
+
+    public int updatePaymentExpiryTimestamp(int emailHash, long paymentExpiryTimestamp) {
+        try {
+            UserMappingEntity userMappingEntity = retrieveSingleEntity(emailHash)
+                    .setPaymentExpiryTimestamp(Instant.ofEpochMilli(paymentExpiryTimestamp));
+            userMappingRepository.save(userMappingEntity);
+            return ONE;
+        } catch (Exception e) {
+            log.error("Failed to update paymentExpiryTimestamp for hash email {} with {}", emailHash, paymentExpiryTimestamp, e);
+        }
+        return NA_INT;
+    }
+
+    public Integer retrieveHashEmail(String email) {
+        try {
+            return userMappingRepository.retrieveEmailHash(email);
+        } catch (Exception e) {
+            log.error("Failed to retrieve email hash for '{}'. ", email, e);
+        }
+        return DEFAULT_EMAIL_HASH;
+    }
+
+    public UserMappingEntity retrieveSingleEntity(int emailHash) {
+        try {
+            return userMappingRepository.getById(emailHash);
+        } catch (Exception e) {
+            log.error("Failed to retrieve single entity og email-hash: {}. ", emailHash, e);
+        }
+        return EMPTY_USER_MAPPING_ENTITY;
+    }
+
+    public String retrieveHashCred(int emailHash) {
+        try {
+            return retrieveSingleEntity(emailHash).getCredHash();
+        } catch (Exception e) {
+            log.error("Failed to retrieve cred hash from db for {}. ", emailHash, e);
+        }
+        return EMPTY_STR;
+    }
+
+    public Boolean retrievePremiumUserStatus(int emailHash) {
+        try {
+            return retrieveSingleEntity(emailHash).isPremiumUser();
+        } catch (Exception e) {
+            log.error("Failed to retrieve isPremiumUser from db for {}. ", emailHash, e);
         }
         return false;
     }
 
-    @Override
-    public boolean checkEntity(UserMappingProto.UserMapping userMapping) {
-        throw new UnsupportedOperationException("Check Entity to be done by hash retrieval attempt. Refer to #retrieveHashEmail method");
-    }
-
-    @Override
     public UserMappingProto.UserMappingList retrieveAll() {
-        String sql = String.format(SELECT_ALL, TABLE);
-        ResultSet resultSet = executeNonUpdateSql(sql);
-        int rowsReturned = 0;
+        List<UserMappingEntity> userMappingEntityList = userMappingRepository.findAll();
         UserMappingProto.UserMappingList.Builder userMappingsBuilder = UserMappingProto.UserMappingList.newBuilder();
-        try {
-            while (true) {
-                try {
-                    if (!resultSet.next()) break;
-                    UserMappingProto.UserMapping userMapping = generateDetail(resultSet);
-                    userMappingsBuilder.addUserMapping(userMapping);
-                    rowsReturned++;
-                } catch (SQLException throwables) {
-                    log.error("Failed to completely extract result from the above select all query. ", throwables);
-                }
-            }
-        } catch (Exception e) {
-            log.error("Failed to execute / process sql '{}'. ", sql, e);
-        }
-        log.info("Received {} entries for sql => '{}'", rowsReturned, sql);
+        log.info("Extracted {} rows from DB on retrieveAll operation.", userMappingEntityList.size());
+        userMappingsBuilder.addAllUserMapping(
+                userMappingEntityList.stream().map(this::generateDetail).collect(Collectors.toList())
+        );
         return userMappingsBuilder.build();
     }
 
-    @Override
-    public UserMappingProto.UserMapping retrieveSingle(UserMappingProto.UserMapping userMapping) {
-        String sql = String.format(SELECT_STMT_ENTRY_SINGLE_ROW, TABLE,
-                COL_HASH_EMAIL, userMapping.getHashEmail());
-        ResultSet resultSet = executeNonUpdateSql(sql);
+    public UserMappingProto.UserMapping retrieveSingle(int emailHash) {
         try {
-            if (resultSet.next()) return generateDetail(resultSet);
-        } catch (SQLException throwables) {
-            log.error("Failed to retrieve email hash from db. ", throwables);
+            UserMappingEntity userMappingEntity = userMappingRepository.findByEmailHash(emailHash);
+            return generateDetail(userMappingEntity);
+        } catch (Exception e) {
+            log.error("Failed to retrieve single entity from db. ", e);
         }
         return EMPTY_USER_MAPPING;
     }
 
-    @Override
-    public UserMappingProto.UserMappingList retrieveSome(UserMappingProto.UserMapping userMapping) {
-        return null;
-    }
-
-    @Override
-    public UserMappingProto.UserMapping generateDetail(ResultSet resultSet) {
+    UserMappingProto.UserMapping generateDetail(UserMappingEntity userMappingEntity) {
         UserMappingProto.UserMapping.Builder builder = UserMappingProto.UserMapping.newBuilder();
         try {
-            builder.setMobile(resultSet.getLong(COL_MOBILE));
-            builder.setEmail(resultSet.getString(COL_EMAIL));
-            builder.setUsername(resultSet.getString(COL_USER));
-            builder.setPremiumUser(resultSet.getBoolean(COL_PREMIUM_USER));
-            builder.setHashCred(resultSet.getString(COL_HASH_CRED));
-            builder.setHashEmail(resultSet.getInt(COL_HASH_EMAIL));
-            builder.setLastCloudSaveTimestamp(resultSet.getLong(COL_LAST_CLOUD_SAVE_TIMESTAMP));
-            builder.setLastSavedTimestamp(resultSet.getLong(COL_LAST_SAVE_TIMESTAMP));
-            builder.setPaymentExpiryTimestamp(resultSet.getLong(COL_PAYMENT_EXPIRY_TIMESTAMP));
-            builder.setAccountCreationTimestamp(resultSet.getLong(COL_ACCOUNT_CREATION_TIMESTAMP));
-            builder.setCurrency(UserMappingProto.Currency.valueOf(resultSet.getString(COL_CURRENCY)));
-        } catch (SQLException throwables) {
-            log.error("Failed to retrieve user-mapping detail from DB. ", throwables);
+            builder.setMobile(userMappingEntity.getMobile());
+            builder.setEmail(userMappingEntity.getEmail());
+            builder.setUsername(userMappingEntity.getUser());
+            builder.setPremiumUser(userMappingEntity.isPremiumUser());
+            builder.setHashCred(userMappingEntity.getCredHash());
+            builder.setHashEmail(userMappingEntity.getEmailHash());
+            builder.setLastCloudSaveTimestamp(convertInstantToMillis(userMappingEntity.getLastCloudSaveTimestamp()));
+            builder.setLastSavedTimestamp(convertInstantToMillis(userMappingEntity.getLastSaveTimestamp()));
+            builder.setPaymentExpiryTimestamp(convertInstantToMillis(userMappingEntity.getPaymentExpiryTimestamp()));
+            builder.setAccountCreationTimestamp(convertInstantToMillis(userMappingEntity.getAccountCreationTimestamp()));
+            builder.setCurrency(UserMappingProto.Currency.valueOf(userMappingEntity.getCurrency()));
+        } catch (Exception e) {
+            log.error("Failed to retrieve user-mapping detail from DB. ", e);
         }
         return builder.build();
     }
 
-    @Override
+    private long convertInstantToMillis(Instant instant) {
+        return instant.toEpochMilli();
+    }
+
+    //scrutinize
     protected Queue<String> processDataToCsv(UserMappingProto.UserMappingList dataList) {
         Queue<String> dataLines = new LinkedList<>();
         dataList.getUserMappingList().forEach(userMapping -> dataLines.add(
-                        StringUtils.joinWith(csvLineSeparator,
+                        StringUtils.joinWith(PIPE,
                                 String.valueOf(userMapping.getMobile()), userMapping.getEmail(), userMapping.getUsername(), userMapping.getPremiumUser(), userMapping.getHashCred(), userMapping.getHashEmail(),
                                 userMapping.getLastCloudSaveTimestamp(), userMapping.getLastSavedTimestamp(), userMapping.getPaymentExpiryTimestamp(), userMapping.getAccountCreationTimestamp(), userMapping.getCurrency())
                 )
         );
         return dataLines;
-    }
-
-    public UserMappingProto.UserMapping generateHashCredDetail(ResultSet resultSet) {
-        UserMappingProto.UserMapping.Builder builder = UserMappingProto.UserMapping.newBuilder();
-        try {
-            builder.setHashCred(resultSet.getString(COL_HASH_CRED));
-        } catch (SQLException throwables) {
-            log.error("Failed to retrieve user-mapping cred detail from DB. ", throwables);
-        }
-        return builder.build();
-    }
-
-    public UserMappingProto.UserMapping generateHashEmailDetail(ResultSet resultSet) {
-        UserMappingProto.UserMapping.Builder builder = UserMappingProto.UserMapping.newBuilder();
-        try {
-            builder.setHashEmail(resultSet.getInt(COL_HASH_EMAIL));
-        } catch (SQLException throwables) {
-            log.error("Failed to retrieve user-mapping hash email detail from DB. ", throwables);
-        }
-        return builder.build();
-    }
-
-    public UserMappingProto.UserMapping generatePremiumUserDetail(ResultSet resultSet) {
-        UserMappingProto.UserMapping.Builder builder = UserMappingProto.UserMapping.newBuilder();
-        try {
-            builder.setPremiumUser(resultSet.getBoolean(COL_PREMIUM_USER));
-        } catch (SQLException throwables) {
-            log.error("Failed to retrieve user-mapping premium-user detail from DB. ", throwables);
-        }
-        return builder.build();
     }
 }

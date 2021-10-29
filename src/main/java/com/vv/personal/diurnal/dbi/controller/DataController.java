@@ -17,10 +17,7 @@ import org.apache.commons.lang3.time.StopWatch;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static com.vv.personal.diurnal.dbi.constants.Constants.*;
@@ -53,12 +50,7 @@ public class DataController {
         StopWatch stopWatch = genericConfig.procureStopWatch();
         try {
             boolean signUpResult = userMappingController.createUserMapping(userMapping) == ONE;
-            UserMappingProto.UserMapping updatedUserMapping = UserMappingProto.UserMapping.newBuilder()
-                    .mergeFrom(userMapping)
-                    .setPaymentExpiryTimestamp(getTrialEndPeriod()) //putting trial '30' day period for new user
-                    .build();
-            userMappingController.updateUserMappingPaymentExpiryTimestamp(updatedUserMapping);
-            log.info("Sign up result for [{}] => {}", updatedUserMapping.getEmail(), signUpResult);
+            log.info("Sign up result for [{}] => {}", userMapping.getEmail(), signUpResult);
             return signUpResult ? RESPOND_TRUE_BOOL : RESPOND_FALSE_BOOL;
         } finally {
             stopWatch.stop();
@@ -104,8 +96,7 @@ public class DataController {
                     Arrays.asList(StringUtils.split(dataTransit.getBackupData(), NEW_LINE)),
                     emailHash);
             if (transformFullBackupToProtos.transformWithoutSuppliedDate()) {
-                List<Integer> bulkEntryDayOpResult = entryDayController.deleteAndCreateEntryDays(transformFullBackupToProtos);
-                if (bulkEntryDayOpResult.stream().allMatch(integer -> integer == 1)) {
+                if (entryDayController.deleteAndCreateEntryDays(transformFullBackupToProtos)) {
                     UserMappingProto.UserMapping userMapping = UserMappingProto.UserMapping.newBuilder()
                             .setEmail(dataTransit.getEmail())
                             .setHashEmail(emailHash)
@@ -181,7 +172,6 @@ public class DataController {
                     .setPaymentExpiryTimestamp(DEFAULT_PAYMENT_EXPIRY_TS)
                     .setPremiumUser(false)
                     .build();
-            userMappingController.updateUserMappingPaymentExpiryTimestamp(updatedUserMapping);
             userMappingController.updatePremiumUserMapping(updatedUserMapping);
             retrievedUserMapping = userMappingController.retrieveUserMapping(emailHash);
         } else if (!retrievedUserMapping.getPremiumUser() && !TimingUtil.hasTimestampExpired(retrievedUserMapping.getPaymentExpiryTimestamp())) {
@@ -211,16 +201,5 @@ public class DataController {
     public DataController setUserMappingController(UserMappingController userMappingController) {
         this.userMappingController = userMappingController;
         return this;
-    }
-
-    public DataController setGenericConfig(GenericConfig genericConfig) {
-        this.genericConfig = genericConfig;
-        return this;
-    }
-
-    Long getTrialEndPeriod() {
-        return Instant.now()
-                .plus(dbiConfig.getTrialPeriodDays(), ChronoUnit.DAYS)
-                .toEpochMilli();
     }
 }

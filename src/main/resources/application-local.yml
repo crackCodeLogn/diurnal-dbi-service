@@ -1,12 +1,7 @@
-db:
-  diurnal:
-    server:
-      host: localhost
-      port: ${PROM_POSTGRES_PORT}
-    user: ${PROM_POSTGRES_REF_USER}
-    cred: ${PROM_POSTGRES_REF_CRED}
-
-dbi:
-  tables:
-    create:
-      onStartup: true
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:${CRDB_PORT}/${CRDB_DB}
+    username: root
+    password:
+  jpa:
+    show-sql: false

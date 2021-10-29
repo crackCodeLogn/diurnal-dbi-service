@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS user_mapping(
+CREATE TABLE IF NOT EXISTS user_mapping2(
     mobile bigint NOT NULL,
     email character varying(150) NOT NULL,
     "user" character varying(150) NOT NULL,

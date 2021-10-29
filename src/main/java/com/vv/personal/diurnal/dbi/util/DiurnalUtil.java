@@ -1,7 +1,6 @@
 package com.vv.personal.diurnal.dbi.util;
 
 import com.vv.personal.diurnal.artifactory.generated.*;
-import com.vv.personal.diurnal.dbi.interactor.IDbi;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.StopWatch;
 
@@ -29,8 +28,8 @@ public class DiurnalUtil {
         return email.toLowerCase().trim();
     }
 
-    public static Boolean isEmailHashAbsent(Integer emailHash) {
-        return emailHash == DEFAULT_EMAIL_HASH;
+    public static boolean isEmailHashAbsent(Integer emailHash) {
+        return emailHash == null || emailHash == DEFAULT_EMAIL_HASH;
     }
 
     public static UserMappingProto.UserMapping generateUserMapping(String email) {
@@ -200,27 +199,6 @@ public class DiurnalUtil {
 
     public static <V> List<String> performBulkOpStr(List<V> listToOpOn, Function<V, String> operation) {
         return listToOpOn.stream().map(operation).collect(Collectors.toList());
-    }
-
-    public static int genericCreateTableIfNotExists(IDbi dbi) {
-        log.warn("Proceeding to create table if not exists: '{}'", dbi.getTableName());
-        int createTableIfNotExistsResult = dbi.createTableIfNotExists();
-        log.warn("Table '{}' create if not exists result: {}", dbi.getTableName(), createTableIfNotExistsResult);
-        return createTableIfNotExistsResult;
-    }
-
-    public static Boolean genericDropTable(IDbi dbi) {
-        log.warn("Proceeding to drop table: '{}'", dbi.getTableName());
-        Boolean dropResult = dbi.dropTable() == 0;
-        log.warn("Table '{}' drop result: {}", dbi.getTableName(), dropResult);
-        return dropResult;
-    }
-
-    public static Boolean genericTruncateTable(IDbi dbi) {
-        log.warn("Proceeding to truncate table: '{}'", dbi.getTableName());
-        Boolean truncateResult = dbi.truncateTable() == 0;
-        log.warn("Table '{}' truncate result: {}", dbi.getTableName(), truncateResult);
-        return truncateResult;
     }
 
     public static String processStringForSqlPush(String input) {

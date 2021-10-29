@@ -1,7 +1,6 @@
 package com.vv.personal.diurnal.dbi;
 
 import com.vv.personal.diurnal.dbi.config.DbiConfig;
-import com.vv.personal.diurnal.dbi.interactor.diurnal.dbi.DiurnalDbi;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
@@ -65,10 +64,5 @@ public class DiurnalDbiServer {
 
         //dbiCacheController.populateAllRefCache();
         //log.info("Prepped overall cache => {}", dbiCacheController.displayAllRefTableCache());
-
-        if (dbiConfig.isCreateTablesOnStartup()) {
-            log.info("Creating tables on startup if non-existent!");
-            dbiConfig.getDiurnalDbis().forEach(DiurnalDbi::createTableIfNotExists);
-        }
     }
 }

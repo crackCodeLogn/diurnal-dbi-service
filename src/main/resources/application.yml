@@ -12,31 +12,7 @@ spring:
 server:
   port: ${SERVER_PORT:25641}
 
-#eureka:
-#  local: localhost:2011
-#  instance:
-#    hostname: ${DOMAIN_NAME:${spring.application.name}}
-#    preferIpAddress: true
-#  client:
-#    service-url:
-#      defaultZone: http://${eureka.user}:${eureka.password}@${EUREKA_URL:${eureka.local}}/eureka #EUREKA_URL var set to => https://prom-v2-eureka-service.herokuapp.com on heroku dashboard
-#  user: ${EUREKA_USER_NAME:user}
-#  password: ${EUREKA_USER_CRED:default}
-
-db:
-  diurnal:
-    name: diurnal
-    server:
-      host: localhost
-      port: ${PROM_POSTGRES_PORT}
-    user: ${PROM_POSTGRES_REF_USER}
-    cred: ${PROM_POSTGRES_REF_CRED}
-    url: ${LOCAL_DATABASE_URL:}
-
 dbi:
-  tables:
-    create:
-      onStartup: ${DBI_TABLES_CREATE_ONSTARTUP:true}
   inactive:
     timeout:
       enabled: ${DBI_INACTIVE_TIMEOUT_ENABLED:false}

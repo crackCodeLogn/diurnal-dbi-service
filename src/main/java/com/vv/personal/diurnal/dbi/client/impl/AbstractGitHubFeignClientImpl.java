@@ -42,7 +42,7 @@ public abstract class AbstractGitHubFeignClientImpl {
                 .content(data)
                 .build();
 
-        Map<String, String> map = ImmutableMap.<String, String>builder()
+        Map<String, String> headerMap = ImmutableMap.<String, String>builder()
                 .put(HEADER_AUTHORIZATION, String.format(HEADER_AUTH_TOKEN_FORMAT, dbiAccessConfig.getToken()))
                 .build();
 
@@ -50,9 +50,8 @@ public abstract class AbstractGitHubFeignClientImpl {
         String fileName = String.format(getBackupFileName(), zonedDateTime.toInstant());
         log.info("Proceeding to writing backup of {} bytes at '{}/{}'!", data.getBytes().length, folder, fileName);
         try {
-            gitHubFeignClient.uploadBackup(dbiAccessConfig.getUser(), dbiAccessConfig.getRepo(),
-                    folder, fileName,
-                    gitHubPayload, map);
+            gitHubFeignClient.uploadBackup(headerMap, dbiAccessConfig.getUser(), dbiAccessConfig.getRepo(), folder, fileName,
+                    gitHubPayload);
             log.info("Upload complete of '{}/{}'!", folder, fileName);
             return true;
         } catch (Exception e) {

@@ -16,10 +16,10 @@ public interface GitHubFeignClient {
 
     @RequestLine("PUT /repos/{user}/{repo}/contents/{folderPath}/{name}")
     @Headers("Content-Type: application/json")
-    void uploadBackup(@Param("user") String user,
+    void uploadBackup(@HeaderMap Map<String, String> headerMap,
+                      @Param("user") String user,
                       @Param("repo") String repo,
                       @Param("folderPath") String folderPath,
                       @Param("name") String fileName,
-                      GitHubPayload gitHubPayload,
-                      @HeaderMap Map<String, String> headerMap);
+                      GitHubPayload gitHubPayload);
 }

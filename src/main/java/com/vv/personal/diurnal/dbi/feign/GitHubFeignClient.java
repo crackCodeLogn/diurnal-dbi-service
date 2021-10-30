@@ -20,7 +20,6 @@ public interface GitHubFeignClient {
                       @Param("repo") String repo,
                       @Param("folderPath") String folderPath,
                       @Param("name") String fileName,
-                      GitHubPayload dataa,
+                      GitHubPayload gitHubPayload,
                       @HeaderMap Map<String, String> headerMap);
-    //https://api.github.com/repos/crackcodelogn/personal-equity/contents/trial
 }

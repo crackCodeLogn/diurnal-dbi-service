@@ -206,9 +206,9 @@ public class EntryDayController {
     public boolean backupUserMappingDataToGitHubInCsv(@RequestParam(name = "delimiter", defaultValue = ",") String delimiter) {
         StopWatch stopWatch = beanStore.procureStopWatch();
         StringBuilder dataLines = new StringBuilder();
-        diurnalTableEntryDay.retrieveAll().getEntryDayList().forEach(entryDay ->
+        diurnalTableEntryDay.retrieveAllEntities().forEach(entryDay ->
                 dataLines.append(StringUtils.joinWith(delimiter,
-                                String.valueOf(entryDay.getHashEmail()), entryDay.getDate(), entryDay.getTitle(), entryDay.getEntriesAsString()))
+                                String.valueOf(entryDay.getEntryDayId().getEmailHash()), entryDay.getEntryDayId().getDate(), entryDay.getTitle(), entryDay.getEntriesAsString()))
                         .append(NEW_LINE)
         );
         boolean compute = gitHubEntryDayFeignClient.backupAndUploadToGitHub(dataLines.toString());

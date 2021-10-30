@@ -402,10 +402,10 @@ public class UserMappingController {
     public boolean backupUserMappingDataToGitHubInCsv(@RequestParam(name = "delimiter", defaultValue = ",") String delimiter) {
         StopWatch stopWatch = beanStore.procureStopWatch();
         StringBuilder dataLines = new StringBuilder();
-        diurnalTableUserMapping.retrieveAll().getUserMappingList().forEach(userMapping ->
+        diurnalTableUserMapping.retrieveAllEntities().forEach(userMapping ->
                 dataLines.append(StringUtils.joinWith(delimiter,
-                                String.valueOf(userMapping.getMobile()), userMapping.getEmail(), userMapping.getUsername(), userMapping.getPremiumUser(), userMapping.getHashCred(), userMapping.getHashEmail(),
-                                userMapping.getLastCloudSaveTimestamp(), userMapping.getLastSavedTimestamp(), userMapping.getPaymentExpiryTimestamp(), userMapping.getAccountCreationTimestamp(), userMapping.getCurrency()))
+                                String.valueOf(userMapping.getMobile()), userMapping.getEmail(), userMapping.getUser(), userMapping.isPremiumUser(), userMapping.getCredHash(), userMapping.getEmailHash(),
+                                userMapping.getLastCloudSaveTimestamp(), userMapping.getLastSaveTimestamp(), userMapping.getPaymentExpiryTimestamp(), userMapping.getAccountCreationTimestamp(), userMapping.getCurrency()))
                         .append(NEW_LINE)
         );
         boolean compute = gitHubUserMappingFeignClient.backupAndUploadToGitHub(dataLines.toString());

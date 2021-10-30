@@ -8,6 +8,7 @@ import com.vv.personal.diurnal.dbi.util.DiurnalUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -90,8 +91,17 @@ public class DiurnalTableEntryDay {
         return false;
     }
 
+    public List<EntryDayEntity> retrieveAllEntities() {
+        try {
+            return entryDayRepository.findAll();
+        } catch (Exception e) {
+            log.error("Failed to retrieve all entry-days. ", e);
+        }
+        return new ArrayList<>();
+    }
+
     public EntryDayProto.EntryDayList retrieveAll() {
-        List<EntryDayEntity> entryDayEntityList = entryDayRepository.findAll();
+        List<EntryDayEntity> entryDayEntityList = retrieveAllEntities();
         return generateDetails(entryDayEntityList);
     }
 

@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -186,8 +187,17 @@ public class DiurnalTableUserMapping {
         return false;
     }
 
+    public List<UserMappingEntity> retrieveAllEntities() {
+        try {
+            return userMappingRepository.findAll();
+        } catch (Exception e) {
+            log.error("Failed to retrieve all user-mappings. ", e);
+        }
+        return new ArrayList<>();
+    }
+
     public UserMappingProto.UserMappingList retrieveAll() {
-        List<UserMappingEntity> userMappingEntityList = userMappingRepository.findAll();
+        List<UserMappingEntity> userMappingEntityList = retrieveAllEntities();
         UserMappingProto.UserMappingList.Builder userMappingsBuilder = UserMappingProto.UserMappingList.newBuilder();
         log.info("Extracted {} rows from DB on retrieveAll operation.", userMappingEntityList.size());
         userMappingsBuilder.addAllUserMapping(

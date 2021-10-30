@@ -1,7 +1,8 @@
 package com.vv.personal.diurnal.dbi.component.activity;
 
 import com.vv.personal.diurnal.dbi.component.ShutdownManager;
-import com.vv.personal.diurnal.dbi.config.TimerConfig;
+import com.vv.personal.diurnal.dbi.config.DbiInactiveTimeoutConfig;
+import com.vv.personal.diurnal.dbi.config.DbiShutdownExitCodeConfig;
 import com.vv.personal.diurnal.dbi.util.TimerUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +28,9 @@ public class InactiveTimerComponent implements WebMvcConfigurer, HandlerIntercep
     @Autowired
     private ShutdownManager shutdownManager;
     @Autowired
-    private TimerConfig timerConfig;
+    private DbiInactiveTimeoutConfig inactiveTimeoutConfig;
+    @Autowired
+    private DbiShutdownExitCodeConfig dbiShutdownExitCodeConfig;
 
     //need to keep this synchronized in order to avoid all web req creating their own timer
     @Override
@@ -43,17 +46,17 @@ public class InactiveTimerComponent implements WebMvcConfigurer, HandlerIntercep
 
     @PostConstruct
     public void postHaste() {
-        log.info("Is DBI InactiveTimeout enabled: {}", timerConfig.isDbiInactiveTimeoutEnabled());
+        log.info("Is DBI InactiveTimeout enabled: {}", inactiveTimeoutConfig.isEnabled());
         restartInactiveTimer();
     }
 
     private void restartInactiveTimer() {
-        if (timerConfig.isDbiInactiveTimeoutEnabled()) {
+        if (inactiveTimeoutConfig.isEnabled()) {
             log.info("Cancelling inactive timer [{}] and restarting it thereafter", inactiveTimer);
             inactiveTimer.cancel();
             //inactiveTimer.purge();
             inactiveTimer = TimerUtil.generateNewTimer();
-            TimerUtil.scheduleTimer(inactiveTimer, procureInactiveTimerTask(inactiveTimer), timerConfig.getDbiInactiveTimeoutSeconds());
+            TimerUtil.scheduleTimer(inactiveTimer, procureInactiveTimerTask(inactiveTimer), inactiveTimeoutConfig.getSeconds());
         }
     }
 
@@ -62,7 +65,7 @@ public class InactiveTimerComponent implements WebMvcConfigurer, HandlerIntercep
             @Override
             public void run() {
                 log.warn("*** Attention, shutting down now ***");
-                shutdownManager.initiateShutdown(timerConfig.getDbiShutdownExitCode());
+                shutdownManager.initiateShutdown(dbiShutdownExitCodeConfig.getCode());
 
                 log.info("Shutting down inactive-timer task");
                 inactiveTimer.cancel();

@@ -1,27 +1,30 @@
 package com.vv.personal.diurnal.dbi.config;
 
-
 import com.vv.personal.diurnal.dbi.auth.Authorizer;
 import com.vv.personal.diurnal.dbi.interactor.diurnal.cache.CachedDiurnal;
 import com.vv.personal.diurnal.dbi.interactor.diurnal.dbi.tables.DiurnalTableEntryDay;
 import com.vv.personal.diurnal.dbi.interactor.diurnal.dbi.tables.DiurnalTableUserMapping;
 import com.vv.personal.diurnal.dbi.repository.EntryDayRepository;
 import com.vv.personal.diurnal.dbi.repository.UserMappingRepository;
+import org.apache.commons.lang3.time.StopWatch;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Scope;
 import org.springframework.security.crypto.password.Pbkdf2PasswordEncoder;
 
 /**
  * @author Vivek
- * @since 23/02/21
+ * @since 29/10/21
  */
 @Configuration
-public class DbiConfig {
+public class BeanStore {
 
-    @Value("${dbi.trialPeriodDays}")
-    private int trialPeriodDays;
+    @Scope("prototype")
+    @Bean(initMethod = "start", destroyMethod = "stop")
+    public StopWatch procureStopWatch() {
+        return new StopWatch();
+    }
 
     @Bean
     public CachedDiurnal cachedDiurnal() {
@@ -43,9 +46,5 @@ public class DbiConfig {
     @Qualifier("DiurnalTableEntryDay")
     public DiurnalTableEntryDay diurnalTableEntryDays(EntryDayRepository entryDayRepository) {
         return new DiurnalTableEntryDay(entryDayRepository);
-    }
-
-    public int getTrialPeriodDays() {
-        return trialPeriodDays;
     }
 }

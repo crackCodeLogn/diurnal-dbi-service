@@ -1,11 +1,12 @@
 package com.vv.personal.diurnal.dbi.controller;
 
+import com.google.common.collect.Sets;
 import com.vv.personal.diurnal.artifactory.generated.DataTransitProto;
 import com.vv.personal.diurnal.artifactory.generated.EntryDayProto;
 import com.vv.personal.diurnal.artifactory.generated.ResponsePrimitiveProto;
 import com.vv.personal.diurnal.artifactory.generated.UserMappingProto;
-import com.vv.personal.diurnal.dbi.config.DbiConfig;
-import com.vv.personal.diurnal.dbi.config.GenericConfig;
+import com.vv.personal.diurnal.dbi.config.BeanStore;
+import com.vv.personal.diurnal.dbi.config.DbiLimitPeriodDaysConfig;
 import com.vv.personal.diurnal.dbi.engine.transformer.TransformBackupToString;
 import com.vv.personal.diurnal.dbi.engine.transformer.TransformFullBackupToProtos;
 import com.vv.personal.diurnal.dbi.util.DiurnalUtil;
@@ -17,7 +18,9 @@ import org.apache.commons.lang3.time.StopWatch;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.PostConstruct;
 import java.util.Arrays;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import static com.vv.personal.diurnal.dbi.constants.Constants.*;
@@ -34,20 +37,28 @@ import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.*;
 @RequestMapping("/diurnal/data")
 public class DataController {
 
+    private Set<String> exemptedEmails;
+
     @Autowired
     private EntryDayController entryDayController;
     @Autowired
     private UserMappingController userMappingController;
     @Autowired
-    private GenericConfig genericConfig;
+    private BeanStore beanStore;
     @Autowired
-    private DbiConfig dbiConfig;
+    private DbiLimitPeriodDaysConfig dbiLimitPeriodDaysConfig;
+
+    @PostConstruct
+    public void postHaste() {
+        exemptedEmails = Sets.newHashSet(dbiLimitPeriodDaysConfig.getCloudExemptionEmails().split(COMMA_STR));
+        if (log.isDebugEnabled()) log.debug("Exempted emails: {} => {}", exemptedEmails.size(), exemptedEmails);
+    }
 
     @ApiOperation(value = "Sign up new user", hidden = true)
     @PostMapping("/signup")
     public ResponsePrimitiveProto.ResponsePrimitive signUpUser(@RequestBody UserMappingProto.UserMapping userMapping) {
         log.info("Rx-ed user to sign up -> [{}]", userMapping.getEmail());
-        StopWatch stopWatch = genericConfig.procureStopWatch();
+        StopWatch stopWatch = beanStore.procureStopWatch();
         try {
             boolean signUpResult = userMappingController.createUserMapping(userMapping) == ONE;
             log.info("Sign up result for [{}] => {}", userMapping.getEmail(), signUpResult);
@@ -62,7 +73,7 @@ public class DataController {
     @PostMapping("/signup/check/email")
     public ResponsePrimitiveProto.ResponsePrimitive checkSignUpUserEmail(@RequestBody DataTransitProto.DataTransit dataTransit) {
         log.info("Checking if user with email [{}] exists in DB", dataTransit.getEmail());
-        StopWatch stopWatch = genericConfig.procureStopWatch();
+        StopWatch stopWatch = beanStore.procureStopWatch();
         try {
             Integer emailHash = userMappingController.retrieveHashEmail(dataTransit.getEmail());
             if (isEmailHashAbsent(emailHash)) {
@@ -81,7 +92,7 @@ public class DataController {
     public ResponsePrimitiveProto.ResponsePrimitive pushWholeBackup(@RequestBody DataTransitProto.DataTransit dataTransit) {
         log.info("Rx-ed data in dataTransit to backup to DB: {} bytes, for email [{}]", dataTransit.getBackupData().getBytes().length,
                 dataTransit.getEmail());
-        StopWatch stopWatch = genericConfig.procureStopWatch();
+        StopWatch stopWatch = beanStore.procureStopWatch();
         try {
             Integer emailHash = userMappingController.retrieveHashEmail(dataTransit.getEmail());
             if (isEmailHashAbsent(emailHash)) {
@@ -94,8 +105,12 @@ public class DataController {
             }
             TransformFullBackupToProtos transformFullBackupToProtos = new TransformFullBackupToProtos(
                     Arrays.asList(StringUtils.split(dataTransit.getBackupData(), NEW_LINE)),
-                    emailHash);
+                    emailHash,
+                    dbiLimitPeriodDaysConfig.getCloud());
             if (transformFullBackupToProtos.transformWithoutSuppliedDate()) {
+                if (!exemptedEmails.contains(dataTransit.getEmail())) transformFullBackupToProtos.trimDownDataToBeSaved();
+                else log.info("Email '{}' is exempted from cloud row reduction. Going with full force!", dataTransit.getEmail());
+
                 if (entryDayController.deleteAndCreateEntryDays(transformFullBackupToProtos)) {
                     UserMappingProto.UserMapping userMapping = UserMappingProto.UserMapping.newBuilder()
                             .setEmail(dataTransit.getEmail())
@@ -118,7 +133,7 @@ public class DataController {
     @PostMapping("/retrieve/backup/whole")
     public ResponsePrimitiveProto.ResponsePrimitive retrieveWholeBackup(@RequestBody DataTransitProto.DataTransit dataTransit) {
         log.info("Rx-ed request in dataTransit to retrieve backup from DB: {} bytes, for email [{}]", dataTransit.getBackupData().getBytes().length, dataTransit.getEmail());
-        StopWatch stopWatch = genericConfig.procureStopWatch();
+        StopWatch stopWatch = beanStore.procureStopWatch();
         try {
             Integer emailHash = userMappingController.retrieveHashEmail(dataTransit.getEmail());
             if (isEmailHashAbsent(emailHash)) {
@@ -193,6 +208,16 @@ public class DataController {
         return retrieveUserDetailsFromDb(DiurnalUtil.generateDataTransit(email)).getHashCred();
     }
 
+    @PutMapping("/manual/backup/github/csv")
+    public boolean backupUserMappingDataToGitHubInCsv(@RequestParam(name = "delimiter", defaultValue = ",") String delimiter) {
+        StopWatch stopWatch = beanStore.procureStopWatch();
+        boolean compute = userMappingController.backupUserMappingDataToGitHubInCsv(delimiter)
+                && entryDayController.backupUserMappingDataToGitHubInCsv(delimiter);
+        stopWatch.stop();
+        log.info("Took {} ms to complete full db table backup from data controller. Result: {}", stopWatch.getTime(TimeUnit.MILLISECONDS), compute);
+        return compute;
+    }
+
     public DataController setEntryDayController(EntryDayController entryDayController) {
         this.entryDayController = entryDayController;
         return this;
@@ -201,5 +226,9 @@ public class DataController {
     public DataController setUserMappingController(UserMappingController userMappingController) {
         this.userMappingController = userMappingController;
         return this;
+    }
+
+    public void setExemptedEmails(Set<String> exemptedEmails) {
+        this.exemptedEmails = exemptedEmails;
     }
 }

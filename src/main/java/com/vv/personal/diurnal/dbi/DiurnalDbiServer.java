@@ -1,6 +1,5 @@
 package com.vv.personal.diurnal.dbi;
 
-import com.vv.personal.diurnal.dbi.config.DbiConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
@@ -26,9 +25,6 @@ import static com.vv.personal.diurnal.dbi.constants.Constants.*;
 public class DiurnalDbiServer {
     @Autowired
     private Environment environment;
-
-    @Autowired
-    private DbiConfig dbiConfig;
 
     public static void main(String[] args) {
         SpringApplication.run(DiurnalDbiServer.class, args);

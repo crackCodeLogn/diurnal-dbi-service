@@ -3,13 +3,17 @@ package com.vv.personal.diurnal.dbi.controller;
 import com.google.protobuf.AbstractMessage;
 import com.vv.personal.diurnal.artifactory.generated.UserMappingProto;
 import com.vv.personal.diurnal.dbi.auth.Authorizer;
-import com.vv.personal.diurnal.dbi.config.DbiConfig;
+import com.vv.personal.diurnal.dbi.client.impl.GitHubUserMappingFeignClientImpl;
+import com.vv.personal.diurnal.dbi.config.BeanStore;
+import com.vv.personal.diurnal.dbi.config.DbiLimitPeriodDaysConfig;
 import com.vv.personal.diurnal.dbi.interactor.diurnal.dbi.tables.DiurnalTableUserMapping;
 import com.vv.personal.diurnal.dbi.model.UserMappingEntity;
 import com.vv.personal.diurnal.dbi.util.DiurnalUtil;
 import com.vv.personal.diurnal.dbi.util.FileUtil;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.StopWatch;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -38,14 +43,18 @@ public class UserMappingController {
     @Autowired
     private Authorizer authorizer;
     @Autowired
-    private DbiConfig dbiConfig;
+    private DbiLimitPeriodDaysConfig dbiLimitPeriodDaysConfig;
+    @Autowired
+    private GitHubUserMappingFeignClientImpl gitHubUserMappingFeignClient;
+    @Autowired
+    private BeanStore beanStore;
 
     @ApiOperation(value = "create user", hidden = true)
     @PostMapping("/create/user")
     public Integer createUserMapping(@RequestBody UserMappingProto.UserMapping userMapping) {
         log.info("Creating new user mapping: {} x {} x {} x {}", userMapping.getMobile(), userMapping.getEmail(), userMapping.getUsername(), userMapping.getPremiumUser());
         Instant currentInstant = Instant.now();
-        Instant trialPremiumPaymentExpiryInstant = getTrialEndPeriod(dbiConfig.getTrialPeriodDays());
+        Instant trialPremiumPaymentExpiryInstant = getTrialEndPeriod(dbiLimitPeriodDaysConfig.getTrialPremium());
         final UserMappingEntity userMappingEntity = new UserMappingEntity()
                 .setMobile(userMapping.getMobile())
                 .setEmail(refineEmail(userMapping.getEmail()))
@@ -231,7 +240,6 @@ public class UserMappingController {
             return false;
         }
         log.info("Updating user mapping: {}", userMapping.getEmail());
-        UserMappingProto.UserMapping inflatedUserMapping = generateCompleteUserMapping(userMapping, emailHash);
         if (diurnalTableUserMapping.updateUsername(emailHash, userMapping.getUsername()) == ONE
                 && diurnalTableUserMapping.updateMobile(emailHash, userMapping.getMobile()) == ONE
                 && diurnalTableUserMapping.updateCurrency(emailHash, userMapping.getCurrency()) == ONE) {
@@ -351,13 +359,12 @@ public class UserMappingController {
     }
 
     @PutMapping("/upload/csv")
-    int uploadCsv(@RequestParam("csv-location") String csvLocation) {
+    public int uploadCsv(@RequestParam("csv-location") String csvLocation) {
         AtomicInteger counter = new AtomicInteger(0);
         List<UserMappingEntity> userMappingEntities = FileUtil.readFileFromLocation(csvLocation).stream()
                 .map(data -> {
                     if (counter.get() == 0) data = data.substring(1);
                     counter.incrementAndGet();
-                    //log.info(data);
                     String[] vals = data.split(",");
 
                     long mobile = Long.parseLong(vals[0].trim());
@@ -389,6 +396,22 @@ public class UserMappingController {
         int saved = diurnalTableUserMapping.pushNewEntities(userMappingEntities);
         log.info("Saved {} into db", saved);
         return saved;
+    }
+
+    @PutMapping("/backup/github/csv")
+    public boolean backupUserMappingDataToGitHubInCsv(@RequestParam(name = "delimiter", defaultValue = ",") String delimiter) {
+        StopWatch stopWatch = beanStore.procureStopWatch();
+        StringBuilder dataLines = new StringBuilder();
+        diurnalTableUserMapping.retrieveAllEntities().forEach(userMapping ->
+                dataLines.append(StringUtils.joinWith(delimiter,
+                                String.valueOf(userMapping.getMobile()), userMapping.getEmail(), userMapping.getUser(), userMapping.isPremiumUser(), userMapping.getCredHash(), userMapping.getEmailHash(),
+                                userMapping.getLastCloudSaveTimestamp(), userMapping.getLastSaveTimestamp(), userMapping.getPaymentExpiryTimestamp(), userMapping.getAccountCreationTimestamp(), userMapping.getCurrency()))
+                        .append(NEW_LINE)
+        );
+        boolean compute = gitHubUserMappingFeignClient.backupAndUploadToGitHub(dataLines.toString());
+        stopWatch.stop();
+        log.info("Took {} ms to complete user_mapping table backup from user-mapping controller. Result: {}", stopWatch.getTime(TimeUnit.MILLISECONDS), compute);
+        return compute;
     }
 
     Instant getTrialEndPeriod(int trialDays) {

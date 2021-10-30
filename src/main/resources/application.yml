@@ -20,6 +20,22 @@ dbi:
   shutdown:
     exit:
       code: ${DBI_SHUTDOWN_EXIT_CODE:0}
-  trialPeriodDays: ${DBI_TRIAL_PERIOD_DAYS:30}
+  limit:
+    period-days:
+      cloud: ${DBI_LIMIT_PERIOD_DAYS_CLOUD:365}
+      trialPremium: ${DBI_TRIAL_PERIOD_DAYS:30}
+      cloudExemptionEmails: ${DBI_LIMIT_PERIOD_DAYS_CLOUD_EXEMPTION_EMAILS:}
+  access-gh:
+    baseUrl: https://api.github.com
+    token: ${DBI_ACCESS_GH_TOKEN:}
+    repo: ${DBI_ACCESS_GH_REPO:}
+    user: ${DBI_ACCESS_GH_USER:crackcodelogn}
+    commitMessage: ${DBI_ACCESS_GH_COMMIT_MSG:Took backup at %s}
+    user-mapping:
+      folder: backup/ump/%s
+      backupFileName: ${DBI_ACCESS_GH_BACKUP_FILE_NAME_UMP:Backup-UserMapping-%s.csv}
+    entry-day:
+      folder: backup/edy/%s
+      backupFileName: ${DBI_ACCESS_GH_BACKUP_FILE_NAME_EDY:Backup-EntryDay-%s.csv}
 
 logging.level.org.springframework.web: ${LOGGING:INFO}

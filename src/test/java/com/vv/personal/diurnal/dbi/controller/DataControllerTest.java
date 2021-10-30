@@ -2,12 +2,14 @@ package com.vv.personal.diurnal.dbi.controller;
 
 import com.vv.personal.diurnal.artifactory.generated.ResponsePrimitiveProto;
 import com.vv.personal.diurnal.artifactory.generated.UserMappingProto;
-import com.vv.personal.diurnal.dbi.config.GenericConfig;
+import com.vv.personal.diurnal.dbi.config.BeanStore;
+import com.vv.personal.diurnal.dbi.config.DbiLimitPeriodDaysConfig;
 import com.vv.personal.diurnal.dbi.interactor.diurnal.dbi.tables.DiurnalTableEntryDay;
 import com.vv.personal.diurnal.dbi.util.DiurnalUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
+import org.assertj.core.util.Sets;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -44,7 +46,9 @@ class DataControllerTest {
     @Mock
     DiurnalTableEntryDay diurnalTableEntryDay;
     @Mock
-    GenericConfig genericConfig;
+    BeanStore beanStore;
+    @Mock
+    DbiLimitPeriodDaysConfig dbiLimitPeriodDaysConfig;
 
     public static List<String> readFileFromLocation(String src) {
         List<String> data = new ArrayList<>();
@@ -77,8 +81,11 @@ class DataControllerTest {
         when(userMappingController.retrievePremiumUserStatus(emailHash)).thenReturn(true);
         when(userMappingController.updateUserMappingLastCloudSaveTimestamp(any(UserMappingProto.UserMapping.class))).thenReturn(1);
         when(diurnalTableEntryDay.pushNewEntities(anyList())).thenReturn(3);
+        when(dbiLimitPeriodDaysConfig.getCloud()).thenReturn(365);
         StopWatch stopWatch = procureStopWatch();
-        when(genericConfig.procureStopWatch()).thenReturn(stopWatch);
+        when(beanStore.procureStopWatch()).thenReturn(stopWatch);
+
+        dataController.setExemptedEmails(Sets.newHashSet());
         stopWatch.start();
         ResponsePrimitiveProto.ResponsePrimitive backupPushResult = dataController.pushWholeBackup(
                 DiurnalUtil.generateDataTransit(mobile, email, 20210304, UserMappingProto.Currency.INR,

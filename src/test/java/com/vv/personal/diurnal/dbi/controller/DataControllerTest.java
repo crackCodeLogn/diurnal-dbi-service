@@ -9,6 +9,7 @@ import com.vv.personal.diurnal.dbi.util.DiurnalUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
+import org.assertj.core.util.Sets;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -81,9 +82,10 @@ class DataControllerTest {
         when(userMappingController.updateUserMappingLastCloudSaveTimestamp(any(UserMappingProto.UserMapping.class))).thenReturn(1);
         when(diurnalTableEntryDay.pushNewEntities(anyList())).thenReturn(3);
         when(dbiLimitPeriodDaysConfig.getCloud()).thenReturn(365);
-        when(dbiLimitPeriodDaysConfig.getCloudExemptionEmails()).thenReturn("");
         StopWatch stopWatch = procureStopWatch();
         when(beanStore.procureStopWatch()).thenReturn(stopWatch);
+
+        dataController.setExemptedEmails(Sets.newHashSet());
         stopWatch.start();
         ResponsePrimitiveProto.ResponsePrimitive backupPushResult = dataController.pushWholeBackup(
                 DiurnalUtil.generateDataTransit(mobile, email, 20210304, UserMappingProto.Currency.INR,

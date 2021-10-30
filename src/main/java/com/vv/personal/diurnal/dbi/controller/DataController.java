@@ -227,4 +227,8 @@ public class DataController {
         this.userMappingController = userMappingController;
         return this;
     }
+
+    public void setExemptedEmails(Set<String> exemptedEmails) {
+        this.exemptedEmails = exemptedEmails;
+    }
 }

@@ -1,1 +1,1 @@
-web: java -Xmx$APP_MAX_HEAP -Dserver.port=$PORT -DSPRING_SECURITY_USERNAME=$PROM_SPRING_USER -DSPRING_SECURITY_CRED=$PROM_SPRING_CRED -jar target/$APP_NAME-$APP_RELEASE_VERSION.jar
+web: java -Xmx$APP_MAX_HEAP -Dquarkus.http.port=$PORT -jar target/quarkus-app/quarkus-run.jar

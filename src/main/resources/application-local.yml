@@ -1,7 +1,7 @@
-spring:
+quarkus:
   datasource:
-    url: jdbc:postgresql://localhost:${CRDB_PORT}/${CRDB_DB}
+    db-kind: postgresql
+    jdbc:
+      url: jdbc:postgresql://localhost:${CRDB_PORT}/${CRDB_DB}
     username: root
     password:
-  jpa:
-    show-sql: false

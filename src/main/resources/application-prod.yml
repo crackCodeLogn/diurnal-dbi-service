@@ -1,6 +1,8 @@
-spring:
+quarkus:
   datasource:
-    url: ${DATABASE_URL}
+    db-kind: postgresql
+    jdbc:
+      url: ${DATABASE_URL}
     # Use https://devcenter.heroku.com/articles/connecting-to-relational-databases-on-heroku-with-java#using-the-database_url-in-plain-jdbc
     # to convert heroku's provided DATABASE_URL to jvm friendly VM param locally. Not in prod.
     hikari:
@@ -9,5 +11,3 @@ spring:
       idleTimeout: 30000
       maxLifetime: 2000000
       connectionTimeout: 30000
-  jpa:
-    show-sql: false

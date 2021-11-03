@@ -1,16 +1,30 @@
-spring:
-  application:
-    name: diurnal-dbi-service
-    heroku: ${spring.application.name}.herokuapp.com
-  profiles:
-    active: ${SPRING_PROFILE:local}
-  security:
-    user:
-      name: ${SPRING_SECURITY_USERNAME:user}
-      password: ${SPRING_SECURITY_CRED:default}
+app:
+  name: diurnal-dbi-service
+  heroku: ${app.name}.herokuapp.com
 
-server:
-  port: ${SERVER_PORT:25641}
+quarkus:
+  http:
+    port: ${SERVER_PORT:25641}
+  datasource:
+    db-kind: postgresql
+    username: hibernate
+    password: hibernate
+    jdbc:
+      url: jdbc:postgresql://localhost:5432/hibernate_db
+  security:
+    users:
+      embedded:
+        enabled: true
+        plain-text: true
+        roles:
+          itachi: user
+        users:
+          itachi: ${INTERACTION_USER_CRED}
+    swagger-ui:
+      path: /swagger-ui
+      # always-include: true # disabled for prod
+  log:
+    level: ${LOGGING:INFO}
 
 dbi:
   inactive:

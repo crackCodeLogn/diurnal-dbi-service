@@ -42,7 +42,7 @@ public class DiurnalTableUserMapping {
 
     public int pushNewEntities(List<UserMappingEntity> userMappingEntityList) {
         try {
-            return userMappingRepository.saveAllAndFlush(userMappingEntityList).size();
+            return userMappingRepository.saveAll(userMappingEntityList).size();
         } catch (Exception e) {
             log.error("Failed to bulk push {} new user mappings. ", userMappingEntityList.size(), e);
         }
@@ -162,7 +162,8 @@ public class DiurnalTableUserMapping {
 
     public UserMappingEntity retrieveSingleEntity(int emailHash) {
         try {
-            return userMappingRepository.getById(emailHash);
+            return userMappingRepository.findById(emailHash)
+                    .orElseThrow();
         } catch (Exception e) {
             log.error("Failed to retrieve single entity og email-hash: {}. ", emailHash, e);
         }

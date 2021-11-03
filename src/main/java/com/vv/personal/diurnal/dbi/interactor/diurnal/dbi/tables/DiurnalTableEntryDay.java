@@ -60,7 +60,7 @@ public class DiurnalTableEntryDay {
     public int pushNewEntities(List<EntryDayEntity> entryDays) {
         if (log.isDebugEnabled()) log.debug("Pushing {} new EntryDay entity", entryDays.size());
         try {
-            int newEntitiesCreated = entryDayRepository.saveAllAndFlush(entryDays).size();
+            int newEntitiesCreated = entryDayRepository.saveAll(entryDays).size();
             if (log.isDebugEnabled()) log.debug("Pushed {} new EntryDay entities", newEntitiesCreated);
             return newEntitiesCreated;
         } catch (Exception e) {
@@ -127,7 +127,7 @@ public class DiurnalTableEntryDay {
     public EntryDayEntity retrieveSingleEntity(Integer emailHash, Integer date) {
         EntryDayId entryDayIdentifier = generateEntryDayIdentifier(emailHash, date);
         try {
-            return entryDayRepository.getById(entryDayIdentifier);
+            return entryDayRepository.findById(entryDayIdentifier).orElseThrow();
         } catch (Exception e) {
             log.error("Failed to get entry-day mapping with identifier: {}. ", entryDayIdentifier, e);
         }

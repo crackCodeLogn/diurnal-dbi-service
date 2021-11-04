@@ -1,34 +1,36 @@
 package com.vv.personal.diurnal.dbi.config;
 
-import lombok.Data;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
+import io.smallrye.config.ConfigMapping;
 
 /**
  * @author Vivek
  * @since 30/10/21
  */
-@Data
-@Configuration
-@ConfigurationProperties(prefix = "dbi.access-gh")
-public class DbiAccessConfig {
-    private String baseUrl;
-    private String token;
-    private String repo;
-    private String user;
-    private String commitMessage;
-    private UserMapping userMapping;
-    private EntryDay entryDay;
+@ConfigMapping(prefix = "dbi.access-gh")
+public interface DbiAccessConfig {
+    String baseUrl();
 
-    @Data
-    public static class UserMapping {
-        private String folder;
-        private String backupFileName;
+    String token();
+
+    String repo();
+
+    String user();
+
+    String commitMessage();
+
+    UserMapping userMapping();
+
+    EntryDay entryDay();
+
+    interface UserMapping {
+        String folder();
+
+        String backupFileName();
     }
 
-    @Data
-    public static class EntryDay {
-        private String folder;
-        private String backupFileName;
+    interface EntryDay {
+        String folder();
+
+        String backupFileName();
     }
 }

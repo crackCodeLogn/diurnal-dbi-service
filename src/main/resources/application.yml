@@ -10,7 +10,7 @@ quarkus:
     username: hibernate
     password: hibernate
     jdbc:
-      url: jdbc:postgresql://localhost:5432/hibernate_db
+      url: jdbc:postgresql://localhost:${CRDB_PORT}/${CRDB_DB}
   security:
     users:
       embedded:
@@ -20,9 +20,9 @@ quarkus:
           itachi: user
         users:
           itachi: ${INTERACTION_USER_CRED}
-    swagger-ui:
-      path: /swagger-ui
-      # always-include: true # disabled for prod
+  swagger-ui:
+    path: /swagger-ui
+    # always-include: true # disabled for prod
   log:
     level: ${LOGGING:INFO}
 
@@ -37,19 +37,17 @@ dbi:
   limit:
     period-days:
       cloud: ${DBI_LIMIT_PERIOD_DAYS_CLOUD:365}
-      trialPremium: ${DBI_TRIAL_PERIOD_DAYS:30}
-      cloudExemptionEmails: ${DBI_LIMIT_PERIOD_DAYS_CLOUD_EXEMPTION_EMAILS:}
+      trial-premium: ${DBI_TRIAL_PERIOD_DAYS:30}
+      cloud-exemption-emails: ${DBI_LIMIT_PERIOD_DAYS_CLOUD_EXEMPTION_EMAILS:}
   access-gh:
-    baseUrl: https://api.github.com
+    base-url: https://api.github.com
     token: ${DBI_ACCESS_GH_TOKEN:}
     repo: ${DBI_ACCESS_GH_REPO:}
     user: ${DBI_ACCESS_GH_USER:crackcodelogn}
-    commitMessage: ${DBI_ACCESS_GH_COMMIT_MSG:Took backup at %s}
+    commit-message: ${DBI_ACCESS_GH_COMMIT_MSG:Took backup at %s}
     user-mapping:
       folder: backup/ump/%s
-      backupFileName: ${DBI_ACCESS_GH_BACKUP_FILE_NAME_UMP:Backup-UserMapping-%s.csv}
+      backup-file-name: ${DBI_ACCESS_GH_BACKUP_FILE_NAME_UMP:Backup-UserMapping-%s.csv}
     entry-day:
       folder: backup/edy/%s
-      backupFileName: ${DBI_ACCESS_GH_BACKUP_FILE_NAME_EDY:Backup-EntryDay-%s.csv}
-
-logging.level.org.springframework.web: ${LOGGING:INFO}
+      backup-file-name: ${DBI_ACCESS_GH_BACKUP_FILE_NAME_EDY:Backup-EntryDay-%s.csv}

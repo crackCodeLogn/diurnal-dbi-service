@@ -1,18 +1,16 @@
 package com.vv.personal.diurnal.dbi.config;
 
-import lombok.Data;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
+import io.smallrye.config.ConfigMapping;
 
 /**
  * @author Vivek
  * @since 29/10/21
  */
-@Data
-@Configuration
-@ConfigurationProperties(prefix = "dbi.limit.period-days")
-public class DbiLimitPeriodDaysConfig {
-    private int cloud;
-    private int trialPremium;
-    private String cloudExemptionEmails;
+@ConfigMapping(prefix = "dbi.limit.period-days")
+public interface DbiLimitPeriodDaysConfig {
+    int cloud();
+
+    int trialPremium();
+
+    String cloudExemptionEmails();
 }

@@ -5,14 +5,16 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import javax.persistence.Column;
-import javax.persistence.Embeddable;
 import java.io.Serializable;
 
 /**
  * @author Vivek
  * @since 27/10/21
+ * <p>
+ * Removing usage of this Id class on 20211104, reason being txn to quarkus, and quarkus doesn't support composite key or embeddable yet.
  */
-@Embeddable
+@Deprecated
+//@Embeddable
 public class EntryDayId implements Serializable {
     private static final long serialVersionUID = 3339611967067170028L;
 

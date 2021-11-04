@@ -7,7 +7,6 @@ import com.vv.personal.diurnal.dbi.interactor.diurnal.dbi.tables.DiurnalTableUse
 import com.vv.personal.diurnal.dbi.repository.EntryDayRepository;
 import com.vv.personal.diurnal.dbi.repository.UserMappingRepository;
 import org.apache.commons.lang3.time.StopWatch;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
@@ -20,10 +19,12 @@ import org.springframework.security.crypto.password.Pbkdf2PasswordEncoder;
 @Configuration
 public class BeanStore {
 
+    @Bean
     @Scope("prototype")
-    @Bean(initMethod = "start", destroyMethod = "stop")
     public StopWatch procureStopWatch() {
-        return new StopWatch();
+        StopWatch stopWatch = new StopWatch();
+        stopWatch.start();
+        return stopWatch;
     }
 
     @Bean
@@ -37,13 +38,11 @@ public class BeanStore {
     }
 
     @Bean
-    @Qualifier("DiurnalTableUserMapping")
     public DiurnalTableUserMapping diurnalTableUserMapping(UserMappingRepository userMappingRepository) {
         return new DiurnalTableUserMapping(userMappingRepository);
     }
 
     @Bean
-    @Qualifier("DiurnalTableEntryDay")
     public DiurnalTableEntryDay diurnalTableEntryDays(EntryDayRepository entryDayRepository) {
         return new DiurnalTableEntryDay(entryDayRepository);
     }

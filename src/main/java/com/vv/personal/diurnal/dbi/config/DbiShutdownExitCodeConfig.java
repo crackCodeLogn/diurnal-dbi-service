@@ -1,16 +1,12 @@
 package com.vv.personal.diurnal.dbi.config;
 
-import lombok.Data;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
+import io.smallrye.config.ConfigMapping;
 
 /**
  * @author Vivek
  * @since 29/10/21
  */
-@Data
-@Configuration
-@ConfigurationProperties(prefix = "dbi.shutdown.exit")
-public class DbiShutdownExitCodeConfig {
-    private int code;
+@ConfigMapping(prefix = "dbi.shutdown.exit")
+public interface DbiShutdownExitCodeConfig {
+    int code();
 }

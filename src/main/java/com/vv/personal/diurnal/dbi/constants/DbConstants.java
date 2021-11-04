@@ -4,7 +4,7 @@ package com.vv.personal.diurnal.dbi.constants;
  * @author Vivek
  * @since 25/02/21
  */
-public class DbConstants {
+public final class DbConstants {
 
     private DbConstants() {
     }

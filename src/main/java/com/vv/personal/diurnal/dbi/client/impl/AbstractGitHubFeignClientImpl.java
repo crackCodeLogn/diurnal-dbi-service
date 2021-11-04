@@ -34,23 +34,23 @@ public abstract class AbstractGitHubFeignClientImpl {
         final ZonedDateTime zonedDateTime = ZonedDateTime.now();
         final GitHubFeignClient gitHubFeignClient = Feign.builder()
                 .encoder(new GsonEncoder())
-                .target(GitHubFeignClient.class, dbiAccessConfig.getBaseUrl());
+                .target(GitHubFeignClient.class, dbiAccessConfig.baseUrl());
 
         String data = getBase64(backupData);
         GitHubPayload gitHubPayload = GitHubPayload.builder()
-                .message(String.format(dbiAccessConfig.getCommitMessage(), zonedDateTime))
+                .message(String.format(dbiAccessConfig.commitMessage(), zonedDateTime))
                 .content(data)
                 .build();
 
         Map<String, String> headerMap = ImmutableMap.<String, String>builder()
-                .put(HEADER_AUTHORIZATION, String.format(HEADER_AUTH_TOKEN_FORMAT, dbiAccessConfig.getToken()))
+                .put(HEADER_AUTHORIZATION, String.format(HEADER_AUTH_TOKEN_FORMAT, dbiAccessConfig.token()))
                 .build();
 
         String folder = String.format(getFolderName(), zonedDateTime.toLocalDate().toString());
         String fileName = String.format(getBackupFileName(), zonedDateTime.toInstant());
         log.info("Proceeding to writing backup of {} bytes at '{}/{}'!", data.getBytes().length, folder, fileName);
         try {
-            gitHubFeignClient.uploadBackup(headerMap, dbiAccessConfig.getUser(), dbiAccessConfig.getRepo(), folder, fileName,
+            gitHubFeignClient.uploadBackup(headerMap, dbiAccessConfig.user(), dbiAccessConfig.repo(), folder, fileName,
                     gitHubPayload);
             log.info("Upload complete of '{}/{}'!", folder, fileName);
             return true;

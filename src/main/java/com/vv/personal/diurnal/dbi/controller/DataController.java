@@ -11,14 +11,14 @@ import com.vv.personal.diurnal.dbi.engine.transformer.TransformBackupToString;
 import com.vv.personal.diurnal.dbi.engine.transformer.TransformFullBackupToProtos;
 import com.vv.personal.diurnal.dbi.util.DiurnalUtil;
 import com.vv.personal.diurnal.dbi.util.TimingUtil;
-import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.PostConstruct;
+import javax.inject.Inject;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -33,28 +33,27 @@ import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.*;
  * This controller's end-points are the one to be used by external client - app - to push data to DB
  */
 @Slf4j
+@Secured("user")
 @RestController("data-controller")
 @RequestMapping("/diurnal/data")
 public class DataController {
+    @Inject
+    EntryDayController entryDayController;
+    @Inject
+    UserMappingController userMappingController;
+    @Inject
+    BeanStore beanStore;
+    @Inject
+    DbiLimitPeriodDaysConfig dbiLimitPeriodDaysConfig;
 
     private Set<String> exemptedEmails;
 
-    @Autowired
-    private EntryDayController entryDayController;
-    @Autowired
-    private UserMappingController userMappingController;
-    @Autowired
-    private BeanStore beanStore;
-    @Autowired
-    private DbiLimitPeriodDaysConfig dbiLimitPeriodDaysConfig;
-
     @PostConstruct
     public void postHaste() {
-        exemptedEmails = Sets.newHashSet(dbiLimitPeriodDaysConfig.getCloudExemptionEmails().split(COMMA_STR));
+        exemptedEmails = Sets.newHashSet(dbiLimitPeriodDaysConfig.cloudExemptionEmails().split(COMMA_STR));
         if (log.isDebugEnabled()) log.debug("Exempted emails: {} => {}", exemptedEmails.size(), exemptedEmails);
     }
 
-    @ApiOperation(value = "Sign up new user", hidden = true)
     @PostMapping("/signup")
     public ResponsePrimitiveProto.ResponsePrimitive signUpUser(@RequestBody UserMappingProto.UserMapping userMapping) {
         log.info("Rx-ed user to sign up -> [{}]", userMapping.getEmail());
@@ -69,7 +68,6 @@ public class DataController {
         }
     }
 
-    @ApiOperation(value = "Check if sign up new user already exists", hidden = true)
     @PostMapping("/signup/check/email")
     public ResponsePrimitiveProto.ResponsePrimitive checkSignUpUserEmail(@RequestBody DataTransitProto.DataTransit dataTransit) {
         log.info("Checking if user with email [{}] exists in DB", dataTransit.getEmail());
@@ -87,7 +85,6 @@ public class DataController {
         }
     }
 
-    @ApiOperation(value = "Read whole backup file and generate data for DB", hidden = true)
     @PostMapping("/push/backup/whole")
     public ResponsePrimitiveProto.ResponsePrimitive pushWholeBackup(@RequestBody DataTransitProto.DataTransit dataTransit) {
         log.info("Rx-ed data in dataTransit to backup to DB: {} bytes, for email [{}]", dataTransit.getBackupData().getBytes().length,
@@ -106,7 +103,7 @@ public class DataController {
             TransformFullBackupToProtos transformFullBackupToProtos = new TransformFullBackupToProtos(
                     Arrays.asList(StringUtils.split(dataTransit.getBackupData(), NEW_LINE)),
                     emailHash,
-                    dbiLimitPeriodDaysConfig.getCloud());
+                    dbiLimitPeriodDaysConfig.cloud());
             if (transformFullBackupToProtos.transformWithoutSuppliedDate()) {
                 if (!exemptedEmails.contains(dataTransit.getEmail())) transformFullBackupToProtos.trimDownDataToBeSaved();
                 else log.info("Email '{}' is exempted from cloud row reduction. Going with full force!", dataTransit.getEmail());
@@ -129,7 +126,6 @@ public class DataController {
         return RESPOND_FALSE_BOOL;
     }
 
-    @ApiOperation(value = "Read DB and convert to string to respond to app", hidden = true)
     @PostMapping("/retrieve/backup/whole")
     public ResponsePrimitiveProto.ResponsePrimitive retrieveWholeBackup(@RequestBody DataTransitProto.DataTransit dataTransit) {
         log.info("Rx-ed request in dataTransit to retrieve backup from DB: {} bytes, for email [{}]", dataTransit.getBackupData().getBytes().length, dataTransit.getEmail());
@@ -156,21 +152,18 @@ public class DataController {
         return RESPOND_EMPTY_BODY;
     }
 
-    @ApiOperation(value = "push last saved timestamp", hidden = true)
     @PostMapping("/push/timestamp/save")
     public ResponsePrimitiveProto.ResponsePrimitive pushLastSavedTimestamp(@RequestBody UserMappingProto.UserMapping userMapping) {
         log.info("Received push for last save ts for [{}]", userMapping.getEmail());
         return generateResponsePrimitiveInt(userMappingController.updateUserMappingLastSaveTimestamp(userMapping));
     }
 
-    @ApiOperation(value = "push user info update for name, mobile and currency", hidden = true)
     @PostMapping("/push/user/info")
     public ResponsePrimitiveProto.ResponsePrimitive pushUserInfo(@RequestBody UserMappingProto.UserMapping userMapping) {
         log.info("Received new user info for [{}] -> {}, {}, {}", userMapping.getEmail(), userMapping.getUsername(), userMapping.getMobile(), userMapping.getCurrency());
         return generateResponsePrimitiveBool(userMappingController.updateUserInfo(userMapping));
     }
 
-    @ApiOperation(value = "retrieve user detail", hidden = true)
     @PostMapping("/retrieve/user")
     public UserMappingProto.UserMapping retrieveUserDetailsFromDb(@RequestBody DataTransitProto.DataTransit dataTransit) {
         log.info("Received req to extract details for user: {}", dataTransit.getEmail());
@@ -220,11 +213,6 @@ public class DataController {
 
     public DataController setEntryDayController(EntryDayController entryDayController) {
         this.entryDayController = entryDayController;
-        return this;
-    }
-
-    public DataController setUserMappingController(UserMappingController userMappingController) {
-        this.userMappingController = userMappingController;
         return this;
     }
 

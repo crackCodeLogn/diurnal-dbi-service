@@ -15,7 +15,7 @@ import java.util.Set;
  * @author Vivek
  * @since 23/12/20
  */
-public class Constants {
+public final class Constants {
 
     private Constants() {
     }

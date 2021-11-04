@@ -2,7 +2,6 @@ package com.vv.personal.diurnal.ping.controller.health;
 
 import com.vv.personal.diurnal.artifactory.generated.ResponsePrimitiveProto;
 import com.vv.personal.diurnal.dbi.util.DiurnalUtil;
-import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,8 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class HealthController {
 
     @GetMapping("/ping")
-    @ApiOperation(value = "ping for heartbeat", hidden = true)
-    ResponsePrimitiveProto.ResponsePrimitive ping() {
+    public ResponsePrimitiveProto.ResponsePrimitive ping() {
         String pingResult = "ALIVE-" + System.currentTimeMillis();
         log.info("PINGING back with status {}", pingResult);
         return DiurnalUtil.generateResponsePrimitiveString(pingResult);

@@ -8,9 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Queue;
 import java.util.stream.Collectors;
 
 import static com.vv.personal.diurnal.dbi.constants.Constants.*;
@@ -241,15 +239,14 @@ public class DiurnalTableUserMapping {
         return instant.toEpochMilli();
     }
 
-    //scrutinize
-    protected Queue<String> processDataToCsv(UserMappingProto.UserMappingList dataList) {
-        Queue<String> dataLines = new LinkedList<>();
-        dataList.getUserMappingList().forEach(userMapping -> dataLines.add(
-                        StringUtils.joinWith(PIPE,
-                                String.valueOf(userMapping.getMobile()), userMapping.getEmail(), userMapping.getUsername(), userMapping.getPremiumUser(), userMapping.getHashCred(), userMapping.getHashEmail(),
-                                userMapping.getLastCloudSaveTimestamp(), userMapping.getLastSavedTimestamp(), userMapping.getPaymentExpiryTimestamp(), userMapping.getAccountCreationTimestamp(), userMapping.getCurrency())
-                )
+    public String processDataToCsv() {
+        StringBuilder dataLines = new StringBuilder();
+        retrieveAllEntities().forEach(userMapping ->
+                dataLines.append(StringUtils.joinWith(COMMA_STR,
+                                String.valueOf(userMapping.getMobile()), userMapping.getEmail(), userMapping.getUser(), userMapping.isPremiumUser(), userMapping.getCredHash(), userMapping.getEmailHash(),
+                                userMapping.getLastCloudSaveTimestamp(), userMapping.getLastSaveTimestamp(), userMapping.getPaymentExpiryTimestamp(), userMapping.getAccountCreationTimestamp(), userMapping.getCurrency()))
+                        .append(NEW_LINE)
         );
-        return dataLines;
+        return dataLines.toString();
     }
 }

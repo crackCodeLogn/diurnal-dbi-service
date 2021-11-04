@@ -1,64 +1,51 @@
 package com.vv.personal.diurnal.dbi;
 
+import io.quarkus.runtime.Quarkus;
+import io.quarkus.runtime.ShutdownEvent;
+import io.quarkus.runtime.StartupEvent;
+import io.quarkus.runtime.annotations.QuarkusMain;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.event.EventListener;
-import org.springframework.core.env.Environment;
-import org.springframework.http.converter.protobuf.ProtobufHttpMessageConverter;
-import springfox.documentation.builders.RequestHandlerSelectors;
-import springfox.documentation.spi.DocumentationType;
-import springfox.documentation.spring.web.plugins.Docket;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
+import javax.enterprise.event.Observes;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-import static com.vv.personal.diurnal.dbi.constants.Constants.*;
-
 @Slf4j
-@ComponentScan({"com.vv.personal.diurnal.dbi", "com.vv.personal.diurnal.ping"})
-@SpringBootApplication
+@QuarkusMain
 public class DiurnalDbiServer {
-    @Autowired
-    private Environment environment;
+    private static final String HEROKU_SWAGGER_UI_URL = "https://%s/swagger-ui/index.html";
+    private static final String SWAGGER_UI_URL = "http://%s:%s/swagger-ui/index.html";
+    private static final String LOCALHOST = "localhost";
+    private static final String QUARKUS_PORT = "quarkus.http.port";
+    private static final String APP_NAME = "app.name";
+    private static final String APP_HEROKU = "app.heroku";
+
+    @ConfigProperty(name = QUARKUS_PORT)
+    Integer port;
+    @ConfigProperty(name = APP_NAME)
+    String appName;
+    @ConfigProperty(name = APP_HEROKU)
+    String herokuHost;
 
     public static void main(String[] args) {
-        SpringApplication.run(DiurnalDbiServer.class, args);
+        Quarkus.run(args);
     }
 
-    @Bean
-    ProtobufHttpMessageConverter protobufHttpMessageConverter() {
-        return new ProtobufHttpMessageConverter();
-    }
-
-    @Bean
-    public Docket api() {
-        return new Docket(DocumentationType.SWAGGER_2)
-                .select()
-                .apis(RequestHandlerSelectors.basePackage("com.vv.personal.diurnal"))
-                .build();
-    }
-
-    @EventListener(ApplicationReadyEvent.class)
-    public void firedUpAllCylinders() {
+    void onStart(@Observes StartupEvent startupEvent) {
+        log.info("********* Starting '{}' *********", appName);
         String host = LOCALHOST;
         try {
             host = InetAddress.getLocalHost().getHostAddress();
         } catch (UnknownHostException e) {
             log.error("Failed to obtain ip address. ", e);
         }
-        String port = environment.getProperty(LOCAL_SPRING_PORT);
-        String herokuHost = environment.getProperty(SPRING_APPLICATION_HEROKU);
-        log.info("'{}' activation is complete! Expected Heroku Swagger running on: {}, exact url: {}",
-                environment.getProperty("spring.application.name"),
+        log.info("Expected Heroku Swagger running on: {}, exact url: {}",
                 String.format(HEROKU_SWAGGER_UI_URL, herokuHost),
                 String.format(SWAGGER_UI_URL, host, port));
+    }
 
-        //dbiCacheController.populateAllRefCache();
-        //log.info("Prepped overall cache => {}", dbiCacheController.displayAllRefTableCache());
+    void onStop(@Observes ShutdownEvent shutdownEvent) {
+        log.info("********* Shutting down '{}' *********", appName);
     }
 }

@@ -6,8 +6,8 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import javax.persistence.Column;
-import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
+import javax.persistence.Id;
 import javax.persistence.Table;
 import java.io.Serializable;
 
@@ -20,8 +20,18 @@ import java.io.Serializable;
 public class EntryDayEntity implements Serializable {
     private static final long serialVersionUID = 3945060484397253781L;
 
-    @EmbeddedId
-    public EntryDayId entryDayId;
+    @Id
+    @Column(name = "hel_dt", nullable = false)
+    private String emailHashAndDate;
+
+    @Column(name = "hash_email", nullable = false)
+    private int emailHash;
+
+    @Column(name = "date", nullable = false)
+    private int date;
+
+    //@EmbeddedId
+    //public EntryDayId entryDayId;
 
     @Column(name = "title")
     private String title;
@@ -32,8 +42,10 @@ public class EntryDayEntity implements Serializable {
     public EntryDayEntity() {
     }
 
-    public EntryDayEntity(EntryDayId entryDayId, String title, String entriesAsString) {
-        this.entryDayId = entryDayId;
+    public EntryDayEntity(String emailHashAndDate, int emailHash, int date, String title, String entriesAsString) {
+        this.emailHashAndDate = emailHashAndDate;
+        this.emailHash = emailHash;
+        this.date = date;
         this.title = title;
         this.entriesAsString = entriesAsString;
     }
@@ -41,7 +53,9 @@ public class EntryDayEntity implements Serializable {
     @Override
     public String toString() {
         return new ToStringBuilder(this, ToStringStyle.JSON_STYLE)
-                .append("entryDayId", entryDayId)
+                .append("emailHashAndDate", emailHashAndDate)
+                .append("emailHash", emailHash)
+                .append("date", date)
                 .append("title", title)
                 .append("entriesAsString", entriesAsString)
                 .toString();
@@ -50,22 +64,43 @@ public class EntryDayEntity implements Serializable {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
+
         if (o == null || getClass() != o.getClass()) return false;
+
         EntryDayEntity that = (EntryDayEntity) o;
-        return new EqualsBuilder().append(entryDayId, that.entryDayId).append(title, that.title).append(entriesAsString, that.entriesAsString).isEquals();
+
+        return new EqualsBuilder().append(emailHash, that.emailHash).append(date, that.date).append(title, that.title).append(entriesAsString, that.entriesAsString).isEquals();
     }
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder(17, 37).append(entryDayId).append(title).append(entriesAsString).toHashCode();
+        return new HashCodeBuilder(17, 37).append(emailHash).append(date).append(title).append(entriesAsString).toHashCode();
     }
 
-    public EntryDayId getEntryDayId() {
-        return entryDayId;
+    public String getEmailHashAndDate() {
+        return emailHashAndDate;
     }
 
-    public EntryDayEntity setEntryDayId(EntryDayId entryDayId) {
-        this.entryDayId = entryDayId;
+    public EntryDayEntity setEmailHashAndDate(String emailHashAndDate) {
+        this.emailHashAndDate = emailHashAndDate;
+        return this;
+    }
+
+    public int getEmailHash() {
+        return emailHash;
+    }
+
+    public EntryDayEntity setEmailHash(int emailHash) {
+        this.emailHash = emailHash;
+        return this;
+    }
+
+    public int getDate() {
+        return date;
+    }
+
+    public EntryDayEntity setDate(int date) {
+        this.date = date;
         return this;
     }
 

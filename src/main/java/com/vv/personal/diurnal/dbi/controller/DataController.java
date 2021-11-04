@@ -54,7 +54,7 @@ public class DataController {
         if (log.isDebugEnabled()) log.debug("Exempted emails: {} => {}", exemptedEmails.size(), exemptedEmails);
     }
 
-    @PostMapping("/signup")
+    @PostMapping(value = "/signup", produces = APPLICATION_X_PROTOBUF, consumes = APPLICATION_X_PROTOBUF)
     public ResponsePrimitiveProto.ResponsePrimitive signUpUser(@RequestBody UserMappingProto.UserMapping userMapping) {
         log.info("Rx-ed user to sign up -> [{}]", userMapping.getEmail());
         StopWatch stopWatch = beanStore.procureStopWatch();
@@ -68,7 +68,7 @@ public class DataController {
         }
     }
 
-    @PostMapping("/signup/check/email")
+    @PostMapping(value = "/signup/check/email", produces = APPLICATION_X_PROTOBUF, consumes = APPLICATION_X_PROTOBUF)
     public ResponsePrimitiveProto.ResponsePrimitive checkSignUpUserEmail(@RequestBody DataTransitProto.DataTransit dataTransit) {
         log.info("Checking if user with email [{}] exists in DB", dataTransit.getEmail());
         StopWatch stopWatch = beanStore.procureStopWatch();
@@ -85,7 +85,7 @@ public class DataController {
         }
     }
 
-    @PostMapping("/push/backup/whole")
+    @PostMapping(value = "/push/backup/whole", produces = APPLICATION_X_PROTOBUF, consumes = APPLICATION_X_PROTOBUF)
     public ResponsePrimitiveProto.ResponsePrimitive pushWholeBackup(@RequestBody DataTransitProto.DataTransit dataTransit) {
         log.info("Rx-ed data in dataTransit to backup to DB: {} bytes, for email [{}]", dataTransit.getBackupData().getBytes().length,
                 dataTransit.getEmail());
@@ -126,7 +126,7 @@ public class DataController {
         return RESPOND_FALSE_BOOL;
     }
 
-    @PostMapping("/retrieve/backup/whole")
+    @PostMapping(value = "/retrieve/backup/whole", produces = APPLICATION_X_PROTOBUF, consumes = APPLICATION_X_PROTOBUF)
     public ResponsePrimitiveProto.ResponsePrimitive retrieveWholeBackup(@RequestBody DataTransitProto.DataTransit dataTransit) {
         log.info("Rx-ed request in dataTransit to retrieve backup from DB: {} bytes, for email [{}]", dataTransit.getBackupData().getBytes().length, dataTransit.getEmail());
         StopWatch stopWatch = beanStore.procureStopWatch();
@@ -152,19 +152,19 @@ public class DataController {
         return RESPOND_EMPTY_BODY;
     }
 
-    @PostMapping("/push/timestamp/save")
+    @PostMapping(value = "/push/timestamp/save", produces = APPLICATION_X_PROTOBUF, consumes = APPLICATION_X_PROTOBUF)
     public ResponsePrimitiveProto.ResponsePrimitive pushLastSavedTimestamp(@RequestBody UserMappingProto.UserMapping userMapping) {
         log.info("Received push for last save ts for [{}]", userMapping.getEmail());
         return generateResponsePrimitiveInt(userMappingController.updateUserMappingLastSaveTimestamp(userMapping));
     }
 
-    @PostMapping("/push/user/info")
+    @PostMapping(value = "/push/user/info", produces = APPLICATION_X_PROTOBUF, consumes = APPLICATION_X_PROTOBUF)
     public ResponsePrimitiveProto.ResponsePrimitive pushUserInfo(@RequestBody UserMappingProto.UserMapping userMapping) {
         log.info("Received new user info for [{}] -> {}, {}, {}", userMapping.getEmail(), userMapping.getUsername(), userMapping.getMobile(), userMapping.getCurrency());
         return generateResponsePrimitiveBool(userMappingController.updateUserInfo(userMapping));
     }
 
-    @PostMapping("/retrieve/user")
+    @PostMapping(value = "/retrieve/user", produces = APPLICATION_X_PROTOBUF, consumes = APPLICATION_X_PROTOBUF)
     public UserMappingProto.UserMapping retrieveUserDetailsFromDb(@RequestBody DataTransitProto.DataTransit dataTransit) {
         log.info("Received req to extract details for user: {}", dataTransit.getEmail());
         Integer emailHash = userMappingController.retrieveHashEmail(dataTransit.getEmail());

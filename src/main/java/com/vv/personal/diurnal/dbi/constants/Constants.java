@@ -6,9 +6,7 @@ import com.vv.personal.diurnal.artifactory.generated.UserMappingProto;
 
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -44,7 +42,7 @@ public final class Constants {
     public static final Long DEFAULT_PAYMENT_EXPIRY_TS = NA_LONG;
     public static final Long DEFAULT_ACCOUNT_CREATION_TS = NA_LONG;
 
-    public static final List<Integer> EMPTY_LIST_INT = new ArrayList<>(0);
+    public static final String APPLICATION_X_PROTOBUF = "application/x-protobuf";
 
     //RESPONSES
     public static final Integer INT_RESPONSE_WONT_PROCESS = -13; //N Proc
@@ -67,15 +65,4 @@ public final class Constants {
     public static final DateTimeFormatter DTF_APP_DISPLAY_DATE_PATTERN = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
     public static final Instant DEFAULT_INSTANT_DATETIME = Instant.ofEpochMilli(0L);
-
-    //FORMATTERS
-    public static final String HEROKU_SWAGGER_UI_URL = "https://%s/swagger-ui/index.html";
-    public static final String SWAGGER_UI_URL = "http://%s:%s/swagger-ui/index.html";
-    public static final String HEROKU_HOST_URL = "https://%s";
-    public static final String HOST_URL = "http://%s:%s";
-
-    public static final String LOCALHOST = "localhost";
-    public static final String LOCAL_SPRING_HOST = "local.server.host";
-    public static final String LOCAL_SPRING_PORT = "local.server.port";
-    public static final String SPRING_APPLICATION_HEROKU = "spring.application.heroku";
 }

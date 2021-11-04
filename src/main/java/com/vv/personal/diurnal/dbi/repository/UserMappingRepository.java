@@ -13,7 +13,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface UserMappingRepository extends JpaRepository<UserMappingEntity, Integer> {
 
-    @Query(value = "SELECT hash_email from user_mapping where email = :email")
+    @Query(value = "select emailHash from UserMappingEntity where email = :email")
     Integer retrieveEmailHash(@Param("email") String email);
     //Integer findEmailHashByEmail(String email); //proper query is above!
 

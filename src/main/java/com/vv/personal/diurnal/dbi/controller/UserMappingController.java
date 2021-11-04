@@ -46,7 +46,7 @@ public class UserMappingController {
     @Inject
     BeanStore beanStore;
 
-    @PostMapping("/create/user")
+    @PostMapping(value = "/create/user", consumes = APPLICATION_X_PROTOBUF)
     public Integer createUserMapping(@RequestBody UserMappingProto.UserMapping userMapping) {
         log.info("Creating new user mapping: {} x {} x {} x {}", userMapping.getMobile(), userMapping.getEmail(), userMapping.getUsername(), userMapping.getPremiumUser());
         Instant currentInstant = Instant.now();
@@ -83,7 +83,7 @@ public class UserMappingController {
         return authorizer.encode(cred);
     }
 
-    @PostMapping("/delete/user")
+    @PostMapping(value = "/delete/user", consumes = APPLICATION_X_PROTOBUF)
     public Integer deleteUserMapping(@RequestBody UserMappingProto.UserMapping userMapping) {
         Integer emailHash = retrieveHashEmail(userMapping.getEmail());
         if (isEmailHashAbsent(emailHash)) {
@@ -100,7 +100,7 @@ public class UserMappingController {
         return deleteUserMapping(DiurnalUtil.generateUserMapping(email));
     }
 
-    @PostMapping("/update/user/name")
+    @PostMapping(value = "/update/user/name", consumes = APPLICATION_X_PROTOBUF)
     public Integer updateUserMappingName(@RequestBody UserMappingProto.UserMapping userMapping) {
         Integer emailHash = retrieveHashEmail(userMapping.getEmail());
         if (isEmailHashAbsent(emailHash)) {
@@ -119,7 +119,7 @@ public class UserMappingController {
         return updateUserMappingName(generateUserMapping(email, updatedUserName));
     }
 
-    @PostMapping("/update/user/hash/cred")
+    @PostMapping(value = "/update/user/hash/cred", consumes = APPLICATION_X_PROTOBUF)
     public Integer updateUserMappingCred(@RequestBody UserMappingProto.UserMapping userMapping) {
         Integer emailHash = retrieveHashEmail(userMapping.getEmail());
         if (isEmailHashAbsent(emailHash)) {
@@ -138,7 +138,7 @@ public class UserMappingController {
         return updateUserMappingCred(generateUserMapping(DEFAULT_MOBILE, email, DEFAULT_USER_NAME, DEFAULT_PREMIUM_USER_STATUS, hashCred));
     }
 
-    @PostMapping("/update/user/mobile")
+    @PostMapping(value = "/update/user/mobile", consumes = APPLICATION_X_PROTOBUF)
     public Integer updateUserMappingMobile(@RequestBody UserMappingProto.UserMapping userMapping) {
         Integer emailHash = retrieveHashEmail(userMapping.getEmail());
         if (isEmailHashAbsent(emailHash)) {
@@ -157,7 +157,7 @@ public class UserMappingController {
         return updateUserMappingMobile(generateUserMapping(mobile, email, DEFAULT_USER_NAME, DEFAULT_PREMIUM_USER_STATUS, DEFAULT_USER_CRED_HASH));
     }
 
-    @PostMapping("/update/user/currency")
+    @PostMapping(value = "/update/user/currency", consumes = APPLICATION_X_PROTOBUF)
     public Integer updateUserMappingCurrency(@RequestBody UserMappingProto.UserMapping userMapping) {
         Integer emailHash = retrieveHashEmail(userMapping.getEmail());
         if (isEmailHashAbsent(emailHash)) {
@@ -176,7 +176,7 @@ public class UserMappingController {
         return updateUserMappingCurrency(generateUserMapping(email, currency));
     }
 
-    @PostMapping("/update/user/timestamp/save/cloud")
+    @PostMapping(value = "/update/user/timestamp/save/cloud", consumes = APPLICATION_X_PROTOBUF)
     public Integer updateUserMappingLastCloudSaveTimestamp(@RequestBody UserMappingProto.UserMapping userMapping) {
         if (userMapping.getHashEmail() == 0) {
             log.warn("Emailhash not supplied in the user mapping: {}", userMapping);
@@ -186,7 +186,7 @@ public class UserMappingController {
         return diurnalTableUserMapping.updateLastCloudSaveTimestamp(userMapping.getHashEmail(), userMapping.getLastCloudSaveTimestamp());
     }
 
-    @PostMapping("/update/user/timestamp/save/local")
+    @PostMapping(value = "/update/user/timestamp/save/local", consumes = APPLICATION_X_PROTOBUF)
     public Integer updateUserMappingLastSaveTimestamp(@RequestBody UserMappingProto.UserMapping userMapping) {
         Integer emailHash = retrieveHashEmail(userMapping.getEmail());
         if (isEmailHashAbsent(emailHash)) {
@@ -197,7 +197,7 @@ public class UserMappingController {
         return diurnalTableUserMapping.updateLastSavedTimestamp(emailHash, userMapping.getLastSavedTimestamp());
     }
 
-    @PostMapping("/update/user/timestamp/payment/expiry")
+    @PostMapping(value = "/update/user/timestamp/payment/expiry", consumes = APPLICATION_X_PROTOBUF)
     public Integer updateUserMappingPaymentExpiryTimestamp(@RequestBody UserMappingProto.UserMapping userMapping) {
         Integer emailHash = retrieveHashEmail(userMapping.getEmail());
         if (isEmailHashAbsent(emailHash)) {
@@ -218,7 +218,7 @@ public class UserMappingController {
         return updateUserMappingPaymentExpiryTimestamp(userMapping);
     }
 
-    @PostMapping("/update/user/info")
+    @PostMapping(value = "/update/user/info", consumes = APPLICATION_X_PROTOBUF)
     public Boolean updateUserInfo(@RequestBody UserMappingProto.UserMapping userMapping) {
         Integer emailHash = retrieveHashEmail(userMapping.getEmail());
         if (isEmailHashAbsent(emailHash)) {
@@ -236,7 +236,7 @@ public class UserMappingController {
         return false;
     }
 
-    @PatchMapping("/update/user/premium")
+    @PatchMapping(value = "/update/user/premium", consumes = APPLICATION_X_PROTOBUF)
     public Integer updatePremiumUserMapping(@RequestBody UserMappingProto.UserMapping userMapping) {
         String email = refineEmail(userMapping.getEmail());
         Integer emailHash = retrieveHashEmail(email);
@@ -267,7 +267,7 @@ public class UserMappingController {
         log.info("Manual premium user update done => {}", result);
     }
 
-    @GetMapping("/retrieve/user")
+    @GetMapping(value = "/retrieve/user", produces = APPLICATION_X_PROTOBUF)
     public UserMappingProto.UserMapping retrieveUserMapping(@RequestParam Integer emailHash) {
         log.info("Retrieving user details for [{}]", emailHash);
         UserMappingProto.UserMapping retrievedUserMapping = diurnalTableUserMapping.retrieveSingle(emailHash);
@@ -275,7 +275,7 @@ public class UserMappingController {
         return retrievedUserMapping;
     }
 
-    @GetMapping("/retrieve/all/users")
+    @GetMapping(value = "/retrieve/all/users", produces = APPLICATION_X_PROTOBUF)
     public UserMappingProto.UserMappingList retrieveAllUserMappings() {
         log.info("Retrieving all user mappings");
         UserMappingProto.UserMappingList userMappingList = diurnalTableUserMapping.retrieveAll();
@@ -320,7 +320,7 @@ public class UserMappingController {
         return retrievePremiumUserStatus(emailHash);
     }
 
-    @GetMapping("/check/user")
+    @GetMapping(value = "/check/user", consumes = APPLICATION_X_PROTOBUF)
     public Boolean checkIfUserExists(@RequestBody UserMappingProto.UserMapping userMapping) {
         log.info("Checking if user exists for email: [{}]", userMapping.getEmail());
         String email = refineEmail(userMapping.getEmail());

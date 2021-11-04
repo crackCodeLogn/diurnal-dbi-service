@@ -20,8 +20,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import static com.vv.personal.diurnal.dbi.constants.Constants.EMPTY_STR;
-import static com.vv.personal.diurnal.dbi.constants.Constants.INT_RESPONSE_WONT_PROCESS;
+import static com.vv.personal.diurnal.dbi.constants.Constants.*;
 import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.*;
 
 /**
@@ -42,14 +41,14 @@ public class EntryDayController {
     @Inject
     BeanStore beanStore;
 
-    @PostMapping("/create/entry-day")
+    @PostMapping(value = "/create/entry-day", produces = APPLICATION_X_PROTOBUF, consumes = APPLICATION_X_PROTOBUF)
     public Integer createEntryDay(@RequestBody EntryDayProto.EntryDay entryDay) {
         Integer sqlResult = diurnalTableEntryDay.pushNewEntity(entryDay.getHashEmail(), entryDay.getDate(), entryDay.getTitle(), entryDay.getEntriesAsString());
         if (log.isDebugEnabled()) log.debug("Result of new entry-day creation: {}", sqlResult);
         return sqlResult;
     }
 
-    @PostMapping("/create/entry-days")
+    @PostMapping(value = "/create/entry-days", consumes = APPLICATION_X_PROTOBUF)
     public int bulkCreateEntryDays(@RequestBody EntryDayProto.EntryDayList entryDayList) {
         log.info("Bulk creating {} entry-days", entryDayList.getEntryDayCount());
         List<EntryDayEntity> bulkEntriesMapped = generateBulkEntryDaysFromProto(entryDayList);
@@ -78,7 +77,7 @@ public class EntryDayController {
         return createEntryDay(generateCompleteEntryDay(emailHash, date, title, entriesAsString));
     }
 
-    @PostMapping("/delete/entry-day")
+    @PostMapping(value = "/delete/entry-day", consumes = APPLICATION_X_PROTOBUF)
     public Integer deleteEntryDay(@RequestBody EntryDayProto.EntryDay entryDay) {
         log.info("Deleting entry-day: {} x {}", entryDay.getHashEmail(), entryDay.getDate());
         Integer sqlResult = diurnalTableEntryDay.deleteEntity(entryDay.getHashEmail(), entryDay.getDate());
@@ -86,7 +85,7 @@ public class EntryDayController {
         return sqlResult;
     }
 
-    @PostMapping("/delete/entry-days")
+    @PostMapping(value = "/delete/entry-days", consumes = APPLICATION_X_PROTOBUF)
     public List<Integer> bulkDeleteEntryDays(@RequestBody EntryDayProto.EntryDayList entryDayList) {
         log.info("Bulk deleting {} entry-days", entryDayList.getEntryDayCount());
         List<Integer> bulkEntriesDeletionResult = performBulkOpInt(entryDayList.getEntryDayList(), this::deleteEntryDay);
@@ -106,7 +105,7 @@ public class EntryDayController {
         return deleteEntryDay(generateEntryDayOnPk(emailHash, date));
     }
 
-    @PostMapping("/delete/entry-days/user")
+    @PostMapping(value = "/delete/entry-days/user", consumes = APPLICATION_X_PROTOBUF)
     public Integer bulkDeleteEntryDaysOfUser(@RequestBody UserMappingProto.UserMapping userMapping) {
         log.info("Bulk deleting entry-days of user with hash: {}", userMapping.getHashEmail());
         Integer bulkEntriesDeletionResult = diurnalTableEntryDay.bulkDeleteEntryDaysOfUser(userMapping.getHashEmail());
@@ -153,7 +152,7 @@ public class EntryDayController {
         return performBulkOpStr(retrieveAllEntryDays().getEntryDayList(), AbstractMessage::toString);
     }
 
-    @GetMapping("/retrieve/all/entry-days/email-hash")
+    @GetMapping(value = "/retrieve/all/entry-days/email-hash", produces = APPLICATION_X_PROTOBUF, consumes = APPLICATION_X_PROTOBUF)
     public EntryDayProto.EntryDayList retrieveAllEntryDaysOfEmailHash(@RequestBody UserMappingProto.UserMapping userMapping) {
         log.info("Retrieving all entry-days of email-hash => {}", userMapping.getHashEmail());
         EntryDayProto.EntryDayList entryDayList = diurnalTableEntryDay.retrieveSome(userMapping.getHashEmail());
@@ -171,7 +170,7 @@ public class EntryDayController {
         return performBulkOpStr(retrieveAllEntryDaysOfEmailHash(generateUserMappingOnPk(emailHash)).getEntryDayList(), AbstractMessage::toString);
     }
 
-    @GetMapping("/check/entry-day")
+    @GetMapping(value = "/check/entry-day", consumes = APPLICATION_X_PROTOBUF)
     public Boolean checkIfEntryDayExists(@RequestBody EntryDayProto.EntryDay entryDay) {
         log.info("Checking if entry-day exists for: {} x {}", entryDay.getHashEmail(), entryDay.getDate());
         boolean checkIfEntryDayExists = diurnalTableEntryDay.checkEntity(entryDay.getHashEmail(), entryDay.getDate());

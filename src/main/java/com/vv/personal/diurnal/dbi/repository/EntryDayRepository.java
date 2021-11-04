@@ -22,6 +22,6 @@ public interface EntryDayRepository extends JpaRepository<EntryDayEntity, String
 
     @Modifying
     @Transactional
-    @Query(value = "DELETE from entry_day where hash_email = :emailHash")
+    @Query(value = "delete from EntryDayEntity where emailHash = :emailHash")
     long deleteRowsWithEmailHash(@Param("emailHash") Integer emailHash);
 }

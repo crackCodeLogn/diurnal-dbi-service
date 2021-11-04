@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.inject.Inject;
 
+import static com.vv.personal.diurnal.dbi.constants.Constants.APPLICATION_X_PROTOBUF;
 import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.generateResponsePrimitiveBool;
 import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.generateResponsePrimitiveString;
 
@@ -23,7 +24,7 @@ public class AuthController {
     @Inject
     Authorizer authorizer;
 
-    @GetMapping("/generate/hash")
+    @GetMapping(value = "/generate/hash", produces = APPLICATION_X_PROTOBUF)
     public ResponsePrimitiveProto.ResponsePrimitive generateHash(@RequestBody String rawCred) {
         log.info("Rx-ed raw-cred '{}' to hash", rawCred);
         String hash = authorizer.encode(rawCred);
@@ -36,7 +37,7 @@ public class AuthController {
         return generateHash(rawCred).getResponse();
     }
 
-    @GetMapping("/verify/cred-hash")
+    @GetMapping(value = "/verify/cred-hash", produces = APPLICATION_X_PROTOBUF)
     public ResponsePrimitiveProto.ResponsePrimitive verifyRawCredToHash(@RequestParam String rawCred,
                                                                         @RequestParam String hash) {
         return generateResponsePrimitiveBool(authorizer.hashMatches(rawCred, hash));

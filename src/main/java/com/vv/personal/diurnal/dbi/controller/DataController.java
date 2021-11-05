@@ -207,7 +207,7 @@ public class DataController {
 
     @PutMapping("/manual/backup/github/csv")
     public boolean backupUserMappingDataToGitHubInCsv(@RequestParam(name = "ump_delimiter", defaultValue = ",") String umpDelimiter,
-                                                      @RequestParam(name = "edy_delimiter", defaultValue = "|") String edyDelimiter) {
+                                                      @RequestParam(name = "edy_delimiter", defaultValue = "\\|") String edyDelimiter) {
         StopWatch stopWatch = beanStore.procureStopWatch();
         boolean compute = userMappingController.backupUserMappingDataToGitHubInCsv(umpDelimiter)
                 && entryDayController.backupUserMappingDataToGitHubInCsv(edyDelimiter);

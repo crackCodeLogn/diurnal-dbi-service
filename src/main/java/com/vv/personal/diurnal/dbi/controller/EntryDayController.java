@@ -9,6 +9,7 @@ import com.vv.personal.diurnal.dbi.engine.transformer.TransformFullBackupToProto
 import com.vv.personal.diurnal.dbi.interactor.diurnal.dbi.tables.DiurnalTableEntryDay;
 import com.vv.personal.diurnal.dbi.model.EntryDayEntity;
 import com.vv.personal.diurnal.dbi.util.DiurnalUtil;
+import com.vv.personal.diurnal.dbi.util.FileUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.StopWatch;
 import org.springframework.security.access.annotation.Secured;
@@ -188,6 +189,32 @@ public class EntryDayController {
         }
         log.info("Checking if entry-day exists for: {} x {}", email, date);
         return checkIfEntryDayExists(generateEntryDayOnPk(emailHash, date));
+    }
+
+    @PutMapping("/upload/csv")
+    public int uploadCsv(@RequestParam("csv-location") String csvLocation,
+                         @RequestParam(value = "delimiter", defaultValue = "\\|") String delimiter) {
+        List<EntryDayEntity> entryDayEntities = FileUtil.readFileFromLocation(csvLocation).stream()
+                .map(data -> {
+                    String[] vals = data.split(delimiter);
+
+                    String emailHashAndDate = vals[0].trim();
+                    int emailHash = Integer.parseInt(vals[1]);
+                    int date = Integer.parseInt(vals[2]);
+                    String title = vals[3];
+                    String entries = vals[4];
+                    return new EntryDayEntity()
+                            .setEmailHashAndDate(emailHashAndDate)
+                            .setEmailHash(emailHash)
+                            .setDate(date)
+                            .setTitle(title)
+                            .setEntriesAsString(entries)
+                            ;
+                }).collect(Collectors.toList());
+        log.info("Extracted {} entities from '{}'", entryDayEntities.size(), csvLocation);
+        int saved = diurnalTableEntryDay.pushNewEntities(entryDayEntities);
+        log.info("Saved {} into db", saved);
+        return saved;
     }
 
     @PutMapping("/backup/github/csv")

@@ -337,13 +337,14 @@ public class UserMappingController {
     }
 
     @PutMapping("/upload/csv")
-    public int uploadCsv(@RequestParam("csv-location") String csvLocation) {
+    public int uploadCsv(@RequestParam("csv-location") String csvLocation,
+                         @RequestParam(value = "delimiter", defaultValue = ",") String delimiter) {
         AtomicInteger counter = new AtomicInteger(0);
         List<UserMappingEntity> userMappingEntities = FileUtil.readFileFromLocation(csvLocation).stream()
                 .map(data -> {
                     if (counter.get() == 0) data = data.substring(1);
                     counter.incrementAndGet();
-                    String[] vals = data.split(",");
+                    String[] vals = data.split(delimiter);
 
                     long mobile = Long.parseLong(vals[0].trim());
                     String email = vals[1];

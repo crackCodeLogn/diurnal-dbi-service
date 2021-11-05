@@ -1,12 +1,13 @@
 quarkus:
   datasource:
     jdbc:
-      url: ${DATABASE_URL}
+      url: ${JDBC_DATABASE_URL}
+    # https://devcenter.heroku.com/articles/connecting-to-relational-databases-on-heroku-with-java#using-the-jdbc_database_url -- for quarkus
     # Use https://devcenter.heroku.com/articles/connecting-to-relational-databases-on-heroku-with-java#using-the-database_url-in-plain-jdbc
     # to convert heroku's provided DATABASE_URL to jvm friendly VM param locally. Not in prod.
-    hikari:
-      minimumIdle: 1
-      maximumPoolSize: 15
-      idleTimeout: 30000
-      maxLifetime: 2000000
-      connectionTimeout: 30000
+#    hikari:
+#      minimumIdle: 1
+#      maximumPoolSize: 15
+#      idleTimeout: 30000
+#      maxLifetime: 2000000
+#      connectionTimeout: 30000

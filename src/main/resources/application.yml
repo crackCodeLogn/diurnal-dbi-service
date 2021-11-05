@@ -5,8 +5,6 @@ app:
 quarkus:
   http:
     port: ${SERVER_PORT:25641}
-  datasource:
-    db-kind: postgresql
   security:
     users:
       embedded:

@@ -1,4 +1,6 @@
 quarkus:
+  transaction-manager:
+    default-transaction-timeout: 240s
   datasource:
     jdbc:
       url: ${JDBC_DATABASE_URL}

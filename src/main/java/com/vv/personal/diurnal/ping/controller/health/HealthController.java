@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import static com.vv.personal.diurnal.dbi.constants.Constants.APPLICATION_X_PROTOBUF;
+
 /**
  * @author Vivek
  * @since 07/12/20
@@ -16,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/health")
 public class HealthController {
 
-    @GetMapping("/ping")
+    @GetMapping(value = "/ping", produces = APPLICATION_X_PROTOBUF)
     public ResponsePrimitiveProto.ResponsePrimitive ping() {
         String pingResult = "ALIVE-" + System.currentTimeMillis();
         log.info("PINGING back with status {}", pingResult);

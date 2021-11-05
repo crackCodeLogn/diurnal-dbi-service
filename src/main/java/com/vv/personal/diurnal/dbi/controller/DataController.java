@@ -206,10 +206,11 @@ public class DataController {
     }
 
     @PutMapping("/manual/backup/github/csv")
-    public boolean backupUserMappingDataToGitHubInCsv(@RequestParam(name = "delimiter", defaultValue = ",") String delimiter) {
+    public boolean backupUserMappingDataToGitHubInCsv(@RequestParam(name = "ump_delimiter", defaultValue = ",") String umpDelimiter,
+                                                      @RequestParam(name = "edy_delimiter", defaultValue = "|") String edyDelimiter) {
         StopWatch stopWatch = beanStore.procureStopWatch();
-        boolean compute = userMappingController.backupUserMappingDataToGitHubInCsv(delimiter)
-                && entryDayController.backupUserMappingDataToGitHubInCsv(delimiter);
+        boolean compute = userMappingController.backupUserMappingDataToGitHubInCsv(umpDelimiter)
+                && entryDayController.backupUserMappingDataToGitHubInCsv(edyDelimiter);
         stopWatch.stop();
         log.info("Took {} ms to complete full db table backup from data controller. Result: {}", stopWatch.getTime(TimeUnit.MILLISECONDS), compute);
         return compute;

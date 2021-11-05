@@ -58,6 +58,10 @@ public class DiurnalTableUserMapping {
         return 0;
     }
 
+    public boolean checkIfEntityExists(String email) {
+        return userMappingRepository.checkIfEmailExists(email) == ONE;
+    }
+
     public int updateUsername(int emailHash, String username) { //updates the user name
         try {
             UserMappingEntity userMappingEntity = retrieveSingleEntity(emailHash).setUser(username);

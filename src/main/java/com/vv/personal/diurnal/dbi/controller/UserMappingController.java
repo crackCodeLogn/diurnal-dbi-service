@@ -324,8 +324,7 @@ public class UserMappingController {
     public Boolean checkIfUserExists(@RequestBody UserMappingProto.UserMapping userMapping) {
         log.info("Checking if user exists for email: [{}]", userMapping.getEmail());
         String email = refineEmail(userMapping.getEmail());
-        Integer emailHash = retrieveHashEmail(email);
-        boolean checkIfUserExists = !isEmailHashAbsent(emailHash);
+        boolean checkIfUserExists = diurnalTableUserMapping.checkIfEntityExists(email);
         log.info("Result: {}", checkIfUserExists);
         return checkIfUserExists;
     }

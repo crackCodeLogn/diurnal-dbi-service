@@ -73,9 +73,8 @@ public class DataController {
         log.info("Checking if user with email [{}] exists in DB", dataTransit.getEmail());
         StopWatch stopWatch = beanStore.procureStopWatch();
         try {
-            Integer emailHash = userMappingController.retrieveHashEmail(dataTransit.getEmail());
-            if (isEmailHashAbsent(emailHash)) {
-                log.info("User doesn't exist for email: {}", dataTransit.getEmail());
+            if (!userMappingController.checkIfUserExists(DiurnalUtil.generateUserMapping(dataTransit.getEmail()))) {
+                log.warn("User doesn't exist for email: {}", dataTransit.getEmail());
                 return RESPOND_FALSE_BOOL;
             }
             return RESPOND_TRUE_BOOL;
@@ -167,6 +166,11 @@ public class DataController {
     @PostMapping(value = "/retrieve/user", produces = APPLICATION_X_PROTOBUF, consumes = APPLICATION_X_PROTOBUF)
     public UserMappingProto.UserMapping retrieveUserDetailsFromDb(@RequestBody DataTransitProto.DataTransit dataTransit) {
         log.info("Received req to extract details for user: {}", dataTransit.getEmail());
+        if (!userMappingController.checkIfUserExists(DiurnalUtil.generateUserMapping(dataTransit.getEmail()))) {
+            log.warn("User doesn't exist for email: {}", dataTransit.getEmail());
+            return EMPTY_USER_MAPPING;
+        }
+
         Integer emailHash = userMappingController.retrieveHashEmail(dataTransit.getEmail());
         if (isEmailHashAbsent(emailHash)) {
             log.warn("User doesn't exist for email: {}", dataTransit.getEmail());

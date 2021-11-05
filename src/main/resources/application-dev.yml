@@ -1,6 +1,5 @@
 quarkus:
   datasource:
-    db-kind: postgresql
     jdbc:
       url: jdbc:postgresql://localhost:${CRDB_PORT}/${CRDB_DB}
     username: root

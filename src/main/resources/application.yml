@@ -7,10 +7,6 @@ quarkus:
     port: ${SERVER_PORT:25641}
   datasource:
     db-kind: postgresql
-    username: hibernate
-    password: hibernate
-    jdbc:
-      url: jdbc:postgresql://localhost:${CRDB_PORT}/${CRDB_DB}
   security:
     users:
       embedded:
@@ -19,7 +15,7 @@ quarkus:
         roles:
           itachi: user
         users:
-          itachi: ${INTERACTION_USER_CRED}
+          itachi: ${DBI_USER_CRED}
   swagger-ui:
     path: /swagger-ui
     # always-include: true # disabled for prod

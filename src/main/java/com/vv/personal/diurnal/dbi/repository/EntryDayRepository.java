@@ -15,7 +15,6 @@ import java.util.List;
  * @since 27/10/21
  */
 @Repository
-//public interface EntryDayRepository extends JpaRepository<EntryDayEntity, EntryDayId> {
 public interface EntryDayRepository extends JpaRepository<EntryDayEntity, String> {
 
     List<EntryDayEntity> findByEmailHash(Integer emailHash);

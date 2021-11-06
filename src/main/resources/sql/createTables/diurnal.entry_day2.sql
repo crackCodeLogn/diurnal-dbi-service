@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS entry_day(
+CREATE TABLE IF NOT EXISTS entry_day2(
     hel_dt VARCHAR(50) PRIMARY KEY,
     hash_email NUMERIC NOT NULL,
     date integer NOT NULL,

@@ -68,6 +68,16 @@ public class DiurnalTableEntryDay {
         if (log.isDebugEnabled()) log.debug("Pushing {} new EntryDay entity", entryDays.size());
         try {
             int newEntitiesCreated = entryDayRepository.saveAll(entryDays).size();
+            /*List<List<EntryDayEntity>> lists = Lists.partition(entryDays, 100);
+            AtomicInteger counter = new AtomicInteger(0);
+            lists.forEach(list -> {
+                entryDayRepository.saveAll(list);
+                entryDayRepository.flush();
+                counter.addAndGet(list.size());
+                log.info("Pushed {}/{}", counter.get(), entryDays.size());
+            });
+            return counter.get();
+            */
             if (log.isDebugEnabled()) log.debug("Pushed {} new EntryDay entities", newEntitiesCreated);
             return newEntitiesCreated;
         } catch (Exception e) {

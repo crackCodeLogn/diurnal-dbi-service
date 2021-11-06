@@ -30,9 +30,6 @@ public class EntryDayEntity implements Serializable {
     @Column(name = "date", nullable = false)
     private int date;
 
-    //@EmbeddedId
-    //public EntryDayId entryDayId;
-
     @Column(name = "title")
     private String title;
 
@@ -69,12 +66,12 @@ public class EntryDayEntity implements Serializable {
 
         EntryDayEntity that = (EntryDayEntity) o;
 
-        return new EqualsBuilder().append(emailHash, that.emailHash).append(date, that.date).append(title, that.title).append(entriesAsString, that.entriesAsString).isEquals();
+        return new EqualsBuilder().append(getEmailHash(), that.getEmailHash()).append(getDate(), that.getDate()).append(getEmailHashAndDate(), that.getEmailHashAndDate()).append(getTitle(), that.getTitle()).append(getEntriesAsString(), that.getEntriesAsString()).isEquals();
     }
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder(17, 37).append(emailHash).append(date).append(title).append(entriesAsString).toHashCode();
+        return new HashCodeBuilder(17, 37).append(getEmailHashAndDate()).append(getEmailHash()).append(getDate()).append(getTitle()).append(getEntriesAsString()).toHashCode();
     }
 
     public String getEmailHashAndDate() {

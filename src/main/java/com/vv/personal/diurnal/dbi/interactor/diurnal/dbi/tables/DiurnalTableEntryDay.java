@@ -27,16 +27,12 @@ public class DiurnalTableEntryDay {
         this.entryDayRepository = entryDayRepository;
     }
 
-    /*private static EntryDayId generateEntryDayIdentifier(Integer emailHash, Integer date) {
-        return new EntryDayId().setEmailHash(emailHash).setDate(date);
-    }*/
     private static String generateEntryDayIdentifier(Integer emailHash, Integer date) {
         return String.format("%d^%d", emailHash, date);
     }
 
     public static EntryDayEntity generateEntryDayEntity(Integer emailHash, Integer date, String title, String description) {
         return new EntryDayEntity()
-                //.setEntryDayId(generateEntryDayIdentifier(emailHash, date))
                 .setEmailHashAndDate(generateEntryDayIdentifier(emailHash, date))
                 .setEmailHash(emailHash)
                 .setDate(date)
@@ -47,7 +43,6 @@ public class DiurnalTableEntryDay {
     public int pushNewEntity(Integer emailHash, Integer date, String title, String description) {
         if (log.isDebugEnabled()) log.debug("Pushing new EntryDay entity: {} x {} x {}", emailHash, date, title);
         EntryDayEntity entryDayEntity = new EntryDayEntity()
-                //.setEntryDayId(generateEntryDayIdentifier(emailHash, date))
                 .setEmailHashAndDate(generateEntryDayIdentifier(emailHash, date))
                 .setEmailHash(emailHash)
                 .setDate(date)
@@ -58,7 +53,6 @@ public class DiurnalTableEntryDay {
             if (log.isDebugEnabled()) log.debug("Pushed new EntryDay entity: {}", entryDayEntity);
             return ONE;
         } catch (Exception e) {
-            //log.error("Failed to push new entry-day mapping with identifier: {}. ", entryDayEntity.getEntryDayId(), e);
             log.error("Failed to push new entry-day mapping with identifier: {}. ", entryDayEntity, e);
         }
         return NA_INT;
@@ -87,7 +81,6 @@ public class DiurnalTableEntryDay {
     }
 
     public int deleteEntity(Integer emailHash, Integer date) {
-        //EntryDayId entryDayIdentifier = generateEntryDayIdentifier(emailHash, date);
         String entryDayIdentifier = generateEntryDayIdentifier(emailHash, date);
         try {
             entryDayRepository.deleteById(entryDayIdentifier);
@@ -100,7 +93,6 @@ public class DiurnalTableEntryDay {
     }
 
     public boolean checkEntity(Integer emailHash, Integer date) {
-        //EntryDayId entryDayIdentifier = generateEntryDayIdentifier(emailHash, date);
         String entryDayIdentifier = generateEntryDayIdentifier(emailHash, date);
         try {
             return entryDayRepository.existsById(entryDayIdentifier);
@@ -144,7 +136,6 @@ public class DiurnalTableEntryDay {
     }
 
     public EntryDayEntity retrieveSingleEntity(Integer emailHash, Integer date) {
-        //EntryDayId entryDayIdentifier = generateEntryDayIdentifier(emailHash, date);
         String entryDayIdentifier = generateEntryDayIdentifier(emailHash, date);
         try {
             return entryDayRepository.findById(entryDayIdentifier).orElseThrow();
@@ -163,8 +154,6 @@ public class DiurnalTableEntryDay {
     public EntryDayProto.EntryDay generateDetail(EntryDayEntity entryDayEntity) {
         EntryDayProto.EntryDay.Builder builder = EntryDayProto.EntryDay.newBuilder();
         try {
-            //builder.setHashEmail(entryDayEntity.getEntryDayId().getEmailHash());
-            //builder.setDate(entryDayEntity.getEntryDayId().getDate());
             builder.setHashEmail(entryDayEntity.getEmailHash());
             builder.setDate(entryDayEntity.getDate());
             builder.setTitle(DiurnalUtil.refineDbStringForOriginal(entryDayEntity.getTitle()));
@@ -180,7 +169,6 @@ public class DiurnalTableEntryDay {
         StringBuilder dataLines = new StringBuilder();
         retrieveAllEntities().forEach(entryDay ->
                 dataLines.append(StringUtils.joinWith(COMMA_STR,
-                                //String.valueOf(entryDay.getEntryDayId().getEmailHash()), entryDay.getEntryDayId().getDate(), entryDay.getTitle(), entryDay.getEntriesAsString()))
                                 entryDay.getEmailHashAndDate(), String.valueOf(entryDay.getEmailHash()), entryDay.getDate(), entryDay.getTitle(), entryDay.getEntriesAsString()))
                         .append(NEW_LINE)
         );

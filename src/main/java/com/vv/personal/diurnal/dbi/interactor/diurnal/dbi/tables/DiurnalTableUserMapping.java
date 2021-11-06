@@ -243,10 +243,10 @@ public class DiurnalTableUserMapping {
         return instant.toEpochMilli();
     }
 
-    public String processDataToCsv() {
+    public String processDataToCsv(String delimiter) {
         StringBuilder dataLines = new StringBuilder();
         retrieveAllEntities().forEach(userMapping ->
-                dataLines.append(StringUtils.joinWith(COMMA_STR,
+                dataLines.append(StringUtils.joinWith(delimiter,
                                 String.valueOf(userMapping.getMobile()), userMapping.getEmail(), userMapping.getUser(), userMapping.isPremiumUser(), userMapping.getCredHash(), userMapping.getEmailHash(),
                                 userMapping.getLastCloudSaveTimestamp(), userMapping.getLastSaveTimestamp(), userMapping.getPaymentExpiryTimestamp(), userMapping.getAccountCreationTimestamp(), userMapping.getCurrency()))
                         .append(NEW_LINE)

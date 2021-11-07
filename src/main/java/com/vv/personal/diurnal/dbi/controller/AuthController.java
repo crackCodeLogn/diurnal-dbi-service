@@ -2,11 +2,13 @@ package com.vv.personal.diurnal.dbi.controller;
 
 import com.vv.personal.diurnal.artifactory.generated.ResponsePrimitiveProto;
 import com.vv.personal.diurnal.dbi.auth.Authorizer;
-import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
+import javax.inject.Inject;
+
+import static com.vv.personal.diurnal.dbi.constants.Constants.APPLICATION_X_PROTOBUF;
 import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.generateResponsePrimitiveBool;
 import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.generateResponsePrimitiveString;
 
@@ -15,15 +17,14 @@ import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.generateResponsePrimi
  * @since 07/03/21
  */
 @Slf4j
+@Secured("user")
 @RestController("auth-controller")
 @RequestMapping("/diurnal/auth")
 public class AuthController {
+    @Inject
+    Authorizer authorizer;
 
-    @Autowired
-    private Authorizer authorizer;
-
-    @ApiOperation(value = "generate hash", hidden = true)
-    @GetMapping("/generate/hash")
+    @GetMapping(value = "/generate/hash", produces = APPLICATION_X_PROTOBUF)
     public ResponsePrimitiveProto.ResponsePrimitive generateHash(@RequestBody String rawCred) {
         log.info("Rx-ed raw-cred '{}' to hash", rawCred);
         String hash = authorizer.encode(rawCred);
@@ -36,8 +37,7 @@ public class AuthController {
         return generateHash(rawCred).getResponse();
     }
 
-    @ApiOperation(value = "verify credential to hash", hidden = true)
-    @GetMapping("/verify/cred-hash")
+    @GetMapping(value = "/verify/cred-hash", produces = APPLICATION_X_PROTOBUF)
     public ResponsePrimitiveProto.ResponsePrimitive verifyRawCredToHash(@RequestParam String rawCred,
                                                                         @RequestParam String hash) {
         return generateResponsePrimitiveBool(authorizer.hashMatches(rawCred, hash));

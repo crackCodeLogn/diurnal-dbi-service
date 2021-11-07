@@ -1,17 +1,14 @@
 package com.vv.personal.diurnal.dbi.config;
 
-import lombok.Data;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
+import io.smallrye.config.ConfigMapping;
 
 /**
  * @author Vivek
  * @since 08/04/21
  */
-@Data
-@Configuration
-@ConfigurationProperties(prefix = "dbi.inactive.timeout")
-public class DbiInactiveTimeoutConfig {
-    private boolean enabled;
-    private Integer seconds;
+@ConfigMapping(prefix = "dbi.inactive.timeout")
+public interface DbiInactiveTimeoutConfig {
+    boolean enabled();
+
+    Integer seconds();
 }

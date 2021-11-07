@@ -36,8 +36,9 @@ class TransformFullBackupToProtosTest {
             transformFullBackupToProtos.getEntryDayListBuilder().addEntryDay(DiurnalUtil.generateEntryDayOnPk(emailHash, transformDate(startDate, i)));
         }
 
-        transformFullBackupToProtos.trimDownDataToBeSaved();
+        int rowsSaved = transformFullBackupToProtos.trimDownDataToBeSaved();
         System.out.println(transformFullBackupToProtos.getEntryDayListBuilder().getEntryDayList().get(0).getDate());
+        assertThat(rowsSaved).isEqualTo(365);
         assertThat(transformFullBackupToProtos.getEntryDayList().getEntryDayList().get(0).getDate()).isEqualTo(20220625);
         assertThat(transformFullBackupToProtos.getEntryDayList().getEntryDayCount()).isEqualTo(365);
     }

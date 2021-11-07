@@ -11,11 +11,11 @@ public class GitHubEntryDayFeignClientImpl extends AbstractGitHubFeignClientImpl
 
     @Override
     String getFolderName() {
-        return dbiAccessConfig.getEntryDay().getFolder();
+        return dbiAccessConfig.entryDay().folder();
     }
 
     @Override
     String getBackupFileName() {
-        return dbiAccessConfig.getEntryDay().getBackupFileName();
+        return dbiAccessConfig.entryDay().backupFileName();
     }
 }

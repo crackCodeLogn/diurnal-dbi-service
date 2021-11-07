@@ -10,14 +10,12 @@ import com.vv.personal.diurnal.dbi.interactor.diurnal.dbi.tables.DiurnalTableUse
 import com.vv.personal.diurnal.dbi.model.UserMappingEntity;
 import com.vv.personal.diurnal.dbi.util.DiurnalUtil;
 import com.vv.personal.diurnal.dbi.util.FileUtil;
-import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
+import javax.inject.Inject;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -33,28 +31,26 @@ import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.*;
  * @since 23/02/21
  */
 @Slf4j
+@Secured("user")
 @RestController("user-mapping-controller")
 @RequestMapping("/diurnal/mapping-user")
 public class UserMappingController {
+    @Inject
+    DiurnalTableUserMapping diurnalTableUserMapping;
+    @Inject
+    Authorizer authorizer;
+    @Inject
+    DbiLimitPeriodDaysConfig dbiLimitPeriodDaysConfig;
+    @Inject
+    GitHubUserMappingFeignClientImpl gitHubUserMappingFeignClient;
+    @Inject
+    BeanStore beanStore;
 
-    @Autowired
-    @Qualifier("DiurnalTableUserMapping")
-    private DiurnalTableUserMapping diurnalTableUserMapping;
-    @Autowired
-    private Authorizer authorizer;
-    @Autowired
-    private DbiLimitPeriodDaysConfig dbiLimitPeriodDaysConfig;
-    @Autowired
-    private GitHubUserMappingFeignClientImpl gitHubUserMappingFeignClient;
-    @Autowired
-    private BeanStore beanStore;
-
-    @ApiOperation(value = "create user", hidden = true)
-    @PostMapping("/create/user")
+    @PostMapping(value = "/create/user", consumes = APPLICATION_X_PROTOBUF)
     public Integer createUserMapping(@RequestBody UserMappingProto.UserMapping userMapping) {
         log.info("Creating new user mapping: {} x {} x {} x {}", userMapping.getMobile(), userMapping.getEmail(), userMapping.getUsername(), userMapping.getPremiumUser());
         Instant currentInstant = Instant.now();
-        Instant trialPremiumPaymentExpiryInstant = getTrialEndPeriod(dbiLimitPeriodDaysConfig.getTrialPremium());
+        Instant trialPremiumPaymentExpiryInstant = getTrialEndPeriod(dbiLimitPeriodDaysConfig.trialPremium());
         final UserMappingEntity userMappingEntity = new UserMappingEntity()
                 .setMobile(userMapping.getMobile())
                 .setEmail(refineEmail(userMapping.getEmail()))
@@ -87,8 +83,7 @@ public class UserMappingController {
         return authorizer.encode(cred);
     }
 
-    @ApiOperation(value = "delete user", hidden = true)
-    @PostMapping("/delete/user")
+    @PostMapping(value = "/delete/user", consumes = APPLICATION_X_PROTOBUF)
     public Integer deleteUserMapping(@RequestBody UserMappingProto.UserMapping userMapping) {
         Integer emailHash = retrieveHashEmail(userMapping.getEmail());
         if (isEmailHashAbsent(emailHash)) {
@@ -105,8 +100,7 @@ public class UserMappingController {
         return deleteUserMapping(DiurnalUtil.generateUserMapping(email));
     }
 
-    @ApiOperation(value = "update user-name", hidden = true)
-    @PostMapping("/update/user/name")
+    @PostMapping(value = "/update/user/name", consumes = APPLICATION_X_PROTOBUF)
     public Integer updateUserMappingName(@RequestBody UserMappingProto.UserMapping userMapping) {
         Integer emailHash = retrieveHashEmail(userMapping.getEmail());
         if (isEmailHashAbsent(emailHash)) {
@@ -125,8 +119,7 @@ public class UserMappingController {
         return updateUserMappingName(generateUserMapping(email, updatedUserName));
     }
 
-    @ApiOperation(value = "update user-cred", hidden = true)
-    @PostMapping("/update/user/hash/cred")
+    @PostMapping(value = "/update/user/hash/cred", consumes = APPLICATION_X_PROTOBUF)
     public Integer updateUserMappingCred(@RequestBody UserMappingProto.UserMapping userMapping) {
         Integer emailHash = retrieveHashEmail(userMapping.getEmail());
         if (isEmailHashAbsent(emailHash)) {
@@ -145,8 +138,7 @@ public class UserMappingController {
         return updateUserMappingCred(generateUserMapping(DEFAULT_MOBILE, email, DEFAULT_USER_NAME, DEFAULT_PREMIUM_USER_STATUS, hashCred));
     }
 
-    @ApiOperation(value = "update user-mobile", hidden = true)
-    @PostMapping("/update/user/mobile")
+    @PostMapping(value = "/update/user/mobile", consumes = APPLICATION_X_PROTOBUF)
     public Integer updateUserMappingMobile(@RequestBody UserMappingProto.UserMapping userMapping) {
         Integer emailHash = retrieveHashEmail(userMapping.getEmail());
         if (isEmailHashAbsent(emailHash)) {
@@ -165,8 +157,7 @@ public class UserMappingController {
         return updateUserMappingMobile(generateUserMapping(mobile, email, DEFAULT_USER_NAME, DEFAULT_PREMIUM_USER_STATUS, DEFAULT_USER_CRED_HASH));
     }
 
-    @ApiOperation(value = "update user-currency", hidden = true)
-    @PostMapping("/update/user/currency")
+    @PostMapping(value = "/update/user/currency", consumes = APPLICATION_X_PROTOBUF)
     public Integer updateUserMappingCurrency(@RequestBody UserMappingProto.UserMapping userMapping) {
         Integer emailHash = retrieveHashEmail(userMapping.getEmail());
         if (isEmailHashAbsent(emailHash)) {
@@ -185,8 +176,7 @@ public class UserMappingController {
         return updateUserMappingCurrency(generateUserMapping(email, currency));
     }
 
-    @ApiOperation(value = "update user-cloud save ts", hidden = true)
-    @PostMapping("/update/user/timestamp/save/cloud")
+    @PostMapping(value = "/update/user/timestamp/save/cloud", consumes = APPLICATION_X_PROTOBUF)
     public Integer updateUserMappingLastCloudSaveTimestamp(@RequestBody UserMappingProto.UserMapping userMapping) {
         if (userMapping.getHashEmail() == 0) {
             log.warn("Emailhash not supplied in the user mapping: {}", userMapping);
@@ -196,8 +186,7 @@ public class UserMappingController {
         return diurnalTableUserMapping.updateLastCloudSaveTimestamp(userMapping.getHashEmail(), userMapping.getLastCloudSaveTimestamp());
     }
 
-    @ApiOperation(value = "update user-save ts", hidden = true)
-    @PostMapping("/update/user/timestamp/save/local")
+    @PostMapping(value = "/update/user/timestamp/save/local", consumes = APPLICATION_X_PROTOBUF)
     public Integer updateUserMappingLastSaveTimestamp(@RequestBody UserMappingProto.UserMapping userMapping) {
         Integer emailHash = retrieveHashEmail(userMapping.getEmail());
         if (isEmailHashAbsent(emailHash)) {
@@ -208,8 +197,7 @@ public class UserMappingController {
         return diurnalTableUserMapping.updateLastSavedTimestamp(emailHash, userMapping.getLastSavedTimestamp());
     }
 
-    @ApiOperation(value = "update user-payment expiry ts", hidden = true)
-    @PostMapping("/update/user/timestamp/payment/expiry")
+    @PostMapping(value = "/update/user/timestamp/payment/expiry", consumes = APPLICATION_X_PROTOBUF)
     public Integer updateUserMappingPaymentExpiryTimestamp(@RequestBody UserMappingProto.UserMapping userMapping) {
         Integer emailHash = retrieveHashEmail(userMapping.getEmail());
         if (isEmailHashAbsent(emailHash)) {
@@ -220,7 +208,6 @@ public class UserMappingController {
         return diurnalTableUserMapping.updatePaymentExpiryTimestamp(emailHash, userMapping.getPaymentExpiryTimestamp());
     }
 
-    @ApiOperation(value = "update user-payment expiry ts")
     @PostMapping("/manual/update/user/timestamp/payment/expiry")
     public Integer updateUserMappingPaymentExpiryTimestampManually(@RequestParam String email,
                                                                    @RequestParam Long paymentExpiryTimestamp) {
@@ -231,8 +218,7 @@ public class UserMappingController {
         return updateUserMappingPaymentExpiryTimestamp(userMapping);
     }
 
-    @ApiOperation(value = "update user-info for name, mobile and currency", hidden = true)
-    @PostMapping("/update/user/info")
+    @PostMapping(value = "/update/user/info", consumes = APPLICATION_X_PROTOBUF)
     public Boolean updateUserInfo(@RequestBody UserMappingProto.UserMapping userMapping) {
         Integer emailHash = retrieveHashEmail(userMapping.getEmail());
         if (isEmailHashAbsent(emailHash)) {
@@ -250,8 +236,7 @@ public class UserMappingController {
         return false;
     }
 
-    @ApiOperation(value = "user premium updation", hidden = true)
-    @PatchMapping("/update/user/premium")
+    @PatchMapping(value = "/update/user/premium", consumes = APPLICATION_X_PROTOBUF)
     public Integer updatePremiumUserMapping(@RequestBody UserMappingProto.UserMapping userMapping) {
         String email = refineEmail(userMapping.getEmail());
         Integer emailHash = retrieveHashEmail(email);
@@ -282,8 +267,7 @@ public class UserMappingController {
         log.info("Manual premium user update done => {}", result);
     }
 
-    @ApiOperation(value = "retrieve user detail", hidden = true)
-    @GetMapping("/retrieve/user")
+    @GetMapping(value = "/retrieve/user", produces = APPLICATION_X_PROTOBUF)
     public UserMappingProto.UserMapping retrieveUserMapping(@RequestParam Integer emailHash) {
         log.info("Retrieving user details for [{}]", emailHash);
         UserMappingProto.UserMapping retrievedUserMapping = diurnalTableUserMapping.retrieveSingle(emailHash);
@@ -291,8 +275,7 @@ public class UserMappingController {
         return retrievedUserMapping;
     }
 
-    @ApiOperation(value = "retrieve all users", hidden = true)
-    @GetMapping("/retrieve/all/users")
+    @GetMapping(value = "/retrieve/all/users", produces = APPLICATION_X_PROTOBUF)
     public UserMappingProto.UserMappingList retrieveAllUserMappings() {
         log.info("Retrieving all user mappings");
         UserMappingProto.UserMappingList userMappingList = diurnalTableUserMapping.retrieveAll();
@@ -306,7 +289,6 @@ public class UserMappingController {
         return performBulkOpStr(retrieveAllUserMappings().getUserMappingList(), AbstractMessage::toString);
     }
 
-    @ApiOperation(value = "retrieve hashed cred from db")
     @GetMapping("/retrieve/hash/cred")
     public String retrieveHashCred(@RequestParam Integer emailHash) {
         log.info("Retrieve cred-hash for: {}", emailHash);
@@ -315,7 +297,6 @@ public class UserMappingController {
         return retrievedCred;
     }
 
-    @ApiOperation(value = "retrieve hashed email from db", notes = "This will be internal to dbi-service only.")
     @GetMapping("/retrieve/hash/email")
     public Integer retrieveHashEmail(@RequestParam String email) {
         email = refineEmail(email);
@@ -328,7 +309,6 @@ public class UserMappingController {
         return diurnalTableUserMapping.retrievePremiumUserStatus(emailHash);
     }
 
-    @ApiOperation(value = "retrieve premium user status from db")
     @GetMapping("/retrieve/status/user-premium")
     public Boolean retrievePremiumUserStatusManually(@RequestParam String email) {
         email = refineEmail(email);
@@ -340,13 +320,11 @@ public class UserMappingController {
         return retrievePremiumUserStatus(emailHash);
     }
 
-    @ApiOperation(value = "check if user exists", hidden = true)
-    @GetMapping("/check/user")
-    public Boolean checkIfUserExists(@RequestParam UserMappingProto.UserMapping userMapping) {
+    @GetMapping(value = "/check/user", consumes = APPLICATION_X_PROTOBUF)
+    public Boolean checkIfUserExists(@RequestBody UserMappingProto.UserMapping userMapping) {
         log.info("Checking if user exists for email: [{}]", userMapping.getEmail());
         String email = refineEmail(userMapping.getEmail());
-        Integer emailHash = retrieveHashEmail(email);
-        boolean checkIfUserExists = !isEmailHashAbsent(emailHash);
+        boolean checkIfUserExists = diurnalTableUserMapping.checkIfEntityExists(email);
         log.info("Result: {}", checkIfUserExists);
         return checkIfUserExists;
     }
@@ -359,13 +337,14 @@ public class UserMappingController {
     }
 
     @PutMapping("/upload/csv")
-    public int uploadCsv(@RequestParam("csv-location") String csvLocation) {
+    public int uploadCsv(@RequestParam("csv-location") String csvLocation,
+                         @RequestParam(value = "delimiter", defaultValue = ",") String delimiter) {
         AtomicInteger counter = new AtomicInteger(0);
         List<UserMappingEntity> userMappingEntities = FileUtil.readFileFromLocation(csvLocation).stream()
                 .map(data -> {
                     if (counter.get() == 0) data = data.substring(1);
                     counter.incrementAndGet();
-                    String[] vals = data.split(",");
+                    String[] vals = data.split(delimiter);
 
                     long mobile = Long.parseLong(vals[0].trim());
                     String email = vals[1];
@@ -401,14 +380,8 @@ public class UserMappingController {
     @PutMapping("/backup/github/csv")
     public boolean backupUserMappingDataToGitHubInCsv(@RequestParam(name = "delimiter", defaultValue = ",") String delimiter) {
         StopWatch stopWatch = beanStore.procureStopWatch();
-        StringBuilder dataLines = new StringBuilder();
-        diurnalTableUserMapping.retrieveAllEntities().forEach(userMapping ->
-                dataLines.append(StringUtils.joinWith(delimiter,
-                                String.valueOf(userMapping.getMobile()), userMapping.getEmail(), userMapping.getUser(), userMapping.isPremiumUser(), userMapping.getCredHash(), userMapping.getEmailHash(),
-                                userMapping.getLastCloudSaveTimestamp(), userMapping.getLastSaveTimestamp(), userMapping.getPaymentExpiryTimestamp(), userMapping.getAccountCreationTimestamp(), userMapping.getCurrency()))
-                        .append(NEW_LINE)
-        );
-        boolean compute = gitHubUserMappingFeignClient.backupAndUploadToGitHub(dataLines.toString());
+        String dataLines = diurnalTableUserMapping.processDataToCsv(delimiter);
+        boolean compute = gitHubUserMappingFeignClient.backupAndUploadToGitHub(dataLines);
         stopWatch.stop();
         log.info("Took {} ms to complete user_mapping table backup from user-mapping controller. Result: {}", stopWatch.getTime(TimeUnit.MILLISECONDS), compute);
         return compute;

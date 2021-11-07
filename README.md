@@ -3,12 +3,12 @@
 ### Tech stack:
 
 <ol>
-<li>Java 8 (as Heroku doesn't support higher buildpacks by default)</li>
-<li>Spring-Boot</li>
-<li>Heroku</li>
+<li>Java 11 - OpenJDK11</li>
+<li>Quarkus <a href="https://quarkus.io/">https://quarkus.io/</a></li>
+<li>Heroku <a href="https://dashboard.heroku.com/">https://dashboard.heroku.com/</a></li>
 <li>Postgres - for prod</li>
 <li>CockroachDB - for local dev. CRDB is built on postgres. <a href="https://www.cockroachlabs.com">https://www.cockroachlabs.com/</a></li>
-<li>Spring fox - Swagger</li>
+<li>Swagger - OpenAPI - non prod</li>
 <li>OpenFeign</li>
 <li>Gson</li>
 <li>Protobuf</li>

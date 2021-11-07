@@ -54,7 +54,7 @@ public class TransformBackupToString {
             Queue<EntryProto.Entry> entries = entryDayRepr.getEntries();
             if (entries.isEmpty()) continue;
 
-            response.addResponses(String.format("%s %s ::\n",
+            response.addResponses(String.format("%s %s ::%n",
                     DiurnalUtil.convertEntryDayDateToDisplayFormat(entryDayRepr.getEntryDay().getDate()),
                     entryDayRepr.getEntryDay().getTitle()));
 
@@ -64,7 +64,7 @@ public class TransformBackupToString {
                 boolean nonComment = true;
                 switch (entry.getSign()) {
                     case COMMENT:
-                        response.addResponses(String.format("//%s\n", entry.getDescription().trim()));
+                        response.addResponses(String.format("//%s%n", entry.getDescription().trim()));
                         nonComment = false;
                         break;
                     case POSITIVE:
@@ -75,7 +75,7 @@ public class TransformBackupToString {
                         break;
                 }
                 if (nonComment) {
-                    response.addResponses(String.format("%s %s %.2f : %s\n", acquiredSign, entry.getCurrency(), entry.getAmount(), entry.getDescription().trim()));
+                    response.addResponses(String.format("%s %s %.2f : %s%n", acquiredSign, entry.getCurrency(), entry.getAmount(), entry.getDescription().trim()));
                     //forcefully neglecting conversion from entry.getCurrency's STR format to the sign symbol for now, as on app side, currency would be overridden from settings itself
                 }
             }

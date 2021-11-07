@@ -2,11 +2,12 @@ package com.vv.personal.diurnal.ping.controller.health;
 
 import com.vv.personal.diurnal.artifactory.generated.ResponsePrimitiveProto;
 import com.vv.personal.diurnal.dbi.util.DiurnalUtil;
-import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import static com.vv.personal.diurnal.dbi.constants.Constants.APPLICATION_X_PROTOBUF;
 
 /**
  * @author Vivek
@@ -17,9 +18,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/health")
 public class HealthController {
 
-    @GetMapping("/ping")
-    @ApiOperation(value = "ping for heartbeat", hidden = true)
-    ResponsePrimitiveProto.ResponsePrimitive ping() {
+    @GetMapping(value = "/ping", produces = APPLICATION_X_PROTOBUF)
+    public ResponsePrimitiveProto.ResponsePrimitive ping() {
         String pingResult = "ALIVE-" + System.currentTimeMillis();
         log.info("PINGING back with status {}", pingResult);
         return DiurnalUtil.generateResponsePrimitiveString(pingResult);

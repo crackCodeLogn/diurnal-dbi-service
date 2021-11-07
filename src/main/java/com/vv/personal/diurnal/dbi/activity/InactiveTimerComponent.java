@@ -1,6 +1,6 @@
-package com.vv.personal.diurnal.dbi.component.activity;
+package com.vv.personal.diurnal.dbi.activity;
 
-import com.vv.personal.diurnal.dbi.component.ShutdownManager;
+/*import com.vv.personal.diurnal.dbi.component.ShutdownManager;
 import com.vv.personal.diurnal.dbi.config.DbiInactiveTimeoutConfig;
 import com.vv.personal.diurnal.dbi.config.DbiShutdownExitCodeConfig;
 import com.vv.personal.diurnal.dbi.util.TimerUtil;
@@ -15,13 +15,15 @@ import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Timer;
-import java.util.TimerTask;
+import java.util.TimerTask;*/
 
 /**
  * @author Vivek
  * @since 08/04/21
  */
+/*
 @Slf4j
+@Deprecated
 @Component
 public class InactiveTimerComponent implements WebMvcConfigurer, HandlerInterceptor {
     private Timer inactiveTimer = TimerUtil.generateNewTimer();
@@ -73,4 +75,4 @@ public class InactiveTimerComponent implements WebMvcConfigurer, HandlerIntercep
             }
         };
     }
-}
+}*/

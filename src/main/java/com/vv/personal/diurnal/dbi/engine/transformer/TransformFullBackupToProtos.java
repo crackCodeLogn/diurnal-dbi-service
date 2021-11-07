@@ -104,7 +104,7 @@ public class TransformFullBackupToProtos {
         return false;
     }
 
-    public void trimDownDataToBeSaved() {
+    public int trimDownDataToBeSaved() {
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
         int allowedEndDate = entryDayListBuilder.getEntryDayList().get(entryDayListBuilder.getEntryDayCount() - 1).getDate();
@@ -119,6 +119,7 @@ public class TransformFullBackupToProtos {
         stopWatch.stop();
         log.info("Took {} ms to trim down data to be saved on cloud. New first entry date: {}, total days to be saved: {}",
                 stopWatch.getTime(TimeUnit.MILLISECONDS), entryDayListBuilder.getEntryDayList().get(0).getDate(), entryDayListBuilder.getEntryDayCount());
+        return entryDays.size();
     }
 
     Integer getAllowedFirstDayForCloud(Integer lastDayInBackup) {

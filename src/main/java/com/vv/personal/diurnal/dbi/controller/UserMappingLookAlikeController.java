@@ -4,12 +4,13 @@ import com.vv.personal.diurnal.dbi.model.UserMappingLookAlikeEntity;
 import com.vv.personal.diurnal.dbi.repository.UserMappingLookAlikeRepository;
 import com.vv.personal.diurnal.dbi.util.FileUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.inject.Inject;
 import java.time.Instant;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -20,15 +21,15 @@ import java.util.stream.Collectors;
  * @since 28/10/21
  */
 @Slf4j
+@Secured("user")
 @RestController("user-mapping-2-controller")
 @RequestMapping("/diurnal/mapping-user-2")
 public class UserMappingLookAlikeController {
-
-    @Autowired
-    private UserMappingLookAlikeRepository userMappingLookAlikeRepository;
+    @Inject
+    UserMappingLookAlikeRepository userMappingLookAlikeRepository;
 
     @PutMapping("/upload/csv")
-    int uploadCsv(@RequestParam("csv-location") String csvLocation) {
+    public int uploadCsv(@RequestParam("csv-location") String csvLocation) {
         AtomicInteger counter = new AtomicInteger(0);
         List<UserMappingLookAlikeEntity> userMappingLookAlikeEntities = FileUtil.readFileFromLocation(csvLocation).stream()
                 .map(data -> {
@@ -63,7 +64,7 @@ public class UserMappingLookAlikeController {
                             ;
                 }).collect(Collectors.toList());
         log.info("Extracted {} entities from '{}'", userMappingLookAlikeEntities.size(), csvLocation);
-        int saved = userMappingLookAlikeRepository.saveAllAndFlush(userMappingLookAlikeEntities).size();
+        int saved = userMappingLookAlikeRepository.saveAll(userMappingLookAlikeEntities).size();
         log.info("Saved {} into db", saved);
         return saved;
     }

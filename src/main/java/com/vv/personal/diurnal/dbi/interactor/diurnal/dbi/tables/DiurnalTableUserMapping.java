@@ -8,9 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Queue;
 import java.util.stream.Collectors;
 
 import static com.vv.personal.diurnal.dbi.constants.Constants.*;
@@ -42,7 +40,7 @@ public class DiurnalTableUserMapping {
 
     public int pushNewEntities(List<UserMappingEntity> userMappingEntityList) {
         try {
-            return userMappingRepository.saveAllAndFlush(userMappingEntityList).size();
+            return userMappingRepository.saveAll(userMappingEntityList).size();
         } catch (Exception e) {
             log.error("Failed to bulk push {} new user mappings. ", userMappingEntityList.size(), e);
         }
@@ -58,6 +56,10 @@ public class DiurnalTableUserMapping {
             log.error("Failed to delete user mapping entity with email-hash: {}. ", emailHash, e);
         }
         return 0;
+    }
+
+    public boolean checkIfEntityExists(String email) {
+        return userMappingRepository.checkIfEmailExists(email) == ONE;
     }
 
     public int updateUsername(int emailHash, String username) { //updates the user name
@@ -162,7 +164,8 @@ public class DiurnalTableUserMapping {
 
     public UserMappingEntity retrieveSingleEntity(int emailHash) {
         try {
-            return userMappingRepository.getById(emailHash);
+            return userMappingRepository.findById(emailHash)
+                    .orElseThrow();
         } catch (Exception e) {
             log.error("Failed to retrieve single entity og email-hash: {}. ", emailHash, e);
         }
@@ -240,15 +243,14 @@ public class DiurnalTableUserMapping {
         return instant.toEpochMilli();
     }
 
-    //scrutinize
-    protected Queue<String> processDataToCsv(UserMappingProto.UserMappingList dataList) {
-        Queue<String> dataLines = new LinkedList<>();
-        dataList.getUserMappingList().forEach(userMapping -> dataLines.add(
-                        StringUtils.joinWith(PIPE,
-                                String.valueOf(userMapping.getMobile()), userMapping.getEmail(), userMapping.getUsername(), userMapping.getPremiumUser(), userMapping.getHashCred(), userMapping.getHashEmail(),
-                                userMapping.getLastCloudSaveTimestamp(), userMapping.getLastSavedTimestamp(), userMapping.getPaymentExpiryTimestamp(), userMapping.getAccountCreationTimestamp(), userMapping.getCurrency())
-                )
+    public String processDataToCsv(String delimiter) {
+        StringBuilder dataLines = new StringBuilder();
+        retrieveAllEntities().forEach(userMapping ->
+                dataLines.append(StringUtils.joinWith(delimiter,
+                                String.valueOf(userMapping.getMobile()), userMapping.getEmail(), userMapping.getUser(), userMapping.isPremiumUser(), userMapping.getCredHash(), userMapping.getEmailHash(),
+                                userMapping.getLastCloudSaveTimestamp(), userMapping.getLastSaveTimestamp(), userMapping.getPaymentExpiryTimestamp(), userMapping.getAccountCreationTimestamp(), userMapping.getCurrency()))
+                        .append(NEW_LINE)
         );
-        return dataLines;
+        return dataLines.toString();
     }
 }

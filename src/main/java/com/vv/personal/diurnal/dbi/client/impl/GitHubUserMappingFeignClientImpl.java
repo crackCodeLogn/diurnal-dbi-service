@@ -11,11 +11,11 @@ public class GitHubUserMappingFeignClientImpl extends AbstractGitHubFeignClientI
 
     @Override
     String getFolderName() {
-        return dbiAccessConfig.getUserMapping().getFolder();
+        return dbiAccessConfig.userMapping().folder();
     }
 
     @Override
     String getBackupFileName() {
-        return dbiAccessConfig.getUserMapping().getBackupFileName();
+        return dbiAccessConfig.userMapping().backupFileName();
     }
 }

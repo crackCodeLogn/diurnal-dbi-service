@@ -9,14 +9,13 @@ import com.vv.personal.diurnal.dbi.engine.transformer.TransformFullBackupToProto
 import com.vv.personal.diurnal.dbi.interactor.diurnal.dbi.tables.DiurnalTableEntryDay;
 import com.vv.personal.diurnal.dbi.model.EntryDayEntity;
 import com.vv.personal.diurnal.dbi.util.DiurnalUtil;
-import io.swagger.annotations.ApiOperation;
+import com.vv.personal.diurnal.dbi.util.FileUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
+import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -30,30 +29,27 @@ import static com.vv.personal.diurnal.dbi.util.DiurnalUtil.*;
  * @since 06/03/21
  */
 @Slf4j
+@Secured("user")
 @RestController("entry-day-controller")
 @RequestMapping("/diurnal/entry-day")
 public class EntryDayController {
+    @Inject
+    DiurnalTableEntryDay diurnalTableEntryDay;
+    @Inject
+    UserMappingController userMappingController;
+    @Inject
+    GitHubEntryDayFeignClientImpl gitHubEntryDayFeignClient;
+    @Inject
+    BeanStore beanStore;
 
-    @Autowired
-    @Qualifier("DiurnalTableEntryDay")
-    private DiurnalTableEntryDay diurnalTableEntryDay;
-    @Autowired
-    private UserMappingController userMappingController;
-    @Autowired
-    private GitHubEntryDayFeignClientImpl gitHubEntryDayFeignClient;
-    @Autowired
-    private BeanStore beanStore;
-
-    @ApiOperation(value = "create entry day", hidden = true)
-    @PostMapping("/create/entry-day")
+    @PostMapping(value = "/create/entry-day", produces = APPLICATION_X_PROTOBUF, consumes = APPLICATION_X_PROTOBUF)
     public Integer createEntryDay(@RequestBody EntryDayProto.EntryDay entryDay) {
         Integer sqlResult = diurnalTableEntryDay.pushNewEntity(entryDay.getHashEmail(), entryDay.getDate(), entryDay.getTitle(), entryDay.getEntriesAsString());
         if (log.isDebugEnabled()) log.debug("Result of new entry-day creation: {}", sqlResult);
         return sqlResult;
     }
 
-    @ApiOperation(value = "create bulk entry-days", hidden = true)
-    @PostMapping("/create/entry-days")
+    @PostMapping(value = "/create/entry-days", consumes = APPLICATION_X_PROTOBUF)
     public int bulkCreateEntryDays(@RequestBody EntryDayProto.EntryDayList entryDayList) {
         log.info("Bulk creating {} entry-days", entryDayList.getEntryDayCount());
         List<EntryDayEntity> bulkEntriesMapped = generateBulkEntryDaysFromProto(entryDayList);
@@ -82,8 +78,7 @@ public class EntryDayController {
         return createEntryDay(generateCompleteEntryDay(emailHash, date, title, entriesAsString));
     }
 
-    @ApiOperation(value = "delete entry-day", hidden = true)
-    @PostMapping("/delete/entry-day")
+    @PostMapping(value = "/delete/entry-day", consumes = APPLICATION_X_PROTOBUF)
     public Integer deleteEntryDay(@RequestBody EntryDayProto.EntryDay entryDay) {
         log.info("Deleting entry-day: {} x {}", entryDay.getHashEmail(), entryDay.getDate());
         Integer sqlResult = diurnalTableEntryDay.deleteEntity(entryDay.getHashEmail(), entryDay.getDate());
@@ -91,8 +86,7 @@ public class EntryDayController {
         return sqlResult;
     }
 
-    @ApiOperation(value = "delete bulk entry-days", hidden = true)
-    @PostMapping("/delete/entry-days")
+    @PostMapping(value = "/delete/entry-days", consumes = APPLICATION_X_PROTOBUF)
     public List<Integer> bulkDeleteEntryDays(@RequestBody EntryDayProto.EntryDayList entryDayList) {
         log.info("Bulk deleting {} entry-days", entryDayList.getEntryDayCount());
         List<Integer> bulkEntriesDeletionResult = performBulkOpInt(entryDayList.getEntryDayList(), this::deleteEntryDay);
@@ -112,8 +106,7 @@ public class EntryDayController {
         return deleteEntryDay(generateEntryDayOnPk(emailHash, date));
     }
 
-    @ApiOperation(value = "delete all entry-days of an user", hidden = true)
-    @PostMapping("/delete/entry-days/user")
+    @PostMapping(value = "/delete/entry-days/user", consumes = APPLICATION_X_PROTOBUF)
     public Integer bulkDeleteEntryDaysOfUser(@RequestBody UserMappingProto.UserMapping userMapping) {
         log.info("Bulk deleting entry-days of user with hash: {}", userMapping.getHashEmail());
         Integer bulkEntriesDeletionResult = diurnalTableEntryDay.bulkDeleteEntryDaysOfUser(userMapping.getHashEmail());
@@ -121,7 +114,6 @@ public class EntryDayController {
         return bulkEntriesDeletionResult;
     }
 
-    @ApiOperation(value = "manually delete all entry-days of an user")
     @DeleteMapping("/manual/delete/entry-days/user")
     public Integer bulkDeleteEntryDaysOfUserManually(@RequestParam String email) {
         Integer emailHash = userMappingController.retrieveHashEmail(email);
@@ -147,7 +139,6 @@ public class EntryDayController {
         return true;
     }
 
-    @ApiOperation(value = "retrieve all entry-days", hidden = true)
     @GetMapping("/retrieve/all/entry-days")
     public EntryDayProto.EntryDayList retrieveAllEntryDays() {
         log.info("Retrieving all entry-days");
@@ -162,9 +153,8 @@ public class EntryDayController {
         return performBulkOpStr(retrieveAllEntryDays().getEntryDayList(), AbstractMessage::toString);
     }
 
-    @ApiOperation(value = "retrieve all entry-days of an email-hash", hidden = true)
-    @GetMapping("/retrieve/all/entry-days/email-hash")
-    public EntryDayProto.EntryDayList retrieveAllEntryDaysOfEmailHash(@RequestParam UserMappingProto.UserMapping userMapping) {
+    @GetMapping(value = "/retrieve/all/entry-days/email-hash", produces = APPLICATION_X_PROTOBUF, consumes = APPLICATION_X_PROTOBUF)
+    public EntryDayProto.EntryDayList retrieveAllEntryDaysOfEmailHash(@RequestBody UserMappingProto.UserMapping userMapping) {
         log.info("Retrieving all entry-days of email-hash => {}", userMapping.getHashEmail());
         EntryDayProto.EntryDayList entryDayList = diurnalTableEntryDay.retrieveSome(userMapping.getHashEmail());
         log.info("Result of retrieving all: {} entry-days of email hash {}", entryDayList.getEntryDayCount(), userMapping.getHashEmail());
@@ -181,9 +171,8 @@ public class EntryDayController {
         return performBulkOpStr(retrieveAllEntryDaysOfEmailHash(generateUserMappingOnPk(emailHash)).getEntryDayList(), AbstractMessage::toString);
     }
 
-    @ApiOperation(value = "check if entry-day exists", hidden = true)
-    @GetMapping("/check/entry-day")
-    public Boolean checkIfEntryDayExists(@RequestParam EntryDayProto.EntryDay entryDay) {
+    @GetMapping(value = "/check/entry-day", consumes = APPLICATION_X_PROTOBUF)
+    public Boolean checkIfEntryDayExists(@RequestBody EntryDayProto.EntryDay entryDay) {
         log.info("Checking if entry-day exists for: {} x {}", entryDay.getHashEmail(), entryDay.getDate());
         boolean checkIfEntryDayExists = diurnalTableEntryDay.checkEntity(entryDay.getHashEmail(), entryDay.getDate());
         log.info("Result: {}", checkIfEntryDayExists);
@@ -202,16 +191,37 @@ public class EntryDayController {
         return checkIfEntryDayExists(generateEntryDayOnPk(emailHash, date));
     }
 
+    @PutMapping("/upload/csv")
+    public int uploadCsv(@RequestParam("csv-location") String csvLocation,
+                         @RequestParam(value = "delimiter", defaultValue = "\\|") String delimiter) {
+        List<EntryDayEntity> entryDayEntities = FileUtil.readFileFromLocation(csvLocation).stream()
+                .map(data -> {
+                    String[] vals = data.split(delimiter);
+
+                    String emailHashAndDate = vals[0].trim();
+                    int emailHash = Integer.parseInt(vals[1]);
+                    int date = Integer.parseInt(vals[2]);
+                    String title = vals[3];
+                    String entries = vals[4];
+                    return new EntryDayEntity()
+                            .setEmailHashAndDate(emailHashAndDate)
+                            .setEmailHash(emailHash)
+                            .setDate(date)
+                            .setTitle(title)
+                            .setEntriesAsString(entries)
+                            ;
+                }).collect(Collectors.toList());
+        log.info("Extracted {} entities from '{}'", entryDayEntities.size(), csvLocation);
+        int saved = diurnalTableEntryDay.pushNewEntities(entryDayEntities);
+        log.info("Saved {} into db", saved);
+        return saved;
+    }
+
     @PutMapping("/backup/github/csv")
-    public boolean backupUserMappingDataToGitHubInCsv(@RequestParam(name = "delimiter", defaultValue = ",") String delimiter) {
+    public boolean backupEntryDayDataToGitHubInCsv(@RequestParam(name = "delimiter", defaultValue = "\\|") String delimiter) {
         StopWatch stopWatch = beanStore.procureStopWatch();
-        StringBuilder dataLines = new StringBuilder();
-        diurnalTableEntryDay.retrieveAllEntities().forEach(entryDay ->
-                dataLines.append(StringUtils.joinWith(delimiter,
-                                String.valueOf(entryDay.getEntryDayId().getEmailHash()), entryDay.getEntryDayId().getDate(), entryDay.getTitle(), entryDay.getEntriesAsString()))
-                        .append(NEW_LINE)
-        );
-        boolean compute = gitHubEntryDayFeignClient.backupAndUploadToGitHub(dataLines.toString());
+        String dataLines = diurnalTableEntryDay.processAllRowsToCsv(delimiter);
+        boolean compute = gitHubEntryDayFeignClient.backupAndUploadToGitHub(dataLines);
         stopWatch.stop();
         log.info("Took {} ms to complete entry_day table backup from entry-day controller. Result: {}", stopWatch.getTime(TimeUnit.MILLISECONDS), compute);
         return compute;

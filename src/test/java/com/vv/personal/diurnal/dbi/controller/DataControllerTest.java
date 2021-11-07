@@ -81,7 +81,7 @@ class DataControllerTest {
         when(userMappingController.retrievePremiumUserStatus(emailHash)).thenReturn(true);
         when(userMappingController.updateUserMappingLastCloudSaveTimestamp(any(UserMappingProto.UserMapping.class))).thenReturn(1);
         when(diurnalTableEntryDay.pushNewEntities(anyList())).thenReturn(3);
-        when(dbiLimitPeriodDaysConfig.getCloud()).thenReturn(365);
+        when(dbiLimitPeriodDaysConfig.cloud()).thenReturn(365);
         StopWatch stopWatch = procureStopWatch();
         when(beanStore.procureStopWatch()).thenReturn(stopWatch);
 

@@ -168,13 +168,13 @@ public class DataController {
         log.info("Received req to extract details for user: {}", dataTransit.getEmail());
         if (!userMappingController.checkIfUserExists(DiurnalUtil.generateUserMapping(dataTransit.getEmail()))) {
             log.warn("User doesn't exist for email: {}", dataTransit.getEmail());
-            return EMPTY_USER_MAPPING;
+            return USER_DOES_NOT_EXIST;
         }
 
         Integer emailHash = userMappingController.retrieveHashEmail(dataTransit.getEmail());
         if (isEmailHashAbsent(emailHash)) {
             log.warn("User doesn't exist for email: {}", dataTransit.getEmail());
-            return EMPTY_USER_MAPPING;
+            return USER_DOES_NOT_EXIST;
         }
         UserMappingProto.UserMapping retrievedUserMapping = userMappingController.retrieveUserMapping(emailHash);
         if (retrievedUserMapping.getPaymentExpiryTimestamp() != DEFAULT_PAYMENT_EXPIRY_TS && TimingUtil.hasTimestampExpired(retrievedUserMapping.getPaymentExpiryTimestamp())) {

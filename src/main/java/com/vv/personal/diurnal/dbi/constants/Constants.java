@@ -51,6 +51,9 @@ public final class Constants {
     public static final ResponsePrimitiveProto.ResponsePrimitive RESPOND_TRUE_BOOL = ResponsePrimitiveProto.ResponsePrimitive.newBuilder().setBoolResponse(true).build();
     public static final ResponsePrimitiveProto.ResponsePrimitive RESPOND_EMPTY_BODY = ResponsePrimitiveProto.ResponsePrimitive.newBuilder().setResponse(EMPTY_STR).build();
     public static final UserMappingProto.UserMapping EMPTY_USER_MAPPING = UserMappingProto.UserMapping.newBuilder().build();
+    public static final UserMappingProto.UserMapping USER_DOES_NOT_EXIST = UserMappingProto.UserMapping.newBuilder()
+            .setMobile(-999)
+            .build();
     public static final EntryDayProto.EntryDay EMPTY_ENTRY_DAY = EntryDayProto.EntryDay.newBuilder().build();
 
     public static final Set<String> TITLES_TO_EXEMPT = new HashSet<>();

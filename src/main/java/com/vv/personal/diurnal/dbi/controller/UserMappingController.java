@@ -380,7 +380,7 @@ public class UserMappingController {
     @PutMapping("/backup/github/csv")
     public boolean backupUserMappingDataToGitHubInCsv(@RequestParam(name = "delimiter", defaultValue = ",") String delimiter) {
         StopWatch stopWatch = beanStore.procureStopWatch();
-        String dataLines = diurnalTableUserMapping.processDataToCsv();
+        String dataLines = diurnalTableUserMapping.processDataToCsv(delimiter);
         boolean compute = gitHubUserMappingFeignClient.backupAndUploadToGitHub(dataLines);
         stopWatch.stop();
         log.info("Took {} ms to complete user_mapping table backup from user-mapping controller. Result: {}", stopWatch.getTime(TimeUnit.MILLISECONDS), compute);

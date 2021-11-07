@@ -205,12 +205,20 @@ public class DataController {
         return retrieveUserDetailsFromDb(DiurnalUtil.generateDataTransit(email)).getHashCred();
     }
 
+    /**
+     * Generate backups of user mapping and entry day tables onto GitHub
+     *
+     * @param umpDelimiter User mapping should be separated via ','
+     * @param edyDelimiter Entry day mapping shouldn't be separated via ','. To facilitate manual backup, use '|'.
+     *                     To trigger this via postman, set 'edy_delimiter' to '%7C' in key val pair.
+     * @return boolean of both tables backup result
+     */
     @PutMapping("/manual/backup/github/csv")
-    public boolean backupUserMappingDataToGitHubInCsv(@RequestParam(name = "ump_delimiter", defaultValue = ",") String umpDelimiter,
-                                                      @RequestParam(name = "edy_delimiter", defaultValue = "\\|") String edyDelimiter) {
+    public boolean backupTableDataToGitHubInCsv(@RequestParam(name = "ump_delimiter", defaultValue = ",") String umpDelimiter,
+                                                @RequestParam(name = "edy_delimiter", defaultValue = "\\|") String edyDelimiter) {
         StopWatch stopWatch = beanStore.procureStopWatch();
         boolean compute = userMappingController.backupUserMappingDataToGitHubInCsv(umpDelimiter)
-                && entryDayController.backupUserMappingDataToGitHubInCsv(edyDelimiter);
+                && entryDayController.backupEntryDayDataToGitHubInCsv(edyDelimiter);
         stopWatch.stop();
         log.info("Took {} ms to complete full db table backup from data controller. Result: {}", stopWatch.getTime(TimeUnit.MILLISECONDS), compute);
         return compute;

@@ -218,9 +218,9 @@ public class EntryDayController {
     }
 
     @PutMapping("/backup/github/csv")
-    public boolean backupUserMappingDataToGitHubInCsv(@RequestParam(name = "delimiter", defaultValue = ",") String delimiter) {
+    public boolean backupEntryDayDataToGitHubInCsv(@RequestParam(name = "delimiter", defaultValue = "\\|") String delimiter) {
         StopWatch stopWatch = beanStore.procureStopWatch();
-        String dataLines = diurnalTableEntryDay.processAllRowsToCsv();
+        String dataLines = diurnalTableEntryDay.processAllRowsToCsv(delimiter);
         boolean compute = gitHubEntryDayFeignClient.backupAndUploadToGitHub(dataLines);
         stopWatch.stop();
         log.info("Took {} ms to complete entry_day table backup from entry-day controller. Result: {}", stopWatch.getTime(TimeUnit.MILLISECONDS), compute);

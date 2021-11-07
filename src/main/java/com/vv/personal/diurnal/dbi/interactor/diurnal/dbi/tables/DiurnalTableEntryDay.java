@@ -165,10 +165,10 @@ public class DiurnalTableEntryDay {
         return builder.build();
     }
 
-    public String processAllRowsToCsv() {
+    public String processAllRowsToCsv(String delimiter) {
         StringBuilder dataLines = new StringBuilder();
         retrieveAllEntities().forEach(entryDay ->
-                dataLines.append(StringUtils.joinWith(COMMA_STR,
+                dataLines.append(StringUtils.joinWith(delimiter,
                                 entryDay.getEmailHashAndDate(), String.valueOf(entryDay.getEmailHash()), entryDay.getDate(), entryDay.getTitle(), entryDay.getEntriesAsString()))
                         .append(NEW_LINE)
         );

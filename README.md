@@ -27,6 +27,7 @@
 
 | Serial | Version | Time | Artifact | Significant changes | 
 | ------ | ------- | ---- | -------- | ------------------- |
+| 4      | 1.4     | 2021-11-07 1900 IST   | 0.0.5-SNAPSHOT | Shifting to Quarkus, DB overhaul, App handling updates |
 | 3      | 1.3     | 2021-10-30 1000 IST   | 0.0.4-SNAPSHOT | Backup and upload to github, restricting cloud backup rows to 1 year from last date and overhauling configs |
 | 2      | 1.2     | 2021-10-28 2330 IST   | 0.0.3-SNAPSHOT | Using JPA completely and replacing the hand-written SQL logic |
 | 1      | 1.1     | 2021-10-24   | 0.0.2-SNAPSHOT | Giving 1 month free premium status to new sign ups |

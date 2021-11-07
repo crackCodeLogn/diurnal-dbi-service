@@ -104,8 +104,10 @@ public class DataController {
                     emailHash,
                     dbiLimitPeriodDaysConfig.cloud());
             if (transformFullBackupToProtos.transformWithoutSuppliedDate()) {
-                if (!exemptedEmails.contains(dataTransit.getEmail())) transformFullBackupToProtos.trimDownDataToBeSaved();
-                else log.info("Email '{}' is exempted from cloud row reduction. Going with full force!", dataTransit.getEmail());
+                int rowsSaved = transformFullBackupToProtos.getEntryDayListBuilder().getEntryDayCount();
+                if (!exemptedEmails.contains(dataTransit.getEmail())) {
+                    rowsSaved = transformFullBackupToProtos.trimDownDataToBeSaved();
+                } else log.info("Email '{}' is exempted from cloud row reduction. Going with full force!", dataTransit.getEmail());
 
                 if (entryDayController.deleteAndCreateEntryDays(transformFullBackupToProtos)) {
                     UserMappingProto.UserMapping userMapping = UserMappingProto.UserMapping.newBuilder()
@@ -113,7 +115,10 @@ public class DataController {
                             .setHashEmail(emailHash)
                             .setLastCloudSaveTimestamp(TimingUtil.extractCurrentUtcTimestamp())
                             .build();
-                    return generateResponsePrimitiveBool(userMappingController.updateUserMappingLastCloudSaveTimestamp(userMapping) == ONE);
+                    return ResponsePrimitiveProto.ResponsePrimitive.newBuilder()
+                            .setIntegralResponse(rowsSaved)
+                            .setBoolResponse(userMappingController.updateUserMappingLastCloudSaveTimestamp(userMapping) == ONE)
+                            .build();
                 }
             } else {
                 log.warn("Incomplete / incorrect save to cloud done!!");
